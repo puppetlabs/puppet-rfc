@@ -28,10 +28,11 @@ recommendation after the numbered decisions if you just want to look at
 1.  The two proposals are based on the requirement that the solution
     should not break existing code (i.e. introduction of new keywords,
     changes to naming rules, breaking API changes are not ok). This to
-    enable introducing this feature in the 3.x puppet stream.  
+    enable introducing this feature in the 3.x puppet stream.
+
     1.  If you do not care about backwards compatibility some of the non
         explored ideas may be more appealing to you, or you may have other
-        ideas to present.  
+        ideas to present.
         
 2.  As both of the proposals are built on lambdas being added to the
     language, this is naturally the first decision point.
@@ -73,16 +74,16 @@ recommendation after the numbered decisions if you just want to look at
         explored options).
 
         1.  delimiters around parameters; i.e. |\$x| or something else?
-        2.  arrow or no arrow; i.e, |\$x| =\> {e}, or |\$x| {e}
-        3.  Use of \$ in variables inside the lambda parameters or not? Using
-            \$ makes it consistent with other parameter declarations, but the
-            \$ before the name is superfluous. (It is also superfluous in
+        2.  arrow or no arrow; i.e, `|$x| => {e}, or |$x| {e}`
+        3.  Use of `$` in variables inside the lambda parameters or not? Using
+            `$` makes it consistent with other parameter declarations, but the
+            `$` before the name is superfluous. (It is also superfluous in
             defines and parameterized classes and could be relaxed there). If
-            you like \$() as delimiters (option i.) instead of || then including
-            the \$ in the list for each variable seems superfluous).
+            you like `$()` as delimiters (option i.) instead of `||` then including
+            the `$` in the list for each variable seems superfluous).
 
-4.  Do you like the ruby-style of using enumeration functions (each,
-    collect, reject, reduce) or do you prefer an operator based
+4.  Do you like the ruby-style of using enumeration functions (`each`,
+    `collect`, `reject`, `reduce`) or do you prefer an operator based
     approach?
 
     1.  If you like operators, the "pipe" approach is what those involved in
@@ -101,7 +102,7 @@ recommendation after the numbered decisions if you just want to look at
         with the names of the functions:
 
         1.  Should it be each (like in ruby), or foreach (as in java8, and some
-            languages where this is a keyword). Does the "for" prefix help or
+            languages where this is a keyword). Does the `for` prefix help or
             confuse? Do you like java8's stream method name better?
         2.  Do you like the ruby select and reject, or would you prefer there is
             only a select (with user having to put a not first to get
@@ -114,9 +115,9 @@ recommendation after the numbered decisions if you just want to look at
         1.  Would you like to see the start of the pipe/chain of iteration be
             based on LHS/RHS combination (i.e selecting hash keys, key-value
             pairs, pairs, triplets, etc. based on parameter declaration in the
-            lambda) e.g. that \$a.each [\$x,\$y| =\> {} picks pairs, or ...
+            lambda) e.g. that `$a.each |$x,$y| => {}` picks pairs, or ...
         2.  always use an additional function to perform the picking (e.g.
-            pairs, triplets, tuplets(n), keys, values) if picking is not "each
+            `pairs`, `triplets`, `tuplets(n)`, `keys`, `values`) if picking is not "each
             element"? (Java-8 has a default stream method with possibility to
             add new such methods for various types of picking things).
 
@@ -147,8 +148,8 @@ Recommendation
 
 The author of this proposal recommends that the ruby-java8 like proposal is used with:
 
-1.  lambda parameters expressed with |\$x|
-2.  lambda parameters placed left of the lambda body i.e. |\$x| {e}
+1.  lambda parameters expressed with `|$x|`
+2.  lambda parameters placed left of the lambda body i.e. `|$x| {e}`
 3.  the lambda body may be a block with one or several
     expressions/statements
 
@@ -162,13 +163,13 @@ The author of this proposal recommends that the ruby-java8 like proposal is used
 
 4.  enumeration functions each, select, reject, collect and reduce are
     implemented.
-5.  enumeration picking is each element (i.e. [key,value] for hash, and
+5.  enumeration picking is each element (i.e. `[key,value]` for hash, and
     each element for array), and that any other picking is done with
-    functions such as keys(), values() for hashes, and pairs(),
-    triplets(), and tuples(n) for arrays.
+    functions such as `keys()`, `values()` for hashes, and `pairs()`,
+    `triplets()`, and `tuples(n)` for arrays.
 6.  It is always a single argument that is curried (it may be an array)
 7.  Literal arguments appear after the curried value by convention, but
-    a function (e.g. reduce) may insert a value before the first when
+    a function (e.g. `reduce`) may insert a value before the first when
     this is logically more sound than having it appear after the curry
     (in reduce the optionally given argument is the "start value").
 8.  Calls to functions always pass the optional lambda as the last
@@ -217,29 +218,22 @@ e.g. an array of ['usrname', 0777, …], or hash of {'username'=\> 0777, ...}
 
 ### Creating, Collecting, and Relating Resources
 
-\$r1 = \$a1.collect |\$x| {file {"/somewhere/\$x": owner =\> \$x}}
-
-\$r2 = \$a2.collect |\$x| {file {"/elsewhere/\$x": owner =\> \$x}}
-
-\$r1 -\> \$r2
+    $r1 = $a1.collect |$x| {file {"/somewhere/$x": owner => $x}}
+    $r2 = $a2.collect |$x| {file {"/elsewhere/$x": owner => $x}}
+    $r1 -> $r2
 
 or
 
-\$a1.collect |\$x| { file {"/somewhere/\$x": owner =\> \$x}} -\>
-
-  \$a2.collect |\$x| { file {"/elsewhere/\$x": owner =\> \$x}}
+    $a1.collect |$x| { file {"/somewhere/$x": owner => $x}} ->
+      \$a2.collect |$x| { file {"/elsewhere/$x": owner =\> $x}}
 
 ### Filtering Data Before Creating a resource
 
-\$a.select |\$x| { \$x =\~ /com\$/ }.each |\$x| {
-
-  file { "/somewhere/\$x":
-
-    owner =\> \$x
-
-  }
-
-}
+    $a.select |$x| { $x =~ /com$/ }.each |$x| {
+      file { "/somewhere/$x":
+        owner => $x
+      }
+    }
 
 Lambdas
 =======
@@ -259,15 +253,14 @@ Parameters inside
 
 The "ruby like" proposal is based on this syntax:
 
-{|\<parameters\>| \<statements or expression\> }
+    {|<parameters>| <statements or expression> }
 
 This means that the block requires arguments to be passed to the block,
 and that the passed arguments are bound to the local variables as
 denoted by the parameters. Here is an example:
 
-{|\$x,\$y| ... } \# lambda with two parameters
-
-{|| ... }      \# lambda with no parameters
+    {|$x,$y| ... } \# lambda with two parameters    
+    {|| ... }      \# lambda with no parameters
 
 Parameters before
 -----------------
@@ -276,13 +269,13 @@ As an alternative to the lambda parameters being inside of the brace,
 they can be moved to the left of the lambda body. (See discussion below
 for the rationale to pick this syntax).
 
-|\<parameters\>| { \<statements or expression\> }
+    |<parameters>| { <statements or expression> }
 
 e.g.
 
-|\$x| { \$x \* 2 }
-
-|\$x| { file { "/somewhere/\$x": … } }
+    |$x| { $x * 2 }
+    
+    |$x| { file { "/somewhere/$x": ... } }
 
 This also makes it possible to allow something else than a block
 expression as the lambda body (e.g. a function, type or define
@@ -294,7 +287,7 @@ typically get unhelpful errors if they get it wrong.
 
 Consider:
 
-\$a.collect |\$x| \$x + 2 . select …
+    $a.collect |$x| $x + 2 . select ...
 
 What is the select applied to? (A: the literal 2).
 
@@ -304,17 +297,16 @@ Function references
 It is useful to be able to directly pass a named function where a lambda
 is allowed. The & operator can be used for this:
 
-&\<NAME\>
+    &<NAME>
 
 These two are then equivalent:
 
-\$array.collect &upcase
-
-\$array.collect |\$x| { upcase(\$x) }
+    $array.collect &upcase
+    $array.collect |$x| { upcase($x) }
 
 The proposal is to only allow a literal reference to a function at the
 same locations as a lambda is allowed (i.e. to not support something
-like &\$x for a dynamic reference, and not accepting &\<NAME\> as an
+like &\$x for a dynamic reference, and not accepting `&<NAME>` as an
 r-value) - see "Discussion about Function Reference" below.
 
 The addition of a function reference is optional, it is not required to
@@ -332,13 +324,12 @@ Moving the lambda parameters outside of the body is somewhat
 grammatically difficult (as we will see in a bit). In Java 8, lambdas
 are written like this:
 
-(x, y) -\> { }
+    (x, y) -\> { }
 
 Using more puppet like syntax, this could be:
 
-(\$x, \$y) =\> { }
-
-() =\> { }
+    ($x, $y) => { }    
+    () => { }
 
 This however means that calls where there are no parameters must use
 parentheses, as a call is otherwise ambiguous. (This would be  a drastic
@@ -346,22 +337,20 @@ change to the puppet language).
 
 A suggested solution to this is to use a syntactic marker such as \$:
 
-\$(x,y)=\>{}
+    $(x,y)=>{}    
+    ${}
 
-\${}
-
-But \${} clashes with old style "non double quoted interpolated string"
-that was available in some versions of puppet. \$(x,y) is preferred to
-\$(\$x,\$y) simply because it is lighter, but then this is not
+But `${}` clashes with old style "non double quoted interpolated string"
+that was available in some versions of puppet. `$(x,y)` is preferred to
+`$($x,$y)` simply because it is lighter, but then this is not
 consistent with how parameters to classes and defines are expressed.
-Also, taken in isolation a \${} syntax may be confused with
+Also, taken in isolation a `${}` syntax may be confused with
 interpolation in general.
 
 Using some other free operator works:
 
-&(x,y) =\> {}
-
-&{}
+    &(x,y) => {}    
+    &{}
 
 This style is used in the "pipe" proposal. because that proposal also
 uses & as a function reference, and a lambda is an anonymous function
@@ -370,67 +359,59 @@ uses & as a function reference, and a lambda is an anonymous function
 If variables should be preceded with \$ to be consistent with other
 function like declarations it starts to look clunky:
 
-&(\$x,\$y) =\> {}
+    &($x,$y) => {}    
+    &{}
 
-&{}
-
-Some languages (e.g. go) uses a keyword "func" to introduce an anonymous
+Some languages (e.g. go) uses a keyword `func` to introduce an anonymous
 function. We could do the same (but this adds a keyword), or we could
-use the convention that the name "\_" means anonymous. If used as an
+use the convention that the name `_` means anonymous. If used as an
 operator, and dropping the fat arrow, a lambda would look like this:
 
-\_(\$x,\$y) {}
-
-\_{}
+    _($x,$y) {}
+    _{}
 
 That looks quite magical compared to the keyword variant:
 
-func(\$x,\$y) {}
-
-func(\$x,\$y) {}
-
-func {}
+    func($x,$y) {}    
+    func($x,$y) {}
+    func {}
 
 It is possible to use the pipe operators (at least in the "Ruby like"
 proposal):
 
-|\$x, \$y| =\> { }
-
-|| =\> { }
+    |$x, $y| => { }
+    || => { }
 
 and also works without the arrow:
 
-|\$x, \$y| { }
-
-|| { }
+    |$x, $y| { }    
+    || { }
 
 Further, it is of value to be able to write a lambda that is not a block
 (such as a function reference). In this case the fat arrow separator may
 look more appealing. Compare:
 
-|\$x| =\> &upcase(\$x)
-
-|\$x| &upcase(\$x)
-
-\$array.each |\$x| {file { "/tmp/\$x": }}
-
-\$array.each |\$x| =\> {file { "/tmp/\$x": }}
+    |$x| => &upcase($x)
+    |$x| &upcase($x)
+    
+    $array.each |$x| {file { "/tmp/$x": }}
+    $array.each |$x| => {file { "/tmp/$x": }}
 
 ### Automatic currying
 
 You may have reacted examples like this:
 
-\$array.collect |\$x| =\> &upcase(\$x)
+    $array.collect |$x| => &upcase($x)
 
 as it has redundant information, this could just as well have been
 written
 
-\$array.collect &upcase
+    $array.collect &upcase
 
 Automatic currying with a lambda could look like this but needs the
 magic variable 'it':
 
-\$array.collect &{ upcase(\$\_) }
+    $array.collect &{ upcase($_) }
 
 Since the introduction of lambda and iteration will be new to the puppet
 community, it is perhaps best to always be explicit as things are
@@ -443,9 +424,8 @@ lambdas that it would be of value to use operators in the wider UTF-8
 character set. An obvious choice for lambda is then the greek lower case
 lambda letter λ
 
-λ(x,y) {}
-
-λ{}
+    λ(x,y) {}    
+    λ{}
 
 Irrespective of the merits and problems of using the lambda character,
 using UTF-8 characters has several inherent problems; they are much more
@@ -456,12 +436,12 @@ Discussion about Function Reference
 -----------------------------------
 
 As shown in the summary of the proposals for lambda, a function
-reference could be created by using &\<NAME\>. As there is no closure
+reference could be created by using `&<NAME>. As there is no closure
 requirement, a function reference can be allowed as an r-value, and thus
 any expression can be used after the &  as long as it evaluates to the
 name of a function. This means that the grammar could be:
 
-& \<expression\>
+    & <expression>
 
 And that expression must evaluate to a string that is the name of the
 function - ie. & is a function pointer.
@@ -472,24 +452,24 @@ are other obvious issues regarding static validation of such statements
 as the correctness is not known until evaluation time.
 
 The functional reference can allow specification of additional
-arguments, i.e. an uncompleted function call, and the 'it' variable
+arguments, i.e. an uncompleted function call, and the `it` variable
 represents where the curried (value is inserted). A concrete binding for
-'it' is needed; it could be spelled out as \$it, or use a more special
-\$\_ syntax.
+`it` is needed; it could be spelled out as `$it`, or use a more special
+`$_` syntax.
 
 This example shows a call where the curried variable is in the second
 position when the call is made.
 
-&myfunc(1, \$\_, "text")
+    &myfunc(1, $_, "text")
 
 Additional rules could be:
 
 1.  if no arguments are specified, the call is made with the single
-    argument \$\_
-2.  if arguments are specified, the \$\_ is the first argument (unless
+    argument `$_`
+2.  if arguments are specified, the `$_` is the first argument (unless
     it is included in the list)
 3.  (or)
-4.  if arguments are specified, the \$\_ must be included in order to
+4.  if arguments are specified, the `$_` must be included in order to
     pass it (this is less magical but also adds noise).
 
 The addition of uncompleted calls is optional.
@@ -521,11 +501,11 @@ nested lambdas.
 
 e.g.
 
-\$a.select |\$x| {\$x \> 10}.collect |\$x|{ \$x\*2 }
+    $a.select |$x| {$x > 10}.collect |$x|{ $x*2 }
 
 is easier to read than
 
-collect(select(\$a) |\$x| { \$x \> 10}) |\$x| {\$x\*2}
+    collect(select($a) |$x| { $x > 10}) |$x|{$x*2}
 
 These two calling styles are referred to as "chained call style" and
 "function call style".
@@ -538,22 +518,22 @@ way.
 Chained call style
 ------------------
 
-\$a.each |\$x| { … }
+    $a.each |$x| { ... }
 
 Function call style
 -------------------
 
-each(\$a) |\$x| { … }
+    each($a) |$x| { ... }
 
 Which naturally also works when there is no data e.g. getting data from
 some default source, and it can directly apply the data to the lambda.
 
-        defaultdata() |\$x| { … }
+    defaultdata() |$x| { ... }
 
 Which, if function call with lambda was not supported would have to be
 written as:
 
-        defaultdata().apply |\$x| { … }
+    defaultdata().apply |$x| { ... }
 
 Which has the negative side effect that the defaultdata() function on
 its own can not make use of efficient enumeration and must always return
@@ -570,22 +550,22 @@ constraints (no new keywords, etc.).
 The rationale for this proposal is that it is believed that sysadmins
 are used to thinking in terms of a unix command line pipe. Essentially
 that is what a combination of dot operation and lambdas provide. Would
-it be better if operations were chained with a pipe '|' ?
+it be better if operations were chained with a pipe `|` ?
 
-One can simply exchange the dot operator with a '|' to get this horrible
+One can simply exchange the dot operator with a `|` to get this horrible
 mix of idioms:
 
-\$a | collect {|\$x| } | each {|\$x| }
+    $a | collect {|$x| } | each {|$x| }
 
 However, this is a good starting point for understanding the proposed
 pipe notation (which is not the horrible line above).
 
-In the pipe proposal,  the | operator means "collect", and the |? means
+In the pipe proposal,  the `|` operator means "collect", and the `|?` means
 "select" (there is no reject, although one could be added with an
 additional operator).  The LHS is always an array, if fed something
 other than an array, it is turned into one. A magic variable referred to
-as "it" (concrete syntax either \$it, or something more special like
-\$\_) is available in the RHS scope. This variable may be renamed by the
+as "it" (concrete syntax either `$it`, or something more special like
+`$_`) is available in the RHS scope. This variable may be renamed by the
 use of a lambda. In addition this proposal uses & as an operator to
 produce a function reference (see separate discussion about Function
 References).
@@ -593,15 +573,15 @@ References).
 A semicolon ends the pipe. This is needed when a pipe is used in
 expressions and provides a visual clue where the pipes ends when the
 last step in the pipe extends over multiple lines. (Although only
-strictly required when the pipe is used as  a value in an expressions it
+strictly required when the pipe is used as a value in an expressions it
 is better if it is mandatory - the pipe ends here;).
 
 Here is an example of upcasing elements of an array, the result is a new
 array:
 
-\$upcased = [a,b,c] | &upcase ;
+    $upcased = [a,b,c] | &upcase ;
 
-produces [A, B, C] assigned to \$upcased.
+produces `[A, B, C]` assigned to `$upcased`.
 
 To summarize; arrays flow through the pipe element by element, applying
 the element to a function that is expressed via function reference, as
@@ -614,20 +594,18 @@ There are obvious difficulties to use the proposed lambda forms that are
 based on using pipes to delimit the lambda parameters. Here are some
 examples:
 
-f | || e  | … \# ambiguous !
+    f | || e  | ... \# ambiguous !
+    f | {|| e } | ... \# ok, ruby like lambdas
+    f | &() e | ... \# ok, prefixed parameter list
 
-f | {|| e } | … \# ok, ruby like lambdas
-
-f | &() e | … \# ok, prefixed parameter list
-
-The &(){} form is used going forward in the text (although the ruby like
+The `&(){}` form is used going forward in the text (although the ruby like
 syntax would work just as well).
 
 ### Collect pipe segment
 
 A collect pipe segment allows one of the following as the RHS:
 
-1.  A function reference &func, (or uncompleted function call) which is
+1.  A function reference `&func`, (or uncompleted function call) which is
     called for each element, the result is collected and passed to the
     next segment in the pipe.
 2.  A lambda, which is called for each element, the result is collected
@@ -649,11 +627,9 @@ behave like the UFO operators \<| |\> where bare word expressions are
 turned into named access - i.e. that the following expressions have the
 same meaning.
 
-|? attr == 3 ;
-
-|? &(x) { \$x['attr'] == 3 } ;
-
-|? &{ \$\_['attr'] == 3 } ;
+    |? attr == 3 ;    
+    |? &(x) { $x['attr'] == 3 } ;
+    |? &{ $_['attr'] == 3 } ;
 
 The side effect is that bare words can not be used to represent strings,
 they must always be quoted in a select segment. An alternative is to add
@@ -663,26 +639,23 @@ special select pipe segment (described in the next section).
 
 Using pipes makes code compact.
 
-\$a |? \$\_ \> 10 | \$\_ \* 2 ;
+    $a |? $_ > 10 | $_ * 2 ;
 
 Which is equivalent to the proposed (more explicit) ruby/java8-like
 alternative:
 
-        \$a.select |\$x| {\$x \> 10}.collect |\$x| { \$x \* 2 }
+    $a.select |$x| {$x > 10}.collect |$x| { $x * 2 }
 
 Pipe syntax can also use variable names (intead of it):
 
-\$a |? &(x) \$x \> 10 | &(x) \$x \* 2 ;
+    $a |? &(x) $x > 10 | &(x) $x * 2 ;
 
 When used to create resources:
 
-\$a |? \$\_ =\~ /com\$/ |
-
-  file { "/somewhere/\$x":
-
-    owner =\> \$x
-
-  } ;
+    $a |? $_ =~ /com$/ |
+      file { "/somewhere/$x":
+        owner => $x
+      } ;
 
 ### Ending the pipe
 
@@ -691,23 +664,25 @@ pipe (say to allow addition of the produced array with another array,
 there must be the need to terminate the array. A semicolon can be used
 for this:
 
-expr | expr ; + expr
+    expr | expr ; + expr
+
+To make it simpler, all pipes should end with a semicolon.
 
 ### Special select pipe segment
 
 It may be possible to use the UFO select to add this behavior to the
-pipet. I.e. a segment written as \<| |\> would be a select with bare
+pipet. I.e. a segment written as `<| |>` would be a select with bare
 word magic.
 
-\<| attr == 3 |\>
+    <| attr == 3 |>
 
-This comes with its own set of grammatical issues, and the operator \<|
+This comes with its own set of grammatical issues, and the operator `<|`
 already has additional semantics.
 
 ### Reduction pipe segments
 
 Since the operators are collect and select only, any reduction needs to
-be performed by a function. The problem is that the semantics of the |
+be performed by a function. The problem is that the semantics of the `|`
 is collect - i.e. collecting the result of each reduction.
 
 The solutions are:
@@ -717,32 +692,32 @@ The solutions are:
     the operator. | is really an enumeration operator, and if the RHS is
     a function producing an enumerable this is used instead of collect.
     The introduction of such special cases is unfortunate.
-3.  Introduce a reduce operator, say |\>, but now two magic it variables
+3.  Introduce a reduce operator, say `|>`, but now two magic `it` variables
     are needed (this and that)
 4.  Support reduction as a lambda function
 
 Reduction as function call with lambda would then look like this:
 
-\$array | &reduce (1) &(memo, x) =\> {\$memo + \$x}
+    $array | reduce (1) &(memo, x) => {$memo + $x}
 
 We now basically have both proposals at the same time (pipe and the ruby
 like support) and the result is both hard to read and hard to
 understand. Compare to:
 
-\$array.reduce(1) |\$memo, \$x| {\$memo + \$x }
+    $array.reduce(1) |$memo, $x| {$memo + $x }
 
 As you have observed, the pipe notation makes simple cases compact
 (perhaps too compact as there are few clues to what is meant by the
 operators), and complexity makes a funny face at us when we need to deal
 with something like reduction.
 
-Other Considered Alternatives^[[a]](#cmnt1)^ and Options
+Other Considered Alternatives and Options
 ========================================================
 
 Function call style with lambda as parameter
 --------------------------------------------
 
-foreach(\$a, {|\$x| … } )
+    foreach($a, {|$x| ... } )
 
 This is not as nice textually (a block nested in the argument list).
 
