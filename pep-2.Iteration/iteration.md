@@ -1,5 +1,5 @@
-"Iteration"
-===========
+Iteration
+=========
 
 This document contains an exploration of options and a proposed solution
 to the puppet redmine issue 
@@ -294,8 +294,10 @@ Additional rules could be:
     argument `$_`
 2.  if arguments are specified, the `$_` is the first argument (unless
     it is included in the list)
-(or)
-4.  if arguments are specified, the `$_` must be included in order to
+
+or
+
+3.  if arguments are specified, the `$_` must be included in order to
     pass it (this is less magical but also adds noise).
 
 The addition of uncompleted calls is optional.
