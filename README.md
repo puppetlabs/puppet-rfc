@@ -1,5 +1,5 @@
 pep
 ===
 
-Puppet Enahncement Process Document Repository
+Puppet Enhancement Process Document Repository
 ----------------------------------------------
