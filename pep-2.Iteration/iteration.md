@@ -2,8 +2,8 @@
 ===========
 
 This document contains an exploration of options and a proposed solution
-to the puppet redmine issue \#11331 - "foreach"
-[http://projects.puppetlabs.com/issues/11331](http://projects.puppetlabs.com/issues/11331)
+to the puppet redmine issue 
+[#11331 - "foreach"](http://projects.puppetlabs.com/issues/11331)
 
 Initially, this proposal for support of iteration was modeled after
 Ruby's lambdas and Enumerables. Work then continued on an alternative
@@ -726,11 +726,9 @@ only appearing last in an argument list), or handle as non evaluated
 expression. If not handled as a special case in the grammar, the
 consequence is that code like this can be written:
 
-\$a = {|\$x| … }
-
-\#... much later
-
-foreach(\$y, \$a)
+    $a = {|$x| … }
+    #... much later
+    foreach($y, $a)
 
 The big problem here is that this requires closures (lambda bound in
 other context than where it is called).
@@ -757,11 +755,9 @@ Using magic variables
 
 (requires foreach to be a keyword)
 
-foreach \$a {
-
-  \$loop
-
-}
+    foreach $a {    
+      $loop
+    }
 
 This requires that foreach is a keyword (it would otherwise be a
 function with \$a as a parameter) followed by a block. This would then
@@ -770,14 +766,14 @@ variables are introduced in such a block. Basically it is the same as a
 lambda only that variables are not declared. Generalized to other
 functions than foreach, it would be an ambiguity in the grammar for
 
-NAME { … }
+    NAME { ... }
 
 as this is either a function call with a hash as a parameter, or a
 function call with a block. Extensive grammar lookahead is required if
 the start of the block is not easily recognized with lexical lookahead.
-(In the proposal that is "{ |")
+(In the proposal that is `{|`)
 
-No matter what is picked (\$loop, \$\_ etc), the magic variable is
+No matter what is picked (`$loop`, `$_` etc), the magic variable remains
 magic. This style also makes it more difficult to specify what is wanted
 on each iteration, one value at a time or two or three, the keys from a
 hash, the values, or the entries? If only one at a time is supported, a
@@ -790,21 +786,17 @@ Other forms of declaration of loop variable than using || inside block
 
 (requires foreach to be a keyword).
 
-foreach \$a (\$x) {}
-
-foreach(\$a, \$x) { }
-
-foreach \$a=\>\$x { }
-
-foreach \$a =\> \$x, \$y, \$z { }
+    foreach $a ($x) {}
+    foreach($a, $x) { }
+    foreach $a=>$x { }
+    foreach $a => $x, $y, $z { }
 
 Can imagine saving typing by auto-shadowing the lhs if it is a variable
 (but this naturally fails if lhs is a general expression). Anyway, here
 is an example:
 
-\$a = [1, 2, 3]
-
-foreach \$a { notice \$a } \# =\> notices '1'
+    $a = [1, 2, 3]
+    foreach $a { notice $a } # => notices '1'
 
 Disadvantages:
 
@@ -818,12 +810,12 @@ The idea is that looping in itself is not the goal, but the application
 of a set onto something (e.g. a resource type). ie. essentially an
 "apply" operator.
 
-apply(a\_collection, to\_named\_thing)
+    apply(a_collection, to_named_thing)
 
-Problem here is what to pick from a\_collection (each, pairs, triplets,
+Problem here is what to pick from a_collection (each, pairs, triplets,
 keys, entries), and how to apply them to the named thing. If the named
 thing is a function, one could pick as many things from a collection as
-there are arguments in the named function (to\_named\_thing). If however
+there are arguments in the named function (to_named_thing). If however
 the named thing is a resource type, arguments are passed by name, so
 some kind of parameterized block is required.
 
@@ -832,54 +824,48 @@ so - either a keyword like apply, or an operator.
 Using keyword apply
 -------------------
 
-apply \$a (\$x, \$y) =\> file { "prefix\_\$x": ensure =\> \$y}
+    apply $a ($x, $y) => file { "prefix_$x": ensure => $y}
 
 Keyword apply can be extended with name - e.g.
 
-        apply each \$a(\$x, \$y) =\> file { "prefix\_\$x": ensure =\>
-\$y}
+    apply each $a($x, $y) => file { "prefix_$x": ensure => $y}
 
 The name could be a symbolic mapping mode in english, e.g. each, pairs,
-triplets, keys, key\_and\_value, etc. if a more human readable form is
+triplets, keys, key_and_value, etc. if a more human readable form is
 wanted. Examples:
 
-        apply each(\$x) \$a =\> file { "prefix\_\$x": ensure =\>
-present}
-
-apply pairs(\$x,\$y) \$a =\> file { "prefix\_\$x": ensure =\> \$y}
+    apply each($x) $a => file { "prefix_$x": ensure => present}
+    apply pairs($x,$y) $a => file { "prefix_$x": ensure => $y}
 
 or some combination of this and other proposals
 
-apply \$a(\$x) =\> file { "prefix\_\$x": ensure =\> present}
-
-apply \$a.each(\$x) =\> file { "prefix\_\$x": ensure =\> present}
-
-apply \$a.pairs(\$x,\$y) =\> file { "prefix\_\$x": ensure =\> \$y}
+    apply $a($x) => file { "prefix_$x": ensure => present}
+    apply $a.each($x) => file { "prefix_$x": ensure => present}
+    apply $a.pairs($x,$y) => file { "prefix_$x": ensure => $y}
 
 The advantage here is that it is explicit how the user wants to pick
 things from the collection.
 
 Still, if the iteration is wanted more than once, it has to be repeated,
-or a RHS block is required. With a RHS block, this \*is\* the same as
+or a RHS block is required. With a RHS block, this *is* the same as
 the lambda proposal earlier, only with explicit naming of the picking
 method. (The same could be achieved with different functions foreach,
-foreach\_key, etc. and using the prefered/proposed solution).
+foreach_key, etc. and using the prefered/proposed solution).
 
 ### Operator example
 
-Example uses \* overloading, and needs either magic variables, or a
+Example uses `*` overloading, and needs either magic variables, or a
 declaration of the mapping
 
-\$a \* file { "prefix\_\$a": ensure =\> present }
-
-\$a \* |\$x| file { "prefix\_\$x": ensure =\> present }
+    $a * file { "prefix_$a": ensure => present }    
+    $a * |$x| file { "prefix_$x": ensure => present }
 
 The only difference from earlier general foreach function and lambda is
 that logic is restricted in what it may apply to. The operator way is
 quite magic.
 
-Adapting Call by Name(updated Feb 15, 2013^[[b]](#cmnt2)^)
-----------------------------------------------------------
+Adapting Call by Name(updated Feb 15, 2013
+------------------------------------------
 
 A define (or a resource type) is almost like a function, but it is
 "called" with named argument passing instead of positional argument
@@ -889,21 +875,19 @@ A special form of lambda can act as an adapter between these two call
 styles. A lambda declared with a RHS being a type/define reference would
 adapt the positional input to the output. Syntax:
 
-|\<parameters\>| &\<NAME\>
+    |<parameters>| &<NAME>
 
 Here is an example, calling the user defined resource type something
 with this syntax, and with an equivalent full syntax:
 
-\$a.each |\$name| &something
-
-\$a.each {|\$name| something { name =\> \$name } }
+    $a.each |$name| &something
+    $a.each {|$name| something { name => $name } }
 
 If additional arguments are needed, they are passed as "default values"
 e.g. these are equivalent
 
-\$a.each |\$name, \$foo=10| &something
-
-\$a.each {|\$name| something { name =\> \$name, foo =\> 10 } }
+    $a.each |\$name, $foo=10| &something
+    $a.each {|$name| something { name => $name, foo => 10 } }
 
 Since the RHS of default values are evaluated, it is possible to bind
 the 'it' variable to any other variable. This opens up a set of issues
@@ -917,7 +901,7 @@ when defaults are used, and there is a desire to define a mapping?
     LHS function (this is how this is implemented in the experimental
     proposal)
 2.  User may use a magic 'it' variable (but several may be needed and
-    this starts to get complex, \$\_\_ ? or \$\_1, \$\_2, or \$\_[1],
+    this starts to get complex, `$__`, or `$_1`, `$_2`, or `$_[1]`,
     etc.)
 3.  If the referenced element is call by position (i.e. a function), the
     arguments are simply passed in the order they are stated.
@@ -926,13 +910,13 @@ This is probably not useful in practice as each element needs a unique
 title that is derived from the input, and the additional complexity of
 "yet more syntax" means this is probably not worth exploring.
 
-Automatic expansion of Collections^[[c]](#cmnt3)^
--------------------------------------------------
+Automatic expansion of Collections
+----------------------------------
 
 Idea being that enumeration happens as a consequence of a special
 assignment - e.g.
 
-\$each = \<expression\>; file { path =\> \$each }
+    $each = <expression>; file { path => $each }
 
 This is similar to the "apply" idea; apply a collection to a resource
 but it allows the specification of the name of the single value that can
@@ -943,7 +927,7 @@ enumeration. It can be expanded to allow picking multiple variables
 (with same type of semantics as introspection of the lambda parameters)
 - e.g.
 
-\$key, \$value = \<expression\> ; …
+    $key, $value = <expression> ; ...
 
 This is more magical, not extensible, and only solves "looping for the
 purpose of applying result to a resource".
@@ -985,9 +969,9 @@ an expression in the lambda with a syntax marker. In the implementation
 
 i.e.
 
-\$a.select {|\$x| = \$x =\~ /awsome/ }
+    $a.select {|$x| = $x =~ awsome }
 
-One remaining problem is that STATEMENT |  EXPRESSION is ambiguous in
+One remaining problem is that `STATEMENT | EXPRESSION` is ambiguous in
 puppet's current grammar (most likely because of the non-parenthesised
 function call allowed for statements), and thus, to be able to have the
 lambda return a value an expression needs to be turned into a statement
@@ -1001,8 +985,8 @@ As a test, a grammar for puppet that changed it to be expression based
 was implemented, and that proved to be very doable by simply using a
 different approach than in the current grammar.
 
-This experiment (egrammar.ra) is currently found here:
-https://github.com/hlindberg/puppet/blob/pops/lib/puppet/pops/impl/parser/egrammar.ra
+This experiment (egrammar.ra) is currently
+found [here](https://github.com/hlindberg/puppet/blob/pops/lib/puppet/pops/impl/parser/egrammar.ra)
 for anyone interested. This work can be manually applied to the real
 grammar.
 
@@ -1012,21 +996,16 @@ are easily found in Geppetto btw, so there is a list to work from.
 
 The egrammar now as support for the following different styles
 
-function λ
-
-function () λ
-
-x.function λ
-
-x.function() λ
+    function λ    
+    function () λ
+    x.function λ
+    x.function() λ
 
 Where λ is one of
 
-{| PARAMETERS | STATEMENTS\_OR\_EXPR }
-
-| PARAMETERS| { STATEMENTS\_OR\_EXPR }
-
-| PARAMETERS| =\> { STATEMENTS\_OR\_EXPR }
+    {| PARAMETERS | STATEMENTS\_OR\_EXPR }    
+    | PARAMETERS| { STATEMENTS\_OR\_EXPR }
+    | PARAMETERS| => { STATEMENTS\_OR\_EXPR }
 
 The intent for supporting all of these is to allow UX studies with one
 and the same version.
@@ -1038,9 +1017,8 @@ Ideally, the grammar should be relaxed to not differentiate between
 expressions and statements, as this makes it possible to use constructs
 such as:
 
-\$a = case …
-
-\$a = if …
+    $a = case ...
+    $a = if ...
 
 Which are much nicer and clearer than embedding conditional assignments
 to \$a inside the nested blocks of these statements.
@@ -1048,114 +1026,3 @@ to \$a inside the nested blocks of these statements.
 This is easily achievable with an expression based grammar; it is only a
 matter of different validation to make the semantics match 3.1, and can
 thus be turned on/off as an experimental feature.
-
-[[a]](#cmnt_ref1)Luke Kanies:
-
-I'd like to at least think about whether we could do an approach that
-didn't require full functionality in the attached block.
-
-E.g., I know that arrays could be done with string expansion, but could
-hashes?  Could we get the other functions out of it?
-
-* * * * *
-
-Henrik Lindberg:
-
-I am not envisioning full functionality either; i.e. classes and define
-not allowed in block which leaves resources and expressions. Also
-probably not allowed to collect (that is instad another form of
-iteration/predicate - only an idea at this stage).
-
-* * * * *
-
-Luke Kanies:
-
-Ah.  I assumed that block was full code.  If it can only hold resources,
-that changes it quite a bit, I think.  That is, if we're going for that
-reduced use case, I think we can get there with less features added to
-the language.
-
-Any chance we could have a phone call about this or something?  Maybe we
-discuss it at the Wednesday morning (PDX time) meeting?
-
-* * * * *
-
-Henrik Lindberg:
-
-Andy and I are speaking at a Ruby meetup (wednesday) and then PuppetCamp
-Stockholm (Thurs). Friday is first opportunity.
-
-I understand what you are after (or at least I think so :) - supporting
-the bare minimum first, but without getting painted into a corner wrt
-other possibilities. Must be backwards compatible, and should use syntax
-palatable by real/typical users. There is one proposal that is
-implemented, and the "pipe" + "type" looks like it is also implementable
-(but requires a few more iterations before completed). Then we have two
-proposals which both can be reduced to a minimal case, while also being
-extensible in the future.
-
-* * * * *
-
-Henrik Lindberg:
-
-regarding "full code" - allowing classes to be created (and some other
-types of statements would be very bad). The way to achieve this is to
-assert what was parsed and validate the types of statements/expressions.
-(This makes it flexible, and easy to experiment with going forward).
-
-* * * * *
-
-Luke Kanies:
-
-I think this is not good.  I think the blocks either need to support the
-full scope of the language, or they need to be a new syntax that makes
-it clear that they're not full language.
-
-That's why I like the string expansion version - it's obviously limited.
-
-* * * * *
-
-Henrik Lindberg:
-
-This thread took place some time ago, and the document is now reworked
-with a lot more detail. However - The blocks are "full language", but
-just as for other types of conditional logic, it should not be allowed
-to create classes or defines. There is no technical reason to limit
-other types of expressions/statements.
-
-Suggest that this particular discussion thread is resolved and that we
-start over with a full review. ok?
-
-* * * * *
-
-Luke Kanies:
-
-Yeah, I feel a bit lost in these docs.  Starting with a clean slate
-seems reasonable.
-
-[[b]](#cmnt_ref2)Henrik Lindberg:
-
-added "using type as a function"
-
-* * * * *
-
-Henrik Lindberg:
-
-Updated to use function reference style
-
-[[c]](#cmnt_ref3)Luke Kanies:
-
-Can I see some examples of this?  I don't understand.
-
-* * * * *
-
-Henrik Lindberg:
-
-This came from your comment in the other document; maybe I misunderstood
-the intent...
-
-* * * * *
-
-Luke Kanies:
-
-Ah, ok.  Thanks.
