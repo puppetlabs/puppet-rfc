@@ -3,6 +3,8 @@
    "title": "<REPLACE with title of pep>"
    "revision":"0.0.0",
    "project":"https://github.com/<REPLACE with ref to project at github>",
+   "implementation" : [
+   ]  
    "requires-peps":[
    ],
    "issues":[
