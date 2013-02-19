@@ -27,7 +27,7 @@ Examples of the Recommended Implementation
 
 ### Iterating over pairs in an array or hash
 
-e.g. an array of `['usrname', 0777, ...]`, or hash of `{'username'=\> 0777, ...}`
+e.g. an array of `['usrname', 0777, ...]`, or hash of `{'username'=> 0777, ...}`
 
     $array.pairs |$x| {
       file {"/somewhere${$x[0]}":
