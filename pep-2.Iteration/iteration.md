@@ -73,7 +73,7 @@ recommendation after the numbered decisions if you just want to look at
         will not work, and you need to read the discussion about the various
         explored options).
 
-        1.  delimiters around parameters; i.e. |\$x| or something else?
+        1.  delimiters around parameters; i.e. `|$x|` or something else?
         2.  arrow or no arrow; i.e, `|$x| => {e}, or |$x| {e}`
         3.  Use of `$` in variables inside the lambda parameters or not? Using
             `$` makes it consistent with other parameter declarations, but the
@@ -207,12 +207,12 @@ Examples of the Recommended Implementation
 
 ### Iterating over pairs in an array or hash
 
-e.g. an array of ['usrname', 0777, …], or hash of {'username'=\> 0777, ...}
+e.g. an array of `['usrname', 0777, ...]`, or hash of `{'username'=\> 0777, ...}`
 
-    $array.pairs |\$x| {
-      file {"/somewhere/\${\$x[0]}":
-        owner =\> \$x[0],
-        mode=\>\$x[1]
+    $array.pairs |$x| {
+      file {"/somewhere${$x[0]}":
+        owner => $x[0],
+        mode=>$x[1]
       }
     }
 
@@ -225,7 +225,7 @@ e.g. an array of ['usrname', 0777, …], or hash of {'username'=\> 0777, ...}
 or
 
     $a1.collect |$x| { file {"/somewhere/$x": owner => $x}} ->
-      \$a2.collect |$x| { file {"/elsewhere/$x": owner =\> $x}}
+      $a2.collect |$x| { file {"/elsewhere/$x": owner => $x}}
 
 ### Filtering Data Before Creating a resource
 
@@ -259,8 +259,8 @@ This means that the block requires arguments to be passed to the block,
 and that the passed arguments are bound to the local variables as
 denoted by the parameters. Here is an example:
 
-    {|$x,$y| ... } \# lambda with two parameters    
-    {|| ... }      \# lambda with no parameters
+    {|$x,$y| ... } # lambda with two parameters    
+    {|| ... }      # lambda with no parameters
 
 Parameters before
 -----------------
@@ -295,7 +295,7 @@ Function references
 -------------------
 
 It is useful to be able to directly pass a named function where a lambda
-is allowed. The & operator can be used for this:
+is allowed. The `&` operator can be used for this:
 
     &<NAME>
 
@@ -306,7 +306,7 @@ These two are then equivalent:
 
 The proposal is to only allow a literal reference to a function at the
 same locations as a lambda is allowed (i.e. to not support something
-like &\$x for a dynamic reference, and not accepting `&<NAME>` as an
+like `&$x` for a dynamic reference, and not accepting `&<NAME>` as an
 r-value) - see "Discussion about Function Reference" below.
 
 The addition of a function reference is optional, it is not required to
@@ -324,7 +324,7 @@ Moving the lambda parameters outside of the body is somewhat
 grammatically difficult (as we will see in a bit). In Java 8, lambdas
 are written like this:
 
-    (x, y) -\> { }
+    (x, y) -> { }
 
 Using more puppet like syntax, this could be:
 
@@ -335,7 +335,7 @@ This however means that calls where there are no parameters must use
 parentheses, as a call is otherwise ambiguous. (This would be  a drastic
 change to the puppet language).
 
-A suggested solution to this is to use a syntactic marker such as \$:
+A suggested solution to this is to use a syntactic marker such as `$`:
 
     $(x,y)=>{}    
     ${}
@@ -353,10 +353,10 @@ Using some other free operator works:
     &{}
 
 This style is used in the "pipe" proposal. because that proposal also
-uses & as a function reference, and a lambda is an anonymous function
+uses `&` as a function reference, and a lambda is an anonymous function
 (although defined instead of referenced).
 
-If variables should be preceded with \$ to be consistent with other
+If variables should be preceded with `$` to be consistent with other
 function like declarations it starts to look clunky:
 
     &($x,$y) => {}    
@@ -397,6 +397,9 @@ look more appealing. Compare:
     $array.each |$x| {file { "/tmp/$x": }}
     $array.each |$x| => {file { "/tmp/$x": }}
 
+Naturally, both styles (without arrow for a braced block, and with arrow for a function reference) could be
+used - maybe to set them apart, and to provider better error feedback (but this may be of debateable value).
+
 ### Automatic currying
 
 You may have reacted examples like this:
@@ -432,6 +435,9 @@ using UTF-8 characters has several inherent problems; they are much more
 difficult to type, and there may be encoding issues in users toolchains
 that makes them drop or misinterpret such characters.
 
+There is already criticism against having too much special punctuation, and
+the addition of greek letters the syntax starts to look like "math".
+
 Discussion about Function Reference
 -----------------------------------
 
@@ -444,7 +450,7 @@ name of a function. This means that the grammar could be:
     & <expression>
 
 And that expression must evaluate to a string that is the name of the
-function - ie. & is a function pointer.
+function - ie. `&` is a function pointer.
 
 This allows composition and functional oriented programming styles to be
 used. This may however be far too complex for the target audience. There
@@ -594,9 +600,9 @@ There are obvious difficulties to use the proposed lambda forms that are
 based on using pipes to delimit the lambda parameters. Here are some
 examples:
 
-    f | || e  | ... \# ambiguous !
-    f | {|| e } | ... \# ok, ruby like lambdas
-    f | &() e | ... \# ok, prefixed parameter list
+    f | || e  |   ... # ambiguous !
+    f | {|| e } | ... # ok, ruby like lambdas
+    f | &() e |   ... # ok, prefixed parameter list
 
 The `&(){}` form is used going forward in the text (although the ruby like
 syntax would work just as well).
@@ -623,7 +629,7 @@ the following additions:
     of all elements for which the expression evaluated to true.
 
 More magic can perhaps be added to the select pipe segment to make it
-behave like the UFO operators \<| |\> where bare word expressions are
+behave like the UFO operators `<| |>` where bare word expressions are
 turned into named access - i.e. that the following expressions have the
 same meaning.
 
@@ -646,7 +652,7 @@ alternative:
 
     $a.select |$x| {$x > 10}.collect |$x| { $x * 2 }
 
-Pipe syntax can also use variable names (intead of it):
+Pipe syntax can also use variable names (instead of `it`):
 
     $a |? &(x) $x > 10 | &(x) $x * 2 ;
 
@@ -886,7 +892,7 @@ with this syntax, and with an equivalent full syntax:
 If additional arguments are needed, they are passed as "default values"
 e.g. these are equivalent
 
-    $a.each |\$name, $foo=10| &something
+    $a.each |$name, $foo=10| &something
     $a.each {|$name| something { name => $name, foo => 10 } }
 
 Since the RHS of default values are evaluated, it is possible to bind
@@ -910,7 +916,7 @@ This is probably not useful in practice as each element needs a unique
 title that is derived from the input, and the additional complexity of
 "yet more syntax" means this is probably not worth exploring.
 
-Automatic expansion of Collections
+Automatic Expansion of Collections
 ----------------------------------
 
 Idea being that enumeration happens as a consequence of a special
@@ -924,8 +930,8 @@ be picked.
 
 This style is not extensible, it can not be used for different types of
 enumeration. It can be expanded to allow picking multiple variables
-(with same type of semantics as introspection of the lambda parameters)
-- e.g.
+(with same type of semantics as introspection of the lambda
+parameters) - e.g.
 
     $key, $value = <expression> ; ...
 
@@ -1003,9 +1009,9 @@ The egrammar now as support for the following different styles
 
 Where λ is one of
 
-    {| PARAMETERS | STATEMENTS\_OR\_EXPR }    
-    | PARAMETERS| { STATEMENTS\_OR\_EXPR }
-    | PARAMETERS| => { STATEMENTS\_OR\_EXPR }
+    {| PARAMETERS | STATEMENTS_OR_EXPR }    
+    | PARAMETERS| { STATEMENTS_OR_EXPR }
+    | PARAMETERS| => { STATEMENTS_OR_EXPR }
 
 The intent for supporting all of these is to allow UX studies with one
 and the same version.
@@ -1021,7 +1027,7 @@ such as:
     $a = if ...
 
 Which are much nicer and clearer than embedding conditional assignments
-to \$a inside the nested blocks of these statements.
+to `$a` inside the nested blocks of these statements.
 
 This is easily achievable with an expression based grammar; it is only a
 matter of different validation to make the semantics match 3.1, and can
