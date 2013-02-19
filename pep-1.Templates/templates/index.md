@@ -11,3 +11,6 @@ Index
 * [Alternatives](alternatives.md)  
   A description of investigated alternatives with rationale (why they were considered, and why they were not
   recommended.
+* [Spinoffs / Future ideas](spinoff.md)  
+  A description of spinoff results and future ideas.
+ 
