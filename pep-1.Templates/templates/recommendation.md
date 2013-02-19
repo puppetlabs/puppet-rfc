@@ -1,10 +1,14 @@
 Recommendations
 ===============
-<!-- Contains recommendations - a selection of the options/the result of evaluation ->
+<!-- Contains recommendations, a selection of the options/the result of evaluation
+     Replace the text below:
+-->
 It recommended that the following options are implemented:
 
-* a) Tranquility
+* [Tranquility](main.md#tranquility)
+* [Happiness](main.md#happiness)
+
 
 And that these options require more investigation in future peps:
 
-* b) Despair
+* [Despair](main.md#despair)
