@@ -97,6 +97,7 @@ recommendation after the numbered decisions if you just want to look at
         with some special cases, and is sprinkled with magic variables. It
         may also seem like mixed idioms and is not like anything seen
         elsewhere.
+        
     2.  If you like the ruby-java8-like approach better you may have issues
         with the names of the functions:
 
@@ -107,6 +108,7 @@ recommendation after the numbered decisions if you just want to look at
             only a select (with user having to put a not first to get
             reject functionality). Do you prefer the more generic term
             filter (used in java8)?
+            
     3.  If you like the ruby-java8-like approach better you may have issues
         with the "picking" from the enumerable:
 
@@ -201,24 +203,18 @@ Examples of the Recommended Implementation
 
 ### Iterating over an array - creating resources
 
-  $array.each |\$x| { file { "/somewhere/\$x": owner =\> \$x } }
+    $array.each |$x| { file { "/somewhere/$x": owner => $x } }
 
 ### Iterating over pairs in an array or hash
 
-e.g. an array of ['usrname', 0777, …], or hash of {'username'=\> 0777,
-…}
+e.g. an array of ['usrname', 0777, …], or hash of {'username'=\> 0777, ...}
 
-\$array.pairs |\$x| {
-
-  file {"/somewhere/\${\$x[0]}":
-
-    owner =\> \$x[0],
-
-    mode=\>\$x[1]
-
-  }
-
-}
+    $array.pairs |\$x| {
+      file {"/somewhere/\${\$x[0]}":
+        owner =\> \$x[0],
+        mode=\>\$x[1]
+      }
+    }
 
 ### Creating, Collecting, and Relating Resources
 
