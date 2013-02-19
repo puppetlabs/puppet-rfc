@@ -290,15 +290,16 @@ position when the call is made.
 
 Additional rules could be:
 
-1.  if no arguments are specified, the call is made with the single
-    argument `$_`
-2.  if arguments are specified, the `$_` is the first argument (unless
-    it is included in the list)
+* if no arguments are specified, the call is made with the single 
+  argument `$_`
+
+* if arguments are specified, the `$_` is the first argument (unless
+  it is included in the list)
 
 or
 
-3.  if arguments are specified, the `$_` must be included in order to
-    pass it (this is less magical but also adds noise).
+* if arguments are specified, the `$_` must be included in order to
+  pass it (this is less magical but also adds noise).
 
 The addition of uncompleted calls is optional.
 
