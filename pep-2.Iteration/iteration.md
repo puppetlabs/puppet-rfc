@@ -32,8 +32,8 @@ recommendation after the numbered decisions if you just want to look at
 
     1.  If you do not care about backwards compatibility some of the non
         explored ideas may be more appealing to you, or you may have other
-        ideas to present.
-  
+        ideas to present.  
+        
 2.  As both of the proposals are built on lambdas being added to the
     language, this is naturally the first decision point.
 
