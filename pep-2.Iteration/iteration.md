@@ -28,8 +28,7 @@ recommendation after the numbered decisions if you just want to look at
 1.  The two proposals are based on the requirement that the solution
     should not break existing code (i.e. introduction of new keywords,
     changes to naming rules, breaking API changes are not ok). This to
-    enable introducing this feature in the 3.x puppet stream.
-
+    enable introducing this feature in the 3.x puppet stream.  
     1.  If you do not care about backwards compatibility some of the non
         explored ideas may be more appealing to you, or you may have other
         ideas to present.  
