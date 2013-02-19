@@ -6,5 +6,9 @@
    "requires-peps":[
    ],
    "issues":[
+   ],
+   "implementation":[
+   "https://github.com/hlindberg/puppet/tree/11331-add-foreach",
+   "https://github.com/hlindberg/puppet/blob/pops/lib/puppet/pops/impl/parser/egrammar.ra"
    ]
 }
