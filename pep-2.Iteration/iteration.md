@@ -1,5 +1,5 @@
-"Iteration"
-===========
+Iteration
+=========
 
 This document contains an exploration of options and a proposed solution
 to the puppet redmine issue 
@@ -27,7 +27,7 @@ Examples of the Recommended Implementation
 
 ### Iterating over pairs in an array or hash
 
-e.g. an array of `['usrname', 0777, ...]`, or hash of `{'username'=\> 0777, ...}`
+e.g. an array of `['usrname', 0777, ...]`, or hash of `{'username'=> 0777, ...}`
 
     $array.pairs |$x| {
       file {"/somewhere${$x[0]}":
@@ -290,13 +290,16 @@ position when the call is made.
 
 Additional rules could be:
 
-1.  if no arguments are specified, the call is made with the single
-    argument `$_`
-2.  if arguments are specified, the `$_` is the first argument (unless
-    it is included in the list)
-3.  (or)
-4.  if arguments are specified, the `$_` must be included in order to
-    pass it (this is less magical but also adds noise).
+* if no arguments are specified, the call is made with the single 
+  argument `$_`
+
+* if arguments are specified, the `$_` is the first argument (unless
+  it is included in the list)
+
+or
+
+* if arguments are specified, the `$_` must be included in order to
+  pass it (this is less magical but also adds noise).
 
 The addition of uncompleted calls is optional.
 

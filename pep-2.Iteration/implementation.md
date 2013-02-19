@@ -1,5 +1,3 @@
-Implementation
-==============
 An Implementation of the Proposal
 =================================
 

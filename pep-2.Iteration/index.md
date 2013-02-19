@@ -1,7 +1,7 @@
-Index
-=====
+Index of pep-2.Iteration
+========================
 <!-- Provide an index list of documents with brief reading instructions/why that document is included -->
-* [Iteration](iternation.md)  
+* [Iteration](iteration.md)  
   The proposal to add lambda and iteration functions.
 * [Evaluation](evaluation.md)  
   Contains a list of options to consider with rationale why an option may be appealing (or why not).

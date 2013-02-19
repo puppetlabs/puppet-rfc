@@ -30,6 +30,8 @@ The author of this proposal recommends that the ruby-java8 like proposal is used
 8.  Calls to functions always pass the optional lambda as the last
     argument.
 
+Rationale
+---------
 The rationale for these recommendations are:
 
 1.  No additional keywords or backwards incompatible changes to the
