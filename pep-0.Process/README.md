@@ -116,12 +116,12 @@ Proposals are written using Github Flavored Markdown.
 Metadata
 --------
 
-A proposal always has one root file manifest.json^[[c]](#cmnt3)^ that
+A proposal always has one root file manifest.json that
 describes:
 
 1.  pep - self reference, the pep number
 2.  project -  a URL to the project's homepage (typically a github
-    repository complete with issue tracker)^[[d]](#cmnt4)^; i.e. as
+    repository complete with issue tracker); i.e. as
     simple/complex as required by the size/complexity of the PEP.
     Further information about the project/work should be found there
     (issue tracking, meetings, schedule, who's who, etc. as dictated by
@@ -140,31 +140,31 @@ describes:
     be one or several redmine issues tracking implementation work, these
     are also included in this file.
 
-{
+    {
 
-   "pep": 123,
+       "pep": 123,
 
-   "revision":"1.2.3",
+       "revision":"1.2.3",
 
-   "project":"https://github.com/hlindberg/pep123",
+       "project":"https://github.com/hlindberg/pep123",
 
-   "requires":[
+       "requires":[
 
-      42,
+          42,
 
-      36
+          36
 
-   ],
+       ],
 
-   "issues":[
+       "issues":[
 
-      "https://www.puppetlabs.com/...",
+          "https://www.puppetlabs.com/...",
 
-      "...."
+          "...."
 
-   ]
+       ]
 
-}
+    }
 
 The intent of this metadata is to allow automatic publishing of PEP's in
 an hyperlinked way and with communication of their status.
@@ -201,40 +201,3 @@ The Java JEP Process:
 The Java JEP Template:
 [http://openjdk.java.net/jeps/2](http://openjdk.java.net/jeps/2)
 
-[[a]](#cmnt_ref1)Henrik Lindberg:
-
-Used by JEP
-
-[[b]](#cmnt_ref2)J.D. Welch:
-
-This is \*precisely\* what I had in mind. :)
-
-[[c]](#cmnt_ref3)Andy Parker:
-
-manifest.cudf perhaps? We were talking about that format earlier, would
-this be a good place to use it?
-
-* * * * *
-
-Henrik Lindberg:
-
-Not sure the CUDF is the best way to express this; looks more like a
-machine format - if we need sat solving we would translate to it... but
-don't think that is of value here.
-
-[[d]](#cmnt_ref4)Andy Parker:
-
-I suppose that more complicated PEPs that require changes across several
-projects might have multiple repositories and that is when this would be
-a link to a homepage instead of a repo...unless the multiple projects
-were brought together with git subtrees or some such
-
-* * * * *
-
-Henrik Lindberg:
-
-It boils down to a repo somewhere - an ultimately it will need to be at
-github to make a pull request - but if a group wants to work on a
-proposal somewhere else, an URL is needed to find where this takes
-place. (Could also not allow this and require that it is always done at
-github; in which case this is always a reference to the github repo).
