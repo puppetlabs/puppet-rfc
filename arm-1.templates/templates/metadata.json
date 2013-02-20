@@ -1,11 +1,11 @@
 {
-   "pep": <REPLACE with pep number>,
-   "title": "<REPLACE with title of pep>"
+   "arm": <REPLACE with ARM number>,
+   "title": "<REPLACE with title of ARM>"
    "revision":"0.0.0",
    "project":"https://github.com/<REPLACE with ref to project at github>",
    "implementation" : [
    ]  
-   "requires-peps":[
+   "requires-arms":[
    ],
    "issues":[
    ]
