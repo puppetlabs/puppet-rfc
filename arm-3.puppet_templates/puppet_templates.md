@@ -29,12 +29,12 @@ When in text mode:
 
 <table>
 <tr>
-  <td><tt>&lt;%</tt></td><td>Switches to puppet mode</td>
+  <td><tt>&lt;%</tt></td>
+  <td>Switches to puppet mode</td>
 </tr>
 <tr>
-  <td><tr>&lt;%=</tt></td>
-  <td>Switches to puppet expression mode. (Left trimming is not</td>
-    possible)
+  <td><tt>&lt;%=</tt></td>
+  <td>Switches to puppet expression mode. (Left trimming is not possible)</td>
 </tr>
 <tr>
   <td><tt>&lt;%%</tt></td>
@@ -46,30 +46,39 @@ When in text mode:
 </tr>
 <tr>
   <td><tt>&lt;%-</tt></td>
-  <td>Trim Left</td>
+  <td>Trim Left<br/>
+  When the opening tag is <tt>&lt;%-</tt> any whitespace preceding the tag, up to and
+  including a new line is not included in the output.
+  </td>
+</tr>
+<tr>
+  <td><tt>&lt;%\#</tt></td>
+  <td>Comment<br/>
+  A comment not included in the output (up to the next <tt>%&gt;</tt>, or right
+  trimming <tt>-%&gt;</tt>). Continues in text mode after having skipped the comment
+  (observes right trimming semantics).
+  </td>
 </tr>
 </table>
 
-When the opening tag is \<%- any whitespace preceding the tag, up to and
-including a new line is not included in the output.
-
-\<%\#        Comment
-
-A comment not included in the output (up to the next %\>, or right
-trimming -%\>). Continues in text mode after having skipped the comment
-(observes right trimming semantics).
-
 When in Puppet mode:
 
-%\>         End puppet mode
+<table>
+<tr>
+  <td><tt>%&gt;</tt></td>
+  <td>End puppet mode</td>
+</tr>
+<tr>
+  <td><tt>-%&gt;</tt></td>
+  <td>Trim Right and end puppet mode</td>
+</tr>
+</table>
 
--%\>         Trim Right and end puppet mode
-
-When the closing tag is -%\> any whitespace following the tag, up to and
+When the closing tag is `-%>` any whitespace following the tag, up to and
 including a new line is not included in the output.
 
 When ending puppet mode the result of the puppet logic is rendered to
-the output for a puppet expression tag \<%=, but not for \<%.
+the output for a puppet expression tag `<%=`, but not for `<%`.
 
 Invocation
 ==========
@@ -80,17 +89,16 @@ In this exploratory document a new function is used while exploring a
 suitable api.
 
 One idea is that EPP templates are recognized by either ending with
-.epp, or having an .epp pseudo ending before an ending indicating the
+`.epp`, or having an `.epp` pseudo ending before an ending indicating the
 type of file (to make editing easier). e.g.
 
-404page.epp
-
-404page.epp.html
+    404page.epp
+    404page.epp.html
 
 Both of these signal that this is an epp file, and could be used like
 this:
 
-pptemplate ( '404page.epp' )
+    pptemplate ('404page.epp')
 
 Passing (local) arguments to the template
 -----------------------------------------
@@ -106,45 +114,39 @@ can be used by also passing additional parameters into the context.
 
 These are quivalent:
 
-\$message = "This is not the \$x you are looking for"
+    $message = "This is not the $x you are looking for"
+    
+    pptemplate('404page.epp')
+    
+    pptemplate('404page.epp') |$template| { $template.render() }
 
-pptemplate('404page.epp')
-
-pptemplate('404page.epp') {|\$template| =
-\$template^[[a]](#cmnt1)^.render()  }
+^[[a]](#cmnt1)^
 
 We can use lambda parameters to pass arguments instead. Either by
 setting the variable in the context, or passing it to the template
 function.
 
- 
 
 These are equivalent:
 
-pptemplate('404page.epp') {|\$template|
+    pptemplate('404page.epp') |$template| {    
+      $message = "This is not the $x you are looking for"
+      $template.render()
+    }
+    
+    pptemplate('404page.epp',
+      "This is not the $x you are looking for") |$template, $message| {
+      $template.render()
+    }
 
-  \$message = "This is not the \$x you are looking for"
+^[[b]](#cmnt2)^
 
-  = \$template.render()
-
-}^[[b]](#cmnt2)^
-
-pptemplate('404page.epp',
-
-  "This is not the \$x you are looking for") {|\$template, \$message|
-
-  = \$template.render()
-
-}
-
- 
-
-The render function requires an instance of a Template, an internal
+The `render` function requires an instance of a Template, an internal
 object that is created by parsing a template file. It triggers the
 rendering of the entire template. It can only be called once in a given
 context if the template adds local variables (since they are immutable).
 
-The name of the internal template variable is \$template by default, but
+The name of the internal template variable is `$template` by default, but
 an author may pick something else (and would then use that varible name
 to reference the template if there is a need to produce output (see the
 output method below).
@@ -160,31 +162,22 @@ Appending output in puppet code
 
 Consider the following EPP template
 
-Here is a list of servers:
-
-\<ul\>
-
-\<% \$array.foreach(|\$x| %\>
-
-  \<li\>\<%= \$x %\>\</li\>
-
-\<% } %\>
-
-\</ul\>
-
-\</p\>
+    Here is a list of servers:
+    <ul>
+    <% $array.foreach |$x| { %>
+      <li><%= $x %>\</li>
+    <% } %>
+    <ul>
+    </p>
 
 And instead using an output method on the template.
 
-Here is a list of servers:
-
-\<ul\>
-
-\<% \$array.foreach(|\$x|
-
-\$template.output('  \<li\>', \$x, '\</li\>\\n'\>) } %\>
-
-\</ul\>
+    Here is a list of servers:    
+    <ul>
+    <% $array.foreach |$x| {
+      $template.output('  <li>', $x, '</li>\n'>) } %>
+    <% } %>
+    </ul>
 
 The template output method simply appends its input to what has already
 been rendered in the template's output buffer.
@@ -201,19 +194,13 @@ defined.
 
 As an example:
 
-Here is a list of servers:
-
-\<ul\>
-
-\<% \$array.foreach(%\> TEXT \<% |\$x|
-
-  \<li\>\<%= \$x %\>\</li\>
-
-\<% } %\>
-
-\</ul\>
-
-\</p\>
+    Here is a list of servers:    
+    <ul>
+    <% $array.foreach %> TEXT <% |$x|
+      <li><%= $x %></li>
+    <% } %>
+    </ul>
+    </p>
 
 This will produce a syntax error.
 
@@ -223,11 +210,12 @@ Inline Templates
 Just as with the inline template support for ERB this can be supported
 for puppet. It is just a string being interpreted instead of loading the
 template from a file. To also support passing additional parameters, the
-pp\_inline\_template takes a single template string, or an array of one
+`pp_inline_template` takes a single template string, or an array of one
 or more template strings as input for the first parameters.
 
-Discussion^[[c]](#cmnt3)^
-=========================
+Discussion
+==========
+^[[c]](#cmnt3)^
 
 Templates are like "puppet eval"
 ================================
@@ -260,14 +248,14 @@ this is possible using an ERB template, and we want users to migrate).
 Is it ok to include or require classes? Declare dependencies? Realize
 resources, collect exported resources?^[[d]](#cmnt4)^
 
-\<%= \$x %\> is clunky
-----------------------
+`<%= $x %>` is clunky
+---------------------
 
-Why not simply use Puppet string interpolation? The \<%= \$x %\> syntax
-is very heavy compared to puppet's simple \$x, or \${x}?
+Why not simply use Puppet string interpolation? The `<%= $x %>` syntax
+is very heavy compared to puppet's simple `$x`, or `${x}`?
 
 The idea is that the EPP tags are different enough to not clash with
-most types of file content. If we pick \$x, or \${x}, the author may
+most types of file content. If we pick `$x`, or `${x}`, the author may
 instead have to use lots of escapes.
 
 The proposal is based on using the ERB tags.
@@ -284,13 +272,13 @@ required feature).
 
 Here are ideas for such a tag, it must appear first in the template:
 
-\<%| \$path\_to\_fame, \$optional\_riches = false %\>
+    <%| $path_to_fame, $optional_riches = false %>
 
 That looks a bit magic
 
-\<% parameters: \$path\_to\_fame, \$optional\_riches = false %\>
+    <% parameters: $path_to_fame, $optional_riches = false %>
 
-That works because parameters: is not a normal puppet expression, it is
+That works because `parameters:` is not a normal puppet expression, it is
 much clearer.
 
 This syntax opens up for other textual oriented processing instruction
@@ -300,11 +288,8 @@ tags for future use.
 
 I don't like the new syntax here - pptemplate("the\_template.epp",
 {"message" =\> "hello world"}) seems to fit better
-
 or better add the much requested named arguments:
-
 pptemplate("foo.epp", :message =\> "hello world")
-
 and it seems we should just use template() and let it detect what the
 template is based on file names?
 
