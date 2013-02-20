@@ -90,7 +90,7 @@ The end marker may optionally start with one of the following operators:
 </table>
 
 The optional start may be separated from the end marker ny whitespace
-(but not newline). These are legal end markers
+(but not newline). These are legal end markers:
 
     -END    
     - END
@@ -98,6 +98,9 @@ The optional start may be separated from the end marker ny whitespace
     | END
     |           END
     |- END
+
+The sections [Indentation](#indentation), and [Trimming](#trimming)
+contains examples and further details.
 
 Indentation
 -----------
@@ -134,16 +137,15 @@ made, thus altering the relative indentation.
 
 Results in the string `XXX\n YYY\n`
 
-Tabs in the input and indentation
----------------------------------
+### Tabs in the input and indentation
 
 Since the puppet language uses a standard tab expansion of 2 spaces this
 would also be used when trimming whitespace (first expand any tabs with
 one or two spaces depending on even/odd position on line, and then
 trim).
 
-Trimming trailing whitespace from last line
--------------------------------------------
+Trimming
+--------
 
 It is possible to trim the trailing whitespace from the last line (the
 line just before the end tag) by starting the end tag with a minus '-'.
@@ -172,7 +174,9 @@ It is allowed to have whitespace between the - and the tag, e.g.
 Spaces allowed in the tag
 -------------------------
 
-Spaces are allowed in the tag name when the form is ", ', or %
+Spaces are allowed in the tag name when the form is `"`, `'`, or `%`.
+The end marker may use the tag without the quotes. Spaces are insignificant
+between words.
 
     0.........1.........2.........3.........4.........5.........6
     $a = @"Verse 8 of The Raven"    
@@ -183,6 +187,9 @@ Spaces are allowed in the tag name when the form is ", ', or %
       Tell me what thy lordly name is on the Night's Plutonian shore!'
       Quoth the raven, `Nevermore.'
       | Verse 8 of The Raven
+
+The comparison of opening and end tag is performed by first removing any quotes, then
+all whitespace, and then comparing the two "shrink wrapped" tags.
 
 Multiple Heredoc on the same line
 ---------------------------------
