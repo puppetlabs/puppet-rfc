@@ -157,7 +157,22 @@ These are equivalent:
       $template.render()
     }
 
-^[[b]](#cmnt2)^
+> surplus.address:
+>
+> What does the lamdba yield without the assignment to
+> \$template.render()?
+>
+> I'm just imagining a bunch of users who get as far as seeing it's a
+> block to pass parameters, omit the call to .render() and get something
+> unexpected.
+>
+>* * * * *
+>
+>> Henrik Lindberg:
+>>
+>> they would get nil back, but pptemplate should check the return and
+>> issue an error "Did you forget to call render?"
+>>
 
 The `render` function requires an instance of a Template, an internal
 object that is created by parsing a template file. It triggers the
@@ -233,7 +248,22 @@ or more template strings as input for the first parameters.
 
 Discussion
 ==========
-^[[c]](#cmnt3)^
+
+> R.I. Pienaar:
+>
+> would very much like to see this expand to use cases that this solves -
+> nice and all to say its a puppet eval - but why? What can we not do
+> today? what actual use cases can a user now solve once we have this?
+>
+> * * * * *
+>
+>> Henrik Lindberg:
+>>
+>> The general idea is to not depend on Ruby for template support. Other
+>> than that I think it is the same use cases as for why Ruby templates are
+>> used.
+>>
+>> Great to have real world examples, and I love to get more input on this.
 
 Templates are like "puppet eval"
 ================================
@@ -264,7 +294,26 @@ but is it ok to create resources from within a template? (Although "No"
 would be a reasonable answer - this may however be a common use case, as
 this is possible using an ERB template, and we want users to migrate).
 Is it ok to include or require classes? Declare dependencies? Realize
-resources, collect exported resources?^[[d]](#cmnt4)^
+resources, collect exported resources?
+
+> surplus.address:
+>
+> I'd say no, not directly.  That ERB users can do any of this is
+> accidental feature due to not sandboxing the template evaluation well
+> enough in the first place.
+>
+> There's already the parser functions available as an extension point, so
+> if a template called on create\_resources then that should allowed, but
+> generally restricting the template authors to the harm they can do in
+> the DSL should be enough power.
+>
+>* * * * *
+>>
+>> Henrik Lindberg:
+>>
+>> the reason I am asking is that EPP means they \*are\* in the DSL in the
+>> template as well. I do want to restrict the available expressions, but I
+>> want to know if there are valid use cases not to be restrictive.
 
 `<%= $x %>` is clunky
 ---------------------
@@ -288,6 +337,22 @@ is probably to allow an EPP tag that does this (if starting in puppet
 mode, I suspect this will enable lambdas to leak and closures to be a
 required feature).
 
+> R.I. Pienaar:
+>
+> would very much like to see this expand to use cases that this solves -
+> nice and all to say its a puppet eval - but why? What can we not do
+> today? what actual use cases can a user now solve once we have this?
+>
+> * * * * *
+>
+>> Henrik Lindberg:
+>>
+>> The general idea is to not depend on Ruby for template support. Other
+>> than that I think it is the same use cases as for why Ruby templates are
+>> used.
+>>
+>> Great to have real world examples, and I love to get more input on this.
+
 Here are ideas for such a tag, it must appear first in the template:
 
     <%| $path_to_fame, $optional_riches = false %>
@@ -301,56 +366,3 @@ much clearer.
 
 This syntax opens up for other textual oriented processing instruction
 tags for future use.
-
-
-
-[[b]](#cmnt_ref2)surplus.address:
-
-What does the lamdba yield without the assignment to
-\$template.render()?
-
-I'm just imagining a bunch of users who get as far as seeing it's a
-block to pass parameters, omit the call to .render() and get something
-unexpected.
-
-* * * * *
-
-Henrik Lindberg:
-
-they would get nil back, but pptemplate should check the return and
-issue an error "Did you forget to call render?"
-
-[[c]](#cmnt_ref3)R.I. Pienaar:
-
-would very much like to see this expand to use cases that this solves -
-nice and all to say its a puppet eval - but why? What can we not do
-today? what actual use cases can a user now solve once we have this?
-
-* * * * *
-
-Henrik Lindberg:
-
-The general idea is to not depend on Ruby for template support. Other
-than that I think it is the same use cases as for why Ruby templates are
-used.
-
-Great to have real world examples, and I love to get more input on this.
-
-[[d]](#cmnt_ref4)surplus.address:
-
-I'd say no, not directly.  That ERB users can do any of this is
-accidental feature due to not sandboxing the template evaluation well
-enough in the first place.
-
-There's already the parser functions available as an extension point, so
-if a template called on create\_resources then that should allowed, but
-generally restricting the template authors to the harm they can do in
-the DSL should be enough power.
-
-* * * * *
-
-Henrik Lindberg:
-
-the reason I am asking is that EPP means they \*are\* in the DSL in the
-template as well. I do want to restrict the available expressions, but I
-want to know if there are valid use cases not to be restrictive.
