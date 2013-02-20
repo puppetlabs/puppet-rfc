@@ -62,7 +62,7 @@ contained text, as follows.
 End Marker
 ----------
 
-The end marker consists of the heredoc tag specified at the opening ´@´ and
+The end marker consists of the heredoc tag specified at the opening `@` and
 operators to control trimming.
 
 The end marker must appear on a line of its own. It may have leading and
