@@ -245,11 +245,9 @@ as well as reference checking also for the inline template strings.
 
 Template wise, an `@END` is equivalent to `@%END%`.
 
-Discussion
-==========
 
-Support syntax checking of additional grammars
-----------------------------------------------
+Syntax checking of heredoc text
+===============================
 
 It is proposed that `@%tag%` means that the string has EPP syntax.
 Wouldn't it be great to be able to specify additional syntaxes and
