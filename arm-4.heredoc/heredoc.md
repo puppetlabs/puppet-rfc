@@ -32,7 +32,7 @@ To overcome the problems above, this proposal is built on using a new
 operator @ to indicate "here doc, until given end tag", e.g.
 
     $a = @END
-    This is the text that gets assigned to `$a`.
+    This is the text that gets assigned to $a.
     And this too.
     END
 
@@ -56,6 +56,7 @@ contained text, as follows.
   the template (it is still a string result, only containing a template).
   See (#combining-heredoc-with-inline-template).</td>
 <tr>
+</table>
 
 End Marker
 ----------
