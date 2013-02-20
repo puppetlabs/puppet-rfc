@@ -1,7 +1,7 @@
 Evaluation / Decision Support
 =============================
 * The heredoc proposal offers options:
-  * [Support spaces in tags](heredoc.md#spaces-allowed-in-tags) or not?  
+  * [Support spaces in tags](heredoc.md#spaces-allowed-in-the-tag) or not?  
     Allowing spaces in the tags offers self documentation, but could potentially
     be more difficult to read/understand.
   * Should the default indentation be based on start of tag instead of pipe, and pipe if
