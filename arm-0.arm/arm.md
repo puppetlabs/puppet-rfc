@@ -102,7 +102,6 @@ It is suggested that a larger ARM forks the repository and uses the fork
 as the collaboration project to drive that ARM; using the issue tracker
 for the fork to handle its issues.
 
-\
 The issue tracker for the master ARM project is used only for the
 lifecycle of ARMs, not for handling issues/work related to the content
 of the ARMs.
