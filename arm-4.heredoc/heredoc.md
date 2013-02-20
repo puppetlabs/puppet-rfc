@@ -116,7 +116,7 @@ the present left whitespace is removed, but not further adjustment is
 made, thus altering the relative indentation.
 
     0.........1.........2.........3.........4.........5.........6
-    \$a = @END
+    $a = @END
       XXX
         YYY
        | END
