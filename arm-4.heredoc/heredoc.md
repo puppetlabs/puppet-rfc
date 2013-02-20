@@ -221,7 +221,7 @@ Additional semantics
 --------------------
 
 The `@tag` is equivalent to a right value (i.e. a string), only that its
-content begins on the next line not already consumed heredoc text. The
+content begins on the next line of not already consumed heredoc text. The
 shuffling around of the text is a purely lexical exercise.
 
 Thus, it is possible to continue the heredoc expression, e.g. with a
