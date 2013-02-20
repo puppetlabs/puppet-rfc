@@ -1,4 +1,4 @@
-\<Puppet Capabilities\>
+Puppet Capabilities
 ==========================
 This document is two things:  A postulate about a step toward application (rather than node) management, and a longer description of how I came to believe that postulate.  The postulate is multipart:
 
