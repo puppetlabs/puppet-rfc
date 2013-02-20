@@ -144,6 +144,8 @@ describes:
 6.  implementation - (option) a list of URLs to branches where exploratory/reference  
     implementions can be found
 
+Example metadata.json
+
     {
        "arm": 123,
        "revision":"1.2.3",
