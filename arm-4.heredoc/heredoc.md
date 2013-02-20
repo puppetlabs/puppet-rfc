@@ -95,10 +95,11 @@ leading whitespace to trim from the text.
 
     $a = @END
 
->  This is indented 2 spaces in the source, but produces
->  a result flush left with the initial 'T'
->    This line is thus indented 2 spaces.
->  | END
+    0.........1.........2.........3.........4.........5.........6
+      This is indented 2 spaces in the source, but produces
+      a result flush left with the initial 'T'
+        This line is thus indented 2 spaces.
+      | END
 
 Without the leading pipe operator, the end tag may be placed anywhere on
 the line. This will include all leading whitespace.
