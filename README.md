@@ -7,8 +7,8 @@ Puppet Armatures Repository
 <blockquote>
 armature |ˈärməCHər, -ˌCHo͝or |<br />
 2 a metal framework on which a sculpture is molded with clay or similar material. <br />
-• a framework or formal structure, esp. of a literary work: _Shakespeare's plots have served as the armature for many novels._<br />
--- New Oxford American Dictionary
+• a framework or formal structure, esp. of a literary work: <i>Shakespeare's plots have served as the armature for many novels.</i><br />
+-- <b>New Oxford American Dictionary</b>
 </blockquote>
 
 This repository contains Puppet Armatures, which are proposals to enhance / add features to Puppet or something in the Puppet
