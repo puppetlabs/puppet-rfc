@@ -90,12 +90,12 @@ The optional start may be separated from the end marker ny whitespace
 
 Indentation
 -----------
+
 The position of the | marker before the end tag controls how much
 leading whitespace to trim from the text.
 
-    $a = @END
-
     0.........1.........2.........3.........4.........5.........6
+    $a = @END
       This is indented 2 spaces in the source, but produces
       a result flush left with the initial 'T'
         This line is thus indented 2 spaces.
@@ -104,29 +104,24 @@ leading whitespace to trim from the text.
 Without the leading pipe operator, the end tag may be placed anywhere on
 the line. This will include all leading whitespace.
 
-\$a = @END
-
-  This is indented 2 spaces in the source, and produces
-
-  a result with left margin equal to the source file's left edge.
-
-    This line is thus indented 4 spaces.
-
-                                        END
+    0.........1.........2.........3.........4.........5.........6
+    $a = @END
+      This is indented 2 spaces in the source, and produces
+      a result with left margin equal to the source file's left edge.
+        This line is thus indented 4 spaces.
+                                            END
 
 When the indentation is right of the beginning position of some lines
 the present left whitespace is removed, but not further adjustment is
 made, thus altering the relative indentation.
 
-\$a = @END
+    0.........1.........2.........3.........4.........5.........6
+    \$a = @END
+      XXX
+        YYY
+       | END
 
-  XXX
-
-    YYY
-
-   | END
-
-Results in the string "XXX\\n YYY\\n"
+Results in the string `XXX\n YYY\n`
 
 Tabs in the input and indentation
 ---------------------------------
@@ -143,105 +138,80 @@ It is possible to trim the trailing whitespace from the last line (the
 line just before the end tag) by starting the end tag with a minus '-'.
 When a '-' is used this is the indentation position.
 
-\$a = @END
-
-  This line will not be terminated by a new line
-
-  -END
-
-\$b = @END
-
-  This line will not be terminated by a new line
-
-  |- END
+    0.........1.........2.........3.........4.........5.........6
+    $a = @END
+      This line will not be terminated by a new line
+      -END
+    $b = @END
+      This line will not be terminated by a new line
+      |- END
 
 This is equivalent to:
 
-\$a =  '  This line will not be terminated by a new line'
-
-\$b =  'This line will not be terminated by a new line'
+    $a =  '  This line will not be terminated by a new line'
+    $b =  'This line will not be terminated by a new line'
 
 It is allowed to have whitespace between the - and the tag, e.g.
 
-\$a = @END
-
-  This line will not be terminated by a new line
-
-  - END
+    0.........1.........2.........3.........4.........5.........6
+    $a = @END    
+      This line will not be terminated by a new line
+      - END
 
 Spaces allowed in the tag
 -------------------------
 
 Spaces are allowed in the tag name when the form is ", ', or %
 
-\$a = @"Verse 8 of The Raven"
-
-  Then this ebony bird beguiling my sad fancy into smiling,
-
-  By the grave and stern decorum of the countenance it wore,
-
-  \`Though thy crest be shorn and shaven, thou,' I said, \`art sure no
-craven.
-
-  Ghastly grim and ancient raven wandering from the nightly shore -
-
-  Tell me what thy lordly name is on the Night's Plutonian shore!'
-
-  Quoth the raven, \`Nevermore.'
-
-  | Verse 8 of The Raven
+    0.........1.........2.........3.........4.........5.........6
+    $a = @"Verse 8 of The Raven"    
+      Then this ebony bird beguiling my sad fancy into smiling,
+      By the grave and stern decorum of the countenance it wore,
+      `Though thy crest be shorn and shaven, thou,' I said, `art sure no craven.
+      Ghastly grim and ancient raven wandering from the nightly shore -
+      Tell me what thy lordly name is on the Night's Plutonian shore!'
+      Quoth the raven, `Nevermore.'
+      | Verse 8 of The Raven
 
 Multiple Heredoc on the same line
 ---------------------------------
 
 It is possible to use more than one heredoc on the same line as in this
-example.
+example:
 
-foo(@FIRST, @SECOND)
-
-  This is the text for the first heredoc
-
-    FIRST
-
-  This is the text for the second
-
-    SECOND
+    foo(@FIRST, @SECOND)    
+      This is the text for the first heredoc
+        FIRST
+      This is the text for the second
+        SECOND
 
 If however, the line is broken like this:
 
-foo(@FIRST,
+    foo(@FIRST,    
+    @SECOND)
 
-@SECOND)
+Then the heredocs must appear in this order:
 
-Then the heredocs must appear in this order
-
-foo(@FIRST,
-
-  This is the text for the first heredoc
-
-  FIRST
-
-@SECOND)
-
-  This is the text for the second
-
-  SECOND
+    foo(@FIRST,    
+      This is the text for the first heredoc
+      FIRST
+    @SECOND)
+      This is the text for the second
+      SECOND
 
 Additional semantics
 --------------------
 
-The @tag is equivalent to a right value (i.e. a string), only that its
+The `@tag` is equivalent to a right value (i.e. a string), only that its
 content begins on the next line not already consumed heredoc text. The
 shuffling around of the text is a purely lexical exercise.
 
 Thus, it is possible to continue the heredoc expression, e.g. with a
 method call.
 
-\$a = @END.upcase
-
-  I am not shouting. At least not yet...
-
-  | END
+    $a = @END.upcase
+      I am not shouting. At least not yet...
+      | END
 
 Combining heredoc with inline template
 ======================================
@@ -255,7 +225,7 @@ To help external tools, the heredoc syntax @%tag% is recommended as this
 allows tools like Geppetto to provide syntax coloring, syntax validation
 as well as reference checking also for the inline template strings.
 
-Template wise, a @END is equivalent to @%END%.
+Template wise, an `@END` is equivalent to `@%END%`.
 
 Discussion
 ==========
@@ -263,33 +233,25 @@ Discussion
 Support syntax checking of additional grammars
 ----------------------------------------------
 
-It is proposed that @%tag% means that the string has EPP syntax.
+It is proposed that `@%tag%` means that the string has EPP syntax.
 Wouldn't it be great to be able to specify additional syntaxes and
 allowing them to be checked?
 
 This could be done by "tagging the tag" with the name of the syntax.
 e.g.
 
-@END:EPP
-
-@END:JavaScript
-
-@END:Ruby
-
-@END:PropertyFile
-
-@END:Yaml
-
-@END:Json
-
-@"END":EPP
+    @END:EPP    
+    @END:JavaScript
+    @END:Ruby
+    @END:PropertyFile
+    @END:Yaml
+    @END:Json
+    @"END":EPP
 
 This way, the checking would take place server side before the content
 is (much later) used with possibly very hard to detect problems as a
 result.
 
-Implementation could be that a function called check\_syntax-\<LANG\> is
+Implementation could be that a function called `check_syntax-<LANG>` is
 called with the result. Thus making the set of languages extensible and
 customizable.
-
-
