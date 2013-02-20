@@ -1,0 +1,12 @@
+{
+   "arm": 5,
+   "title": "Structured Facts in Facter"
+   "revision":"0.0.0",
+   "project":"https://github.com/puppetlabs/facter",
+   "implementation" : [
+   ]  
+   "requires-arms":[
+   ],
+   "issues":[
+   ]
+}
