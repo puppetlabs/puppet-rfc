@@ -136,36 +136,26 @@ describes:
     be considered for implementation. Changes of the Minor number are
     work in progress revisions up to the next release, mostly of concern
     to those collaborating on the ARM.
-4.  requires - (optional) a list of ARMs that must be implemented before
+4.  requires-arm - (optional) a list of ARMs that must be implemented before
     this ARM can be implemented
 5.  issues - (optional) when the ARM is in the late stages, there will
     be one or several redmine issues tracking implementation work, these
     are also included in this file.
+6.  implementation - (option) a list of URLs to branches where exploratory/reference  
+    implementions can be found
 
     {
-
        "arm": 123,
-
        "revision":"1.2.3",
-
        "project":"https://github.com/hlindberg/arm123",
-
        "requires":[
-
           42,
-
           36
-
        ],
-
        "issues":[
-
           "https://www.puppetlabs.com/...",
-
           "...."
-
        ]
-
     }
 
 The intent of this metadata is to allow automatic publishing of ARM's in
