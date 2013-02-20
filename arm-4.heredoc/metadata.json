@@ -1,0 +1,13 @@
+{
+   "arm": 4,
+   "title": "Heredoc"
+   "revision":"0.1.0",
+   "project":"https://github.com/hlindberg/armatures",
+   "implementation" : [
+   ]  
+   "requires-arms":[
+   ],
+   "issues":[
+     "http://projects.puppetlabs.com/issues/13196"
+   ]
+}
