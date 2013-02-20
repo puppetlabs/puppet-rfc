@@ -1,0 +1,12 @@
+{
+   "arm": 6,
+   "title": "Puppet Capabilities",
+   "revision":"1.0.0",
+   "project":"https://github.com/lak/puppet/tree/prototype/master/capabilities",
+   "implementation" : [
+   ]  
+   "requires-arms":[
+   ],
+   "issues":[
+   ]
+}

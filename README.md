@@ -24,3 +24,4 @@ Index of ARMs
 * [ARM-4 Heredoc](arm-4.heredoc/index.md) - Add support for Heredoc feature to Puppet Language.
 * [ARM-5 Structured Facts](arm-3.structured_facts/index.md) - Implementation * 
   details for structured facts in Facter
+* [ARM-6 Puppet Capabilities](arm-4.capabilities/index.md) - Support cross-host application management and monitoring
