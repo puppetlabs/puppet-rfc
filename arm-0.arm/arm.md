@@ -114,6 +114,8 @@ Text Format
 
 Proposals are written using Github Flavored Markdown.
 
+Encoding is always UTF-8.
+
 Metadata
 --------
 
