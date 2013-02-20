@@ -70,44 +70,35 @@ The end marker is specified after the @.
 
 The end marker may optionally start with one of the following operators:
 
-        -        indicates that trailing whitespace (including new line)
+        `-`        indicates that trailing whitespace (including new line)
 is trimmed from the last line
 
-        |        indentation marker, white-space to the left of this
+        `|`        indentation marker, white-space to the left of this
 position is trimmed from the text
 
-        |-         indentation and trimming of trailing whitespace
+        `|-`         indentation and trimming of trailing whitespace
 
 The optional start may be separated from the end marker ny whitespace
 (but not newline). These are legal end markers
 
--END
-
-- END
-
-|END
-
-| END
-
-|           END
-
-|- END
+    -END    
+    - END
+    |END
+    | END
+    |           END
+    |- END
 
 Indentation
 -----------
-
 The position of the | marker before the end tag controls how much
 leading whitespace to trim from the text.
 
-\$a = @END
+    $a = @END
 
-  This is indented 2 spaces in the source, but produces
-
-  a result flush left with the initial 'T'
-
-    This line is thus indented 2 spaces.
-
-  | END
+>  This is indented 2 spaces in the source, but produces
+>  a result flush left with the initial 'T'
+>    This line is thus indented 2 spaces.
+>  | END
 
 Without the leading pipe operator, the end tag may be placed anywhere on
 the line. This will include all leading whitespace.
