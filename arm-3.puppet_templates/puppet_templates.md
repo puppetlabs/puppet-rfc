@@ -27,16 +27,28 @@ EPP Tags
 
 When in text mode:
 
-\<%         Switches to puppet mode
-
-\<%=         Switches to puppet expression mode. (Left trimming is not
-possible)
-
-\<%%         Literal \<%
-
-%%\>          Literal %\>
-
-\<%-         Trim Left
+<table>
+<tr>
+  <td><tt>&lt;%</tt></td><td>Switches to puppet mode</td>
+</tr>
+<tr>
+  <td><tr>&lt;%=</tt></td>
+  <td>Switches to puppet expression mode. (Left trimming is not</td>
+    possible)
+</tr>
+<tr>
+  <td><tt>&lt;%%</tt></td>
+  <td>Literal <tt>&lt;%</tt></td>
+</tr>
+<tr>
+  <td><tt>%%></tt></td>
+  <td>Literal <tt>%&gt;</tt></td>
+</tr>
+<tr>
+  <td><tt>&lt;%-</tt></td>
+  <td>Trim Left</td>
+</tr>
+</table>
 
 When the opening tag is \<%- any whitespace preceding the tag, up to and
 including a new line is not included in the output.
