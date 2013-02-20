@@ -62,22 +62,32 @@ contained text, as follows.
 End Marker
 ----------
 
+The end marker consists of the heredoc tag specified at the opening ´@´ and
+operators to control trimming.
+
 The end marker must appear on a line of its own. It may have leading and
 trailing whitespace, but no other text (it is then not recognized as the
 end of the heredoc). In contrast to Ruby heredoc, there is no need to
 specify at the opening that the end tag may be indented.
 
-The end marker is specified after the @.
-
 The end marker may optionally start with one of the following operators:
 
-        `-`        indicates that trailing whitespace (including new line)
-is trimmed from the last line
-
-        `|`        indentation marker, white-space to the left of this
-position is trimmed from the text
-
-        `|-`         indentation and trimming of trailing whitespace
+<table>
+<tr>
+  <td><tt>-</tt></td>
+  <td>indicates that trailing whitespace (including new line)
+  is trimmed from the <i>last line</i>.</td>
+</tr>
+<tr>
+  <td><tt>|</tt></td>
+  <td>indentation marker, white-space to the left of this
+  position is trimmed from the text on all lines in the heredoc.</td>
+</tr>
+<tr>
+  <td><tt>|-</tt></td>
+  <td>combines indentation and trimming of trailing whitespace</td>
+</tr>
+</table>
 
 The optional start may be separated from the end marker ny whitespace
 (but not newline). These are legal end markers
