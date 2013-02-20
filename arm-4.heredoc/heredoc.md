@@ -47,7 +47,8 @@ contained text, as follows.
   <td>double quoted string semantics (interpolation and escapes except that  double quote <tt>"</tt> may appear without escape).</td>
 </tr>
 <tr>
-  <td><tt>@'END'</tt></td>single quoted string semantics (no interpolation, fewer escapes, accepts single quote <tt>'</tt> without escape).</td>
+  <td><tt>@'END'</tt></td>
+  <td>single quoted string semantics (no interpolation, fewer escapes, accepts single quote <tt>'</tt> without escape).</td>
 </tr>
 <tr>
   <td><tt>@%END%</tt></td>
