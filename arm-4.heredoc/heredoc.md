@@ -54,7 +54,7 @@ contained text, as follows.
   <td>EPP template semantics (no interpolation or escapes),
   signals that the text should be a legal template, but does not evaluate
   the template (it is still a string result, only containing a template).
-  See <a href="#combining-heredoc-with-inline-template>Combining heredoc with inline template</a>.</td>
+  See <a href="#combining-heredoc-with-inline-template">Combining heredoc with inline template</a>.</td>
 <tr>
 </table>
 
