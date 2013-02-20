@@ -16,10 +16,10 @@ written in the source file between a HEREDOC start marker and its
 matching end. There are several issues related to Ruby HEREDOC:
 
 1.  It is not possible to specify removal of indented space in the
-    result. The \<\<- syntax only makes indentation of the end marker
+    result. The `<<-` syntax only makes indentation of the end marker
     possible and the user must call gsub to remove initial whitespace.
-2.  It is not possible to get rid of the final \\n without substitution
-3.  Since the heredoc operator \<\< is also used for the left shift
+2.  It is not possible to get rid of the final `\n` without substitution
+3.  Since the heredoc operator `<<` is also used for the left shift
     binary operator it may not appear in all places where a string may
     appear.
 4.  The Heredoc text is interpolated, and if verbatim ruby interpolation
@@ -31,29 +31,31 @@ Proposal for Puppet Heredoc
 To overcome the problems above, this proposal is built on using a new
 operator @ to indicate "here doc, until given end tag", e.g.
 
-\$a = @END
-
-This is the text that gets assigned to \$a.
-
-And this too.
-
-END
+    $a = @END
+    This is the text that gets assigned to `$a`.
+    And this too.
+    END
 
 Further, the operator allows specification of the semantics of the
 contained text, as follows.
 
-@END                no interpolation and no escapes
-
-@"END"        " " string semantics (interpolation and escapes except
-that  double quote " may appear without escape).
-
-@'END'        ' ' string semantics (no interpolation, fewer escapes,
-accepts single quote ' without escape).
-
-@%END%        EPP template' semantics (no interpolation or escapes),
-signals that the text should be a legal template, but does not evaluate
-the template (it is still a string result, only containing a template).
-See "Combining heredoc with inline template".
+<table>
+<tr>
+  <td>`@END`</td><td>no interpolation and no escapes</td></tr>
+<tr>
+  <td>`@"END"</td>
+  <td>double quoted string semantics (interpolation and escapes except that  double quote `"` may appear without escape).</td>
+</tr>
+<tr>
+  <td>`@'END'`</td>single quoted string semantics (no interpolation, fewer escapes, accepts single quote `'` without escape).</td>
+</tr>
+<tr>
+  <td>`@%END%`</td>
+  <td>EPP template' semantics (no interpolation or escapes),
+  signals that the text should be a legal template, but does not evaluate
+  the template (it is still a string result, only containing a template).
+  See (#combining-heredoc-with-inline-template).</td>
+<tr>
 
 End Marker
 ----------
