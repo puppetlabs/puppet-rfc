@@ -1,9 +1,9 @@
 ARM
 ===
 
-Puppet Armaments Repository
+Puppet Armatures Repository
 ---------------------------
-This repository contains Puppet Armaments - Proposals to enhance / add features to puppet or something in the puppet
+This repository contains Puppet Amatures - Proposals to enhance / add features to puppet or something in the puppet
 eco-system.
 
 Index of ARMs
