@@ -41,20 +41,20 @@ contained text, as follows.
 
 <table>
 <tr>
-  <td>`@END`</td><td>no interpolation and no escapes</td></tr>
+  <td><tt>@END</tt></td><td>no interpolation and no escapes</td></tr>
 <tr>
-  <td>`@"END"</td>
-  <td>double quoted string semantics (interpolation and escapes except that  double quote `"` may appear without escape).</td>
+  <td><tt>@"END"</tt></td>
+  <td>double quoted string semantics (interpolation and escapes except that  double quote <tt>"</tt> may appear without escape).</td>
 </tr>
 <tr>
-  <td>`@'END'`</td>single quoted string semantics (no interpolation, fewer escapes, accepts single quote `'` without escape).</td>
+  <td><tt>@'END'</tt></td>single quoted string semantics (no interpolation, fewer escapes, accepts single quote <tt>'</tt> without escape).</td>
 </tr>
 <tr>
-  <td>`@%END%`</td>
-  <td>EPP template' semantics (no interpolation or escapes),
+  <td><tt>@%END%</tt></td>
+  <td>EPP template semantics (no interpolation or escapes),
   signals that the text should be a legal template, but does not evaluate
   the template (it is still a string result, only containing a template).
-  See (#combining-heredoc-with-inline-template).</td>
+  See <a href="#combining-heredoc-with-inline-template>Combining heredoc with inline template</a>.</td>
 <tr>
 </table>
 
