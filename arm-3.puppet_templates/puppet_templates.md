@@ -120,11 +120,29 @@ These are quivalent:
     
     pptemplate('404page.epp') |$template| { $template.render() }
 
-^[[a]](#cmnt1)^
-
-We can use lambda parameters to pass arguments instead. Either by
-setting the variable in the context, or passing it to the template
-function.
+> R.I. Pienaar:
+> 
+> I don't like the new syntax here - pptemplate("the\_template.epp",
+> {"message" =\> "hello world"}) seems to fit better
+> or better add the much requested named arguments:
+> pptemplate("foo.epp", :message =\> "hello world")
+> and it seems we should just use template() and let it detect what the
+> template is based on file names?
+>
+>* * * * *
+>
+>> Henrik Lindberg:
+>>
+>> mostly agree (call by named parameter is an interesting separate topic I
+>> think, has some intrinsic problems combined with varargs, and parameter
+>> overloading; but separate topic I think).
+>>
+>> Regarding using the same function - all for it, but I did not want to
+>> start out by being constrained by current function's signature)
+>>
+>> We can use lambda parameters to pass arguments instead. Either by
+>> setting the variable in the context, or passing it to the template
+>> function.
 
 
 These are equivalent:
@@ -284,25 +302,7 @@ much clearer.
 This syntax opens up for other textual oriented processing instruction
 tags for future use.
 
-[[a]](#cmnt_ref1)R.I. Pienaar:
 
-I don't like the new syntax here - pptemplate("the\_template.epp",
-{"message" =\> "hello world"}) seems to fit better
-or better add the much requested named arguments:
-pptemplate("foo.epp", :message =\> "hello world")
-and it seems we should just use template() and let it detect what the
-template is based on file names?
-
-* * * * *
-
-Henrik Lindberg:
-
-mostly agree (call by named parameter is an interesting separate topic I
-think, has some intrinsic problems combined with varargs, and parameter
-overloading; but separate topic I think).
-
-Regarding using the same function - all for it, but I did not want to
-start out by being constrained by current function's signature)
 
 [[b]](#cmnt_ref2)surplus.address:
 
