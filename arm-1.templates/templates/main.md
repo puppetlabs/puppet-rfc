@@ -1,5 +1,5 @@
 <!--This template should be copied to a file named after the pep -->
-\<REPLACE WITH PEP TITLE\>
+\<REPLACE WITH ARM TITLE\>
 ==========================
 <!--Replace all of this text with real content.
     This is the document that should describe the enhancement.

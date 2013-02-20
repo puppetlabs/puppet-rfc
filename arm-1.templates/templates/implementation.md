@@ -4,4 +4,4 @@ Implementation
      in this document.
 -->
 
-There is no implementation of this proposal.
+There is no implementation of this ARM.
