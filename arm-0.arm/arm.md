@@ -21,7 +21,7 @@ issues/feature requests in the issue tracker.
 Overview
 ========
 
-The Puppet Enhancement Process is a process for collecting, reviewing,
+Puppet Armatures is a process for collecting, reviewing,
 sorting, and recording the result of proposals for enhancements to
 Puppet and related ecosystem and processes.
 
