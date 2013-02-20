@@ -1,11 +1,12 @@
 {
-   "pep": 2,
+   "arm": 2,
    "title"; "Iteration",
-   "revision":"0.1.0",
-   "project":"https://github.com/hlindberg/pep",
-   "requires-peps":[
+   "revision":"0.1.1",
+   "project":"https://github.com/hlindberg/arm",
+   "requires-arms":[
    ],
    "issues":[
+     "http://projects.puppetlabs.com/issues/11331"
    ],
    "implementation":[
    "https://github.com/hlindberg/puppet/tree/11331-add-foreach",
