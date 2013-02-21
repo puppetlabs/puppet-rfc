@@ -13,13 +13,13 @@ for years with no, or very little, action or value.
 Other open source projects have adopted an enhancement process to deal
 with such issues, and thus, this is an attempt to define ARM - Puppet
 Armatures. This proposal is heavily inspired by the Java
-community's JEP process.
+community's [JEP][JEP1] process.
 
 One can view the ARM as the process leading up to one or several
 issues/feature requests in the issue tracker.
 
 Overview
-========
+--------
 
 Puppet Armatures is a process for collecting, reviewing,
 sorting, and recording the result of proposals for enhancements to
@@ -32,8 +32,8 @@ one of the following criteria:
 
 1.  It requires more than 2 weeks of engineering
     construction effort, or
-2.  It makes a significant change to something in the  Puppet eco
-    system, or to the processes and infrastructure by which it is
+2.  It makes a significant change to something in the Puppet ecosystem, or to 
+    the processes and infrastructure by which it is
     developed, or
 3.  It is in high demand by developers or users
 
@@ -42,13 +42,13 @@ In addition, some changes are always considered significant:
 1.  Changes to the Puppet Language
 2.  Changes in evaluation semantics
 
-The primary goal of the process is to produce an up to date list of
+The primary goal of the process is to produce an up-to-date list of
 proposals serving as a long term roadmap for Puppet Projects. The intent
 is that this roadmap extends well into the future (several years) to
 allow for sufficient time for the most complex proposals to be
 researched, defined and implemented.
 
-The process is public, anyone may submit proposals as well as contribute
+The process is public; anyone may submit proposals as well as contribute
 to any of the proposals.
 
 The occurrence of a ARM only means that it is a proposal of record from
@@ -62,7 +62,7 @@ it to be funded. Non funded, stale or otherwise defunct ARMs are taken
 off the list.
 
 ARMs Talks, and ARM Rallies
-===========================
+---------------------------
 
 There should be regular ARMs talks; where proposals for new ARMs are
 presented, major revisions reviewed and where the ARM process itself is
@@ -74,7 +74,7 @@ this includes communicating the state of ARMs and possibly organizing
 reviews/feedback on ARMs in the pipeline.
 
 ARM implementation
-==================
+------------------ 
 
 The ARM consists of a Git repository where each top level folder is a
 ARM identified by an ARM number and the name of the ARM.
@@ -83,14 +83,14 @@ and archived ARMs. Defunct ARMs are garbage collected after 12 months of
 their deprecation. Archived ARMs are kept (but are not updated to keep
 in sync with the implementation).
 
-The github issue tracker for the ARM project is used to propose
-addition/archiving of ARMs. The governors of the ARM resolves additions
-by ascertaining the seriousness and likelihood of funding, assigns a ARM
+To request a new ARM identifier or suggest archiving an old one, submit a 
+Github Issue against the main repository. The governors of the ARM resolve additions
+by ascertaining the seriousness and likelihood of funding, assign a ARM
 number and creates a top level folder for the ARM. The seriousness
-behind an idea does not necessarily mean that it is not a "whacky idea",
+behind an idea does not necessarily mean that it is not a "wacky idea",
 only that there is serious intent to work on the idea.
 
-The ARM folder is created with initial metadata (see below), and a
+The ARM governors create a folder with initial metadata (see below) and a
 template for the proposal. (See the JEP template as a reference to what
 it may contain - link at the end of this document).
 
@@ -98,15 +98,17 @@ Contributions to a ARM are done via github pull requests. The ARM is
 worked on until there is a first acceptable draft. It is then merged to
 the master ARM repository.
 
-It is suggested that a larger ARM forks the repository and uses the fork
-as the collaboration project to drive that ARM; using the issue tracker
-for the fork to handle its issues.
+We suggest that people working on a larger ARM fork the repository and use the 
+fork (and its issue tracker) as the collaboration point to drive that ARM to
+the point where it's ready for submission to the upstream repository.
 
 The issue tracker for the master ARM project is used only for the
 lifecycle of ARMs, not for handling issues/work related to the content
 of the ARMs.
 
-The master ARM repository is owned by Puppet Labs.
+The master ARM repository is owned/goverened by Puppet Labs but commit access
+should be opened to community members who have demonstrated interest in working 
+on ARMs.
 
 Text Format
 -----------
@@ -114,6 +116,10 @@ Text Format
 Proposals are written using Github Flavored Markdown.
 
 Encoding is always UTF-8.
+
+The templates in ARM-1 should be a starting point, but a minimal beginning 
+point might be simply writing to the section header prompts in [the JEP2 
+document][JEP2].
 
 Metadata
 --------
@@ -164,7 +170,7 @@ The intent of this metadata is to allow automatic publishing of ARM's in
 an hyperlinked way and with communication of their status.
 
 Implementation Issues
-=====================
+---------------------
 
 Possible meta data additions:
 
@@ -186,12 +192,8 @@ tags. It may be difficult when the master project contains all ARMs -
 not investigated. An alternative is also to have ARMs ultimate
 approval/endorsement be controlled by a redmine issue.
 
-References
-==========
 
-The Java JEP Process:
-[http://openjdk.java.net/jeps/1](http://openjdk.java.net/jeps/1)
+[JEP1]: http://openjdk.java.net/jeps/1 "The Java JEP Process"
 
-The Java JEP Template:
-[http://openjdk.java.net/jeps/2](http://openjdk.java.net/jeps/2)
+[JEP2]: http://openjdk.java.net/jeps/2 "The Java JEP Template"
 
