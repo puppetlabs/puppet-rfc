@@ -22,6 +22,5 @@ Index of ARMs
 * [ARM-2 Iteration](arm-2.iteration/index.md) - Add iteration to the Puppet Language
 * [ARM-3 Puppet Templates](arm-3.puppet_templates/index.md) - Add support to write templates in the Puppet Language
 * [ARM-4 Heredoc](arm-4.heredoc/index.md) - Add support for Heredoc feature to Puppet Language.
-* [ARM-5 Structured Facts](arm-3.structured_facts/index.md) - Implementation * 
-  details for structured facts in Facter
-* [ARM-6 Puppet Capabilities](arm-4.capabilities/index.md) - Support cross-host application management and monitoring
+* [ARM-5 Structured Facts](arm-5.structured_facts/index.md) - Implementation of structured facts in Facter
+* [ARM-6 Puppet Capabilities](arm-6.capabilities/index.md) - Support cross-host application management and monitoring
