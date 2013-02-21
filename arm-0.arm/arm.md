@@ -193,7 +193,7 @@ not investigated. An alternative is also to have ARMs ultimate
 approval/endorsement be controlled by a redmine issue.
 
 
-[JEP1]: http://openjdk.java.net/jeps/1 The Java JEP Process
+[JEP1]: http://openjdk.java.net/jeps/1 "The Java JEP Process"
 
-[JEP2]: http://openjdk.java.net/jeps/2 The Java JEP Template
+[JEP2]: http://openjdk.java.net/jeps/2 "The Java JEP Template"
 
