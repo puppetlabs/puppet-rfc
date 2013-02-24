@@ -5,7 +5,7 @@
     This is the document that should describe the enhancement.
 -->
 
-This pep proposes the introduction of three concepts; Tranquility, Happiness and Despair described below.
+This ARM proposes the introduction of three concepts; Tranquility, Happiness and Despair described below.
 
 Despair
 -------
