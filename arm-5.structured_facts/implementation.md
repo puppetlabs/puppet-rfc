@@ -4,4 +4,4 @@ Implementation
      in this document.
 -->
 
-There is no implementation of this ARM.
+https://github.com/kbarber/facter/tree/ticket/master/4561-add_structured_data
