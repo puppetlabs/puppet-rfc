@@ -95,11 +95,11 @@ different means.
    accessing its members. The above examples if this were supported would 
    become:
 
-    # puppet dsl example
-    if $facts['operatingsystem'] == 'linux' { ... }
-
-    # erb example
-    I'm running on <%= @facts['operatingsystem'] -%> OS.
+       # puppet dsl example
+       if $facts['operatingsystem'] == 'linux' { ... }
+       
+       # erb example
+       I'm running on <%= @facts['operatingsystem'] -%> OS.
 
 2. Alternatively, structured fact names could exist as top-level variables as 
    they do now, but use a different sigil to the `$` for accessing them; for 
@@ -110,11 +110,11 @@ different means.
    alternate approach for templates since parsing there moves out of puppet's 
    control:
 
-    # puppet dsl example
-    if &operatingsystem == 'linux' { ... }
-
-    # erb example -- must fallback to scope.lookupvar (?)
-    I'm running on <%= scope.lookupvar('&operatingsystem') %>
+       # puppet dsl example
+       if &operatingsystem == 'linux' { ... }
+       
+       # erb example -- must fallback to scope.lookupvar (?)
+       I'm running on <%= scope.lookupvar('&operatingsystem') %>
 
 
 Testing
