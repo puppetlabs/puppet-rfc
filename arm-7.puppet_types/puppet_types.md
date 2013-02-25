@@ -5,33 +5,36 @@ This ARM introduces the idea that Puppet Types should be expressible in the Pupp
 
 Why is it of value to be able to express Types in the Puppet Language?
 
-* Users do not have to use Ruby
-* Reduces (longer term Removes) the need to have a Ruby runtime in order to operate on types
-* Enables different implementations which is especially beneficial for devices (say a C or Lua runtime)
+* Users do not have to use Ruby.
+* Reduces (longer term Removes) the need to have a Ruby runtime in order to operate on types.
+* Enables different implementations which is especially beneficial for devices (say a C or Lua runtime).
 
 Background
 ----------
 The current type system in Puppet is based on resource types that are implemented using an internal Ruby DSL.
 There are many features that are almost never used, and with the open nature of DSL's in Ruby the definitions are somewhat
-open ended. In practice (after having investigated the types in the puppet distribution), most of the types are 
-reasonable well implemented. There is however unnecessary complexities between providers and types that blurs their boundaries.
+open ended. In practice (after having investigated the types in the puppet distribution), it was found that most of the
+types were reasonable well implemented. There is however unnecessary complexities between providers and types
+that blurs their boundaries in some cases. 
 
 This proposal is based on what is believed to be the actual needs for expressing types (resource types, as well as
-other kinds of "structured data". 
+other kinds of "structured data"). 
 
 Goals
 -----
-* Should define a model and concrete syntax for definition of types in Puppet.
-* Should allow a Type to represent a type of Resource Type Kind, as well as represent a general data structure.
-* Should support Polyglot implementation (different target languages).
-* Should show a migration path for current Ruby implemented types.
+This ARM should:
+
+* define a model and concrete syntax for definition of types in Puppet.
+* define a Type so that it can represent a Resource Type, as well as represent a general data structure.
+* show how to support Polyglot implementations (different target languages).
+* show a migration path for current Ruby implemented types.
 
 Dependencies
 ------------
 This ARM requires:
 
 * ARM-2.Iteration (Lambdas)
-* ARM-X.Expression Based Grammar
+* ARM-TBD.Expression Based Grammar
 
 Type
 ====
@@ -302,7 +305,7 @@ Examples
 Instantiation
 -------------
 Instantiation is based on a `new` function that takes a hash with values. Further detailing can be done with
-a lambda that is given the newly instantiated object.
+a lambda that is given the newly (not yet fully) instantiated object.
 
     MyType.new {
       my_attr => 10
@@ -322,6 +325,9 @@ key/value pairs left on return from the call to new an error is raised.
 
 Logic may append to multi valued attributes by using += operator. (This is different from regular puppet logic
 where += always produces a new array). An initializer may naturally initialize a multi-valued feature with a literal array).
+
+### Default values
+Default values are applied as the first step of instantiation.
     
 Models
 ------
