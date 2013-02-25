@@ -88,6 +88,8 @@ previously-acceptable manifests. There are two alternatives proposed for
 representing structured facts, both of which eliminate this ambiguity through 
 different means.
 
+### Alt 1: Top-level facts hash
+
 Top-scope hash called `facts` which contains all of the structured facts as 
 keys.  This would clearly demarcate manifest and ENC-set variables from ones 
 that come from facter, provide a way to enumerate the facts (using the 
@@ -100,6 +102,8 @@ become:
      
      # erb example
      I'm running on <%= @facts['operatingsystem'] -%> OS.
+
+### Alt 2: Separate sigil for facts
 
 Alternatively, structured fact names could exist as top-level variables as 
 they do now, but use a different sigil to the `$` for accessing them; for 
@@ -116,6 +120,8 @@ control:
      # erb example -- must fallback to scope.lookupvar (?)
      I'm running on <%= scope.lookupvar('&operatingsystem') %>
 
+In this case a function would be provided to enumerate all the top-level
+facts since there's nothing to iterate across with a `keys()` method.
 
 Testing
 -------
