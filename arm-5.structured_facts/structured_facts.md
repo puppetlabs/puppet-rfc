@@ -65,7 +65,63 @@ now, further details to come)
 Alternatives
 ------------
 
-* Top level hash vs sigil distinction in DSL
+The main decision point is around how to represent facts once they're in the 
+Puppet DSL. Currently all facts are available as top scope variables and are 
+not differentiated from variables set at top scope. This is both convenient and 
+problematic for users. On one hand, it's quite simple to refer to fact values 
+in manifests and templates:
+
+    # puppet DSL example
+    if $operatingsystem == 'linux' {
+      # do something
+    } else {
+      # do something else 
+    }
+
+    # erb example
+    I'm running on <%= @operatingsystem -%> OS.
+
+Problems arise when users create variable names that conflict with facts; this 
+is especially troublesome because new facts can appear through modules 
+distributed through pluginsync or facter updates and invalidate 
+previously-acceptable manifests. There are two alternatives proposed for 
+representing structured facts, both of which eliminate this ambiguity through 
+different means.
+
+### Alt 1: Top-level facts hash
+
+Top-scope hash called `facts` which contains all of the structured facts as 
+keys.  This would clearly demarcate manifest and ENC-set variables from ones 
+that come from facter, provide a way to enumerate the facts (using the 
+`keys()` function on the hash), but have a cost of greater verbosity when 
+accessing its members. The above examples if this were supported would 
+become:
+
+     # puppet dsl example
+     if $facts['operatingsystem'] == 'linux' { ... }
+     
+     # erb example
+     I'm running on <%= @facts['operatingsystem'] -%> OS.
+
+### Alt 2: Separate sigil for facts
+
+Alternatively, structured fact names could exist as top-level variables as 
+they do now, but use a different sigil to the `$` for accessing them; for 
+example the `@` or `&` mark would indicate a separate namespace to manifest- 
+and ENC-set variables. The advantage of this is that it more compact and 
+saves a cost of the enclosing hash's name plus paired square brackets plus 
+paired apostrophes per invocation; the downside is that it requires an 
+alternate approach for templates since parsing there moves out of puppet's 
+control:
+
+     # puppet dsl example
+     if &operatingsystem == 'linux' { ... }
+     
+     # erb example -- must fallback to scope.lookupvar (?)
+     I'm running on <%= scope.lookupvar('&operatingsystem') %>
+
+In this case a function would be provided to enumerate all the top-level
+facts since there's nothing to iterate across with a `keys()` method.
 
 Testing
 -------
