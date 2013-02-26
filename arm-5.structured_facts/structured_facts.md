@@ -102,6 +102,7 @@ become:
      
      # erb example
      I'm running on <%= @facts['operatingsystem'] -%> OS.
+     
 
 ### Alt 2: Separate sigil for facts
 
@@ -123,6 +124,40 @@ control:
 In this case a function would be provided to enumerate all the top-level
 facts since there's nothing to iterate across with a `keys()` method.
 
+### Alt3: Namespace
+
+Alternatively, reserve the `::facts"` namespace, and access facts using a qualified name. This means
+accessing `operatingsystem` like this:
+
+    # puppet dsl example
+    if $::facts::operatingsystem == 'linux' { ... }
+    
+    #  erb example -- could 1. represent the variables using __ as namespace separator
+    I'm running on <%= @facts__operatingsystem %>
+    
+    # or 2. as hash
+    I'm running on <%= @facts['operatingsystem'] %>
+    
+    # or 3. as a method
+    I'm running on <%= fact('operatingsystem') %>
+
+    # or 3. as a method on scope
+    I'm running on <%= scope.fact('operatingsystem') %>
+
+### Alt4: Function/Method
+
+Alternatively, use the function/method syntax proposed in arm-2. The function `facts` returns all facts as
+a hash which can be iterated, filtered etc. The function `fact` returns a single fact (which may be a complex data type).
+
+    # puppet dsl examples
+    if fact('operatingsystem') == 'linux' { ... }
+    
+    # erb example
+    I'm running on <%= scope.fact('operatingsystem') %>
+    
+	# puppet dsl example (using arm-2 proposal to filter with select)
+	$macstuff = facts().select |$key, $val| { $key =~ /^macosx/ } 
+     
 Testing
 -------
 
@@ -130,6 +165,9 @@ TBD
 
 Risks and Assumptions
 ---------------------
+
+> Henrik Lindberg
+> Backwards (and forwards) compatibility is a big issue. 
 
 TBD
 
@@ -142,3 +180,16 @@ Impact
 ------
 
 TBD
+
+> Henrik.Lindberg
+> If arm-3 EPP is implemented, there are no issues regarding how facts are accessed in EPP templates, it would
+> be the same syntax as in puppet logic.
+> 
+
+> Henrik Lindberg
+> Facts are similar to Settings - they would also benefit from being typed.
+
+> Henrik Lindberg
+> Currently it is possible to override variables that represent facts. This style of usage becomes more difficult
+> When they are bound to something that is not a unqualified variable. (This is a good thing IMO, but may require
+> more change for some users; I don't know how common this is).
