@@ -1,12 +1,13 @@
 {
    "arm": <REPLACE with ARM number>,
-   "title": "<REPLACE with title of ARM>"
-   "revision":"0.0.0",
+   "title": "<REPLACE with title of ARM>",
+   "champion":"<REPLACE with Github handle of proposal champion",
    "project":"https://github.com/<REPLACE with ref to project at github>",
-   "implementation" : [
-   ]  
-   "requires-arms":[
+   "revision":"0.0.0",
+   "requires":[
    ],
    "issues":[
-   ]
+   ],
+   "implementation":[
+   ],
 }
