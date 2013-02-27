@@ -21,20 +21,81 @@ were considered but not explored further.
 Examples of the Recommended Implementation
 ==========================================
 
-### Iterating over an array - creating resources
+### Creating Array with Append to each
 
-    $array.each |$x| { file { "/somewhere/$x": owner => $x } }
+Question from mailing list:
+> How can I append `"/var/bricks"` to each item in the array? Lack of a
+> looping construct makes this challenging in puppet, such that:
+> `brick_array = ['gfs01:/var/bricks', 'gfs02:/var/bricks', ... ]` ?
+
+Here is how:
+
+    $nodes = ['gfs01' ,'gfs02', 'gfs03', 'gfs04]
+    $brick_store = "/var/bricks"
+    $brick_array = $nodes.collect |$x| { "$x:$brick_store" }
+
+### Iterating over Two Structures
+From the mailinglist:
+
+> I need to generate a file with this content:
+>
+>    /bin/mount --bind /home/some/path/ /home/someuser/www  
+>    /bin/mount --bind /home/comple/tely/different/path/ /home/differentuser/www  
+>    /bin/mount --bind /home/another/path/ /home/anotheruser/www  
+>  
+> For each row I need to insert two variables, the `path` (different per user), and `.../user/www`.
+
+Here is one way of doing this, if the data is in two arrays:
+
+    $users = ['someuser', 'differentuser', 'anotheruser']
+    $paths = ['some/path', 'complete/tely/different/path', 'another/path']
+    
+    $content = $users.reduce("") |$memo, $i, $x| "$memo
+    /bin/mount --bind /home/${paths[$i]}/ /home/$x/www" }
+    
+    # content contains the desired text
+
+Alternatively, using a hash would be simpler. This can also be implemented
+as collection to an array, and the standard lib `join` function (joining entries with a new line).
+
+### Iterating over an Array - Creating Resources
+
+> Question:
+> I have a list of users and need to create a file resource for each user and set the owner to that user.
+> (Sure, I can pass an array as title, but I need to also set owner...
+>
+
+Here is how this can be done:
+
+    $usernames.each |$x| { file { "/home/$x/.somerc": owner => $x } }
 
 ### Iterating over pairs in an array or hash
 
-e.g. an array of `['usrname', 0777, ...]`, or hash of `{'username'=> 0777, ...}`
+> Question:
+> I have an array with usernames and modes, I need to create a file resource with corresponding mode.
 
-    $array.pairs |$x| {
-      file {"/somewhere${$x[0]}":
+That can look like this using `tuples` function to pick pairs from the array (it picks 2 by default).
+
+    $users_with_mode = ['fred', 0666, 'mary', 0777 ]
+    $users_with_mode.tuples.each |$x| {
+      file {"/home/{$x[0]}/.somerc":
         owner => $x[0],
-        mode=>$x[1]
+        mode  => $x[1]
       }
     }
+
+> And if they are in a hash?
+
+Easier, that can look like this:
+
+    $users_with_mode = ['fred' => 0666, 'mary' => 0777 ]
+    $users_with_mode.each |$user, $mode| {
+      file {"/home/$user/.somerc":
+        owner => $user,
+        mode  => $mode
+      }
+    }
+
 
 ### Creating, Collecting, and Relating Resources
 
@@ -54,6 +115,19 @@ or
         owner => $x
       }
     }
+
+### Including Classes Derived From Facts
+
+> From user group:
+> Variable `$roles` contains names of roles (obtained via a fact), and the need is to map these
+> to inclusion of classes.
+
+Here is a very simple interpolation of the name, but could naturally use a hash lookup or similar.
+
+    $roles.each |$x| { 
+      include "our_$x"
+    }
+
 
 Lambdas
 =======
