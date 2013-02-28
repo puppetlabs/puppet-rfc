@@ -4,7 +4,7 @@
 Introduction
 ------------
 
-There is currently a gap in the process for developing puppet that is
+There is currently a gap in the process for developing Puppet that is
 sometimes critiqued as lack of openness,  frustration over where and how
 to get ideas heard, and the perception that the redmine issue tracker
 functions as a dumping ground for fly by feature requests that sit there
@@ -15,8 +15,9 @@ with such issues, and thus, this is an attempt to define ARM - Puppet
 Armatures. This proposal is heavily inspired by the Java
 community's [JEP][JEP1] process.
 
-One can view the ARM as the process leading up to one or several
-issues/feature requests in the issue tracker.
+In some cases, ARMs are artifacts of the process leading up to one or several
+issues/feature requests in the issue tracker. In others, they may be detailed,
+principled specifications for major innovations.
 
 Overview
 --------
@@ -61,8 +62,57 @@ collaborators have signed up to complete the work of a ARM to consider
 it to be funded. Non funded, stale or otherwise defunct ARMs are taken
 off the list.
 
-ARMs Talks, and ARM Rallies
----------------------------
+
+ARM Process
+-----------
+
+A successful ARM (and we want them _all_ to be successful!) passes through the
+following states:
+
+![Fig. 1: Armature workflow](arm-0-workflow.png)
+
+* **Draft** —  In circulation by the idea's champion for initial review and
+  consensus- building; Generally a fork of the ARM repository that has not
+  been merged into the master branch.
+
+* **Posted** — Pushed into the ARM repository by the champion for wider
+  review. When an ARM is posted (via a pull request), comments must be
+  requested from the [Puppet Developers](https://groups.google.com/group
+  /puppet-dev) mailing list. Feedback from that forum, and any other means the
+  champion wishes, is incorporated by the champion and other contributors
+  until the ARM is ready for a more formal review.
+
+* **Submitted** — Declared by the champion as ready for evaluation by the
+  Armatures governors. A formal review results in an up-or-down decision. If
+  the proposal is accepted, it moves to Candidate status, and is given the
+  major version 1.0. Submissions must be made by sending mail to <a
+  href="mailto:armatures@puppetlabs.com">armatures@puppetlabs.com</a>.
+
+* **Candidate** — Accepted for inclusion in iteration planning (costing and
+  scheduling). A
+  [ticket](https://projects.puppetlabs.com/projects/puppet/issues/new) is
+  created for the sole purpose of tracking development.
+
+* **Funded** — Implementation is costed and staffed. In some cases, Puppet
+  Labs will be responsible for executing on an ARM; in others, community
+  contributors (likely the ARM champions) are responsible for execution,
+  following the normal procedures for [contributing to Puppet]
+  (https://github.com/puppetlabs/puppet/blob/master/CONTRIBUTING.md).
+
+* **Completed** — Built, tested, packaged, released. Once completed, ARMs are
+  archived and marked as such.
+
+* **Rejected:** — The governors hope it doesn't happen, but there may come a
+  point they must reject proposals outright. The proposal will still be in the
+  repository, and champions will be notified exactly why a proposal is
+  rejected. Rejected proposals may be resubmitted after necessary rework. Re-
+  submissions must increment the major version number.
+
+* **Withdrawn:** — If the ARM champion does not wish to continue further work,
+  it can be marked as withdrawn. The proposal will contiune to exist, and 
+  work may be taken up by a new champion.
+
+### ARMs Talks, and ARM Rallies
 
 There should be regular ARMs talks; where proposals for new ARMs are
 presented, major revisions reviewed and where the ARM process itself is
@@ -73,8 +123,8 @@ ARM rallies should be arranged whenever there is a Puppet conf/camp -
 this includes communicating the state of ARMs and possibly organizing
 reviews/feedback on ARMs in the pipeline.
 
-ARM implementation
------------------- 
+Creating an ARM
+---------------
 
 The ARM consists of a Git repository where each top level folder is a
 ARM identified by an ARM number and the name of the ARM.
@@ -121,77 +171,90 @@ The templates in ARM-1 should be a starting point, but a minimal beginning
 point might be simply writing to the section header prompts in [the JEP2 
 document][JEP2].
 
+Auxiliary Files
+---------------
+
+The major part of an ARM's content should be plain text, but they may include
+auxiliary files such as diagrams. Such files should be named
+`arm-[number]-[file_description].[extension]`.
+
 Metadata
 --------
 
-A proposal always has one root file manifest.json that
-describes:
+A proposal always has one root file `manifest.json` that describes:
 
-1.  arm - self reference, the ARM number
-2.  project -  a URL to the project's homepage (typically a github
-    repository complete with issue tracker); i.e. as
-    simple/complex as required by the size/complexity of the ARM.
-    Further information about the project/work should be found there
-    (issue tracking, meetings, schedule, who's who, etc. as dictated by
-    the complexity/size of the project).
-3.  revision - a sequence number indicating the revision/version of the
-    proposal. Revision uses semver (Major, Minor, Micro) where micro
+1.  **arm** - (required) self reference, the ARM number
+2.  **champion** - (required) Github handle of the primary author
+3.  **organization** - a list of Github handles for contributors
+    to the ARM, or a Github organization name
+4.  **effort** - quantity of work required to fully implement. Resonable
+    values: XS, S, M, L, XL, XXL
+5.  **revision** - (required) a sequence number indicating the revision/version of the
+    proposal. Revision uses semver (Major, Minor, Micro, where micro
     changes means that only typos or formatting have changed). The first
     version made available for consideration to be implemented should be
     1.0. Change in the Major number indicates a new completed version to
     be considered for implementation. Changes of the Minor number are
     work in progress revisions up to the next release, mostly of concern
-    to those collaborating on the ARM.
-4.  requires-arm - (optional) a list of ARMs that must be implemented before
+    to those collaborating on the ARM
+6.  **requires** - a list of ARMs that must be implemented before
     this ARM can be implemented
-5.  issues - (optional) when the ARM is in the late stages, there will
-    be one or several redmine issues tracking implementation work, these
-    are also included in this file.
-6.  implementation - (option) a list of URLs to branches where exploratory/reference  
-    implementions can be found
+7.  **project** - (required) a URL or list of URLs to the project's homepage (typically
+    a github repository complete with issue tracker); i.e. as simple/complex
+    as required by the size/complexity of the ARM. Further information about
+    the project/work should be found there, like URLs to puppet project
+    branches where exploratory/reference implementions, issue tracking,
+    meetings, schedule, who's who, etc. as dictated by the complexity/size of
+    the project
+8.  **issues** - when the ARM is in the late stages, there will be
+    one or several Puppet Labs tickets tracking implementation work; URLs to
+    these are also included in this file
+9.  **implementation** - when the ARM is in the late stages, there
+    will be one or several Puppet Labs tickets tracking implementation work such as
+    target versions, work assignments, compatibility, and so on. These are
+    also included in this file
 
 Example metadata.json
 
-    {
-       "arm": 123,
-       "revision":"1.2.3",
-       "project":"https://github.com/hlindberg/arm123",
-       "requires":[
-          42,
-          36
-       ],
-       "issues":[
-          "https://www.puppetlabs.com/...",
-          "...."
-       ]
-    }
+~~~json
+{
+  "arm":123,
+  "title":"Introduce a new syntax"
+  "champion":"hlindberg",
+  "organization":[
+    "hlinkberg",
+    "ahpook",
+    "jdwelch"
+  ],
+  "effort":"XL",
+  "project":"https://github.com/hlindberg/arm123",
+  "revision":"1.2.3",
+  "requires":[
+    42,
+    36
+  ],
+  "issues":[
+    "https://projects.puppetlabs.com/...",
+    "...."
+  ],
+  "implementation":[
+    "https://projects.puppetlabs.com/...",
+    "...."
+  ],
+}
+~~~
 
-The intent of this metadata is to allow automatic publishing of ARM's in
-an hyperlinked way and with communication of their status.
+The intent of this metadata is to allow automatic publishing of ARMs in an
+hyperlinked way and with communication of their status.
 
-Implementation Issues
----------------------
+Keep in mind we may add fields as necessary, for example including status or a
+particular reviewer's name.
 
-Possible meta data additions:
+Finally
+-------
 
-1.  Effort - XS, S, M, L, XL, XXL
-2.  Duration XS, S, M, ...
-3.  Startdate
-4.  Component(s)/Area(s) - e.g. Puppet core, factor, mcollective,
-    dev-process, arm, etc.
-5.  Template/Pep version
-6.  Creation date (is perhaps already defined by looking at git data)
-7.  Author / Organization (is perhaps already defined by using git)
-8.  Associated issues this ARM will address (fix)
-
-Endorsements / Approvals
-------------------------
-
-If we want to keep track of endorsements/approvals we could use signed
-tags. It may be difficult when the master project contains all ARMs -
-not investigated. An alternative is also to have ARMs ultimate
-approval/endorsement be controlled by a redmine issue.
-
+Happy ARM-wrestling, and remember [we welcome all
+feedback](https://github.com/puppetlabs/armatures/issues/new) on the process.
 
 [JEP1]: http://openjdk.java.net/jeps/1 "The Java JEP Process"
 
