@@ -3,32 +3,29 @@ Recommendation
 
 The author of this proposal recommends that the ruby-java8 like proposal is used with:
 
-1.  lambda parameters expressed with `|$x|`
-2.  lambda parameters placed left of the lambda body i.e. `|$x| {e}`
-3.  the lambda body may be a block with one or several
+1.  Lambda parameters expressed with `|$x|`
+2.  Lambda parameters placed left of the lambda body i.e. `|$x| {e}`
+3.  The lambda body may be a block with one or several
     expressions/statements
-
-    1.  Wait with implementation of these options until use-cases are more
-        known:
-
-        1.  function reference and uncompleted call (specifying arguments that
-            are not curried from the enumerable)
-        2.  type/define reference (i.e. a call-by-position to call-by-name
-            mapping)
-
-4.  enumeration functions each, select, reject, collect and reduce are
+4.  Enumeration functions `each`, `select`, `reject`, `collect` and `reduce` are
     implemented.
-5.  enumeration picking is each element (i.e. `[key,value]` for hash, and
-    each element for array), and that any other picking is done with
-    functions such as `keys()`, `values()` for hashes, and `pairs()`,
-    `triplets()`, and `tuples(n)` for arrays.
-6.  It is always a single argument that is curried (it may be an array)
+5.  Enumeration picking is:  
+    **Array** - one lambda arg picks each value, two args picks index and each value.  
+    **Hash**  - one lambda arg picks each entry as a [key, value] array, two args picks key and value.
+6.  Any other type of picking is done with functions; suggest `tuples(n=2)´ function to pick n elements.
 7.  Literal arguments appear after the curried value by convention, but
     a function (e.g. `reduce`) may insert a value before the first when
     this is logically more sound than having it appear after the curry
     (in reduce the optionally given argument is the "start value").
-8.  Calls to functions always pass the optional lambda as the last
-    argument.
+8.  Calls to functions always pass the optional lambda as the last argument.
+
+
+
+Wait with implementation of these options until use-cases are more known:
+
+1. Function reference and uncompleted call (specifying arguments that
+   are not curried from the enumerable)
+2. Type/define reference (i.e. a call-by-position to call-by-name mapping)
 
 Rationale
 ---------
@@ -54,3 +51,6 @@ The rationale for these recommendations are:
     currying, closures).
 10. In the IRC discussions to date on puppet-dev, the recommended style
     seems preferable over the pipe/operator based.
+11. The "picking logic" mimics Ruby, but avoids having to have an additional function to get index in array
+    (which is useful in several use cases; messages, picking from parallell lists, etc.). The more strict; always
+    just pass each element is not very practical when iterating over hashes.
