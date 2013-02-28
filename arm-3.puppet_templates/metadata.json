@@ -2,7 +2,7 @@
    "arm": 3,
    "title": "Puppet Templates"
    "revision":"0.1.0",
-   "project":"https://github.com/hlindberg/armatures",
+   "project":"https://github.com/puppetlabs/armatures",
    "implementation" : [
    ]  
    "requires-arms":[
