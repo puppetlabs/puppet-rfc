@@ -85,8 +85,8 @@ following states:
 * **Submitted** — Declared by the champion as ready for evaluation by the
   Armatures governors. A formal review results in an up-or-down decision. If
   the proposal is accepted, it moves to Candidate status, and is given the
-  major version 1.0. Submissions must be made by sending mail to <a
-  href="mailto:armatures@puppetlabs.com">armatures@puppetlabs.com</a>.
+  major version 1.0. Submissions must be made by sending mail to the
+  [Puppet Developers](https://groups.google.com/group/puppet-dev) mailing list.
 
 * **Candidate** — Accepted for inclusion in iteration planning (costing and
   scheduling). A
