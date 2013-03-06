@@ -28,3 +28,4 @@ Index of ARMs
 * [ARM-8 Data In Modules](arm-8.data_in_modules/index.md) - Separate Data from Code in Modules
 * [ARM-9 Data Bindings](arm-9.data_binding/index.md) - Next iteration of automatic data bindings
 * [ARM-10 Additional Node Scope](arm-10.additional_node_scope/index.md) - Add a level of scope for nodes
+* [ARM-11 Execution Model](arm-11.execution_model/index.md) - Describe a next-gen execution model for Puppet
