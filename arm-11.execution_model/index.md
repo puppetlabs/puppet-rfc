@@ -80,7 +80,7 @@ are moving to an operational mode with puppet where every run is normally in
 no-op mode and only deployment windows have do-something mode set; mcollective 
 would be responsible for triggering those runs.
 
-### Fact Service
+### <a name="description_fact_service">Fact Service</a>
 
 Currently, the puppet agent invokes facter at the beginning of each run, 
 gathering facts in real-time and uploading them in the HTTP request for the 
@@ -89,6 +89,55 @@ delivery and submission would be decoupled from the agent execution. Facter
 could then run on any appropriate schedule, which would probably be a much 
 longer period than "every puppet run" because most facts do not change very 
 quickly relative to the lifecycle of a node. 
+
+The fact service consists of a queue of pending fact submissions and some 
+workers which pull work off the queue and persist it to fact storage, which is 
+exactly what PuppetDB does today when it's configured to [store facts in the 
+inventory service](http://docs.puppetlabs.com/puppetdb/1.1/connect_puppet_master.html).  
+The difference is that the fact submission is not tied to a catalog request by 
+the client; instead the endpoint which receives the facts submission is 
+responsible for detecting differences between the previous fact storage for 
+that node and notifying the [Compiler Service](#description_compiler_service) 
+that it needs to compile a new catalog using these facts.
+
+### <a name="description_compiler_service">Compiler Service</a>
+ 
+The Compiler Service is responsible for pulling compile requests of its own 
+queue, compiling catalogs for nodes, and persisting them in catalog storage.  
+Requests can come into the compiler queue from fact service, from a human 
+interacting with a commandline, or any other event such as a post-commit hook 
+which notifies the compiler service there is new code available that needs to 
+get out to nodes.
+
+The service persists compiled catalogs in Catalog Storage, which again already 
+exists in PuppetDB. This area has perhaps the largest number of changes 
+necessary from today's execution model:
+
+* This needs to be a  
+  [static-compiler-ish](http://projects.puppetlabs.com/issues/6873) kind of 
+  catalog (sourced urls containing the checksum of the file inside the catalog) 
+  so that changes in files result in a different catalog. Files that are 
+  referenced by URL but whose contents are not stored in the catalog need to 
+  get populated into a new [Content Service](#description_content_service).
+* Similarly, the [config_version 
+  variable](https://github.com/puppetlabs/puppet/blob/master/lib/puppet/defaults.rb#L334-L340), 
+  or something functionally equivalent, needs to a reliable indicator of 
+  whether _anything_ has changed in the components of the catalog; at the 
+  moment only site.pp changing causes this value to change.
+* Environments should live with real separation in this compiler service, which 
+  probably means a Ruby interpreter per environment.
+* It should be possible to pre-compile catalogs for a node but not serve them 
+  up yet; this would fix the 'thundering herd' problem because as soon as code 
+  was complete you could start compiling, but nodes would only know about the 
+  changes when they were told to look for them.
+* The PuppetDB wire format is a pure JSON implementation of the catalog format, 
+  not the same thing as the agent consumes today. They should be unified, so 
+  the translation step that happens now on the way out to PuppetDB from the 
+  compiler is no longer necessary.
+
+### <a name="description_content_service">Content Service</a>
+
+TBD
 
 Testing and Evaluation
 ----------------------
