@@ -19,7 +19,7 @@ Index of ARMs
 -------------
 <table>
 <tr>
-  <th>ARM #</th>
+  <th>ARM</th>
   <th>Title</th>
   <th>Description</th>
   <th>Revision</th>
