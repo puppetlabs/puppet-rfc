@@ -1,6 +1,9 @@
 Other Considered Alternatives and Options
 =========================================
-This document contains considered alternatives for the pep-2.Iteration proposal.
+This document contains considered alternatives for the ARM-2.Iteration proposal.
+
+It is based both on work done by the authors of this proposal and ideas discussed in various
+forums. If these ideas seems half-baked, it is probably because that is precisely what they are.
 
 Function call style with lambda as parameter
 --------------------------------------------
@@ -219,7 +222,3 @@ parameters) - e.g.
 
 This is more magical, not extensible, and only solves "looping for the
 purpose of applying result to a resource".
-
-After updating the "pipe" and "using type as a function" above, I think
-the gist of what this proposal is about is achieved while also being
-extensible...
