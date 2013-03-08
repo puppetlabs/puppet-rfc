@@ -1,17 +1,16 @@
-Decision/Evaluation Support
-===========================
+ARM-2 Decision/Evaluation Support
+=================================
 
 In order to help with the reading and evaluation/decision making, this
-is one way of breaking down the reading/decisions. There is a
-recommendation after the numbered decisions if you just want to look at
-"what the author of the document prefers".
+is one way of breaking down the reading/decisions. The recommended solution
+is what is described in the [main document's description](iteration.md#description).
 
 1.  The two proposals are based on the requirement that the solution
     should not break existing code (i.e. introduction of new keywords,
     changes to naming rules, breaking API changes are not ok). This to
     enable introducing this feature in the 3.x puppet stream.
 
-    1.  If you do not care about backwards compatibility some of the non
+    1.  If you do not care about forward compatibility some of the non
         explored ideas may be more appealing to you, or you may have other
         ideas to present.
         
@@ -115,10 +114,11 @@ recommendation after the numbered decisions if you just want to look at
 
     1.  You may dislike it because it is two ways to do the same
     2.  You may like it because some functions may not have a LHS to apply a
-        dot method lambda to, and hey the functions are unaware of how they
-        were called.
+        dot method lambda to.
     3.  You may like it because it enables being able to indirectly apply a
-        function by name to data
+        function by name to data.
+    4.  You may like it because a user basically only has to learn a simple principle; 
+        "It is possible to pass a lambda to the right of a call".
     4.  You may be ok with having both, but would like to see restrictions
         on combination of function call with lambda to avoid users creating
         nested lambda calls and other constructs that are hard to read, but

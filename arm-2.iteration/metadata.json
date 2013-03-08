@@ -1,15 +1,17 @@
 {
    "arm": 2,
-   "title"; "Iteration",
-   "revision":"0.1.1",
+   "title": "Iteration",
+   "revision":"0.2.0",
+   "champion": hlindberg,
    "project":"https://github.com/hlindberg/arm",
-   "requires-arms":[
+   "requires":[
    ],
    "issues":[
      "http://projects.puppetlabs.com/issues/11331"
    ],
    "implementation":[
+   "https://github.com/hlindberg/puppet/tree/pops/"
+   "https://github.com/hlindberg/rgen/"
    "https://github.com/hlindberg/puppet/tree/11331-add-foreach",
-   "https://github.com/hlindberg/puppet/blob/pops/lib/puppet/pops/impl/parser/egrammar.ra"
    ]
 }
