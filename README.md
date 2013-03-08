@@ -18,20 +18,25 @@ and contributor efforts. For details, please read [ARM-0](arm-0.arm/index.md), w
 Index of ARMs
 -------------
 <table>
-<th>
-  <td>ARM #</td>
-  <td>Title</td>
-  <td>Description</td>
-  <td>Revision</td>
-  <td>Date</td>
-</th>
+<tr>
+  <th>ARM #</th>
+  <th>Title</th>
+  <th>Description</th>
+  <th>Revision</th>
+  <th>Date</th>
+</tr>
 <tr>
   <td>0</td>
-  <td>ARM</td>
+  <td><a href="arm-0.arm/arm.md">ARM</a></td>
   <td>Describes ARM itself</td>
   <td>0.2.0</td>
   <td>March 1, 2013</td>
 </tr><tr>
+  <td>0</td>
+  <td><a href="arm-1.templates/templates">Templates</a></td>
+  <td>Templates for creating a new ARM</td>
+  <td>0.1.0</td>
+  <td>March 1, 2013</td>
 * [ARM-1 Templates](arm-1.templates/templates) - Templates for creating a new ARM
 </tr><tr>
 * [ARM-2 Iteration](arm-2.iteration/index.md) - Add iteration to the Puppet Language
