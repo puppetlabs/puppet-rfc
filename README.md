@@ -26,7 +26,11 @@ Index of ARMs
   <td>Date</td>
 </th>
 <tr>
-* [ARM-0 ARM](arm-0.arm/index.md) - Describes ARM itself
+  <td>0</td>
+  <td>ARM</td>
+  <td>Describes ARM itself</td>
+  <td>0.2.0</td>
+  <td>March 1, 2013</td>
 </tr><tr>
 * [ARM-1 Templates](arm-1.templates/templates) - Templates for creating a new ARM
 </tr><tr>
