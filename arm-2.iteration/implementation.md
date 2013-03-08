@@ -42,7 +42,7 @@ and why the implementation efforts were changed into the proposed Expression Bas
 Grammar.
 
 Expression Based Grammar
-========================
+------------------------
 
 The expression based grammar generalizes everything into expressions
 and defines the grammar by using two techniques: Racc precedence (to resolve most shift/reduce conflicts),

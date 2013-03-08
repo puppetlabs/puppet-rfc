@@ -436,6 +436,18 @@ Internal Changes
 ----------------
 Changes that are not directly visible to a user of the puppet language.
 
+### Expression Based Grammar
+
+The biggest internal change in the implementation of this proposal is the use of a new _expression based grammar_.
+This grammar handles both "statements" and "expressions" as expressions. This style means that some semantics
+are not enforced by the grammar per se (the parser accepts nonsensical input) and it is instead handled by a validator
+that kicks in when the parser has completed its work. In contrast, the current grammar can not enforce all semantics, and many
+issues are not found until the logic is evaluated. The introduction of a validator means that more such runtime validation
+can be performed upfront.
+
+More details about the Expression Based Grammar and how it works is found in the
+document [Implementaion](implementation.md#expression-based-grammar).
+ 
 ### Changes to Scope
 
 In order to support lambdas, there is the need to provide a classic _local scope_ where variable definitions
