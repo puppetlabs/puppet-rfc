@@ -17,14 +17,35 @@ and contributor efforts. For details, please read [ARM-0](arm-0.arm/index.md), w
 
 Index of ARMs
 -------------
+<table>
+<th>
+  <td>ARM #</td>
+  <td>Title</td>
+  <td>Description</td>
+  <td>Revision</td>
+  <td>Date</td>
+</th>
+<tr>
 * [ARM-0 ARM](arm-0.arm/index.md) - Describes ARM itself
+</tr><tr>
 * [ARM-1 Templates](arm-1.templates/templates) - Templates for creating a new ARM
+</tr><tr>
 * [ARM-2 Iteration](arm-2.iteration/index.md) - Add iteration to the Puppet Language
+</tr><tr>
 * [ARM-3 Puppet Templates](arm-3.puppet_templates/index.md) - Add support to write templates in the Puppet Language
+</tr><tr>
 * [ARM-4 Heredoc](arm-4.heredoc/index.md) - Add support for Heredoc feature to Puppet Language.
+</tr><tr>
 * [ARM-5 Structured Facts](arm-5.structured_facts/index.md) - Implementation of structured facts in Facter
+</tr><tr>
 * [ARM-6 Puppet Capabilities](arm-6.capabilities/index.md) - Support cross-host application management and monitoring
+</tr><tr>
 * [ARM-7 Puppet Types](arm-7.puppet_types/index.md) - Express Puppet Types in the Puppet DSL
+</tr><tr>
 * [ARM-8 Data In Modules](arm-8.data_in_modules/index.md) - Separate Data from Code in Modules
+</tr><tr>
 * [ARM-9 Data Bindings](arm-9.data_binding/index.md) - Next iteration of automatic data bindings
+</tr><tr>
 * [ARM-10 Additional Node Scope](arm-10.additional_node_scope/index.md) - Add a level of scope for nodes
+</tr>
+</table>
