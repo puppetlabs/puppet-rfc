@@ -205,7 +205,7 @@ Here an imaginary user defined function collecting data from some source:
 >> closures, and turning lambda parameters into a binary operator of suitable precedence).
 
 
-### Custom (Ruby) Function with Lambda
+### Implementing a Custom (Ruby) Function with Lambda
 
 Implementing a function that accepts and operates on a lambda is very simple.
 A lambda (if present) is always added as the last argument to a function. 
@@ -225,7 +225,7 @@ and then invoking it with some arguments.
 
 The proposed functions for iteration and data transformation are:
 
-* `each` - iterate over collection
+* `each` - iterates over collection
 * `slice` - produces slices (chunks; pairs, triplets, ...) of a collection and optionally iterates over it
 * `collect` - produces a new array by collecting each result of the given lambda
 * `select` - produces a new array filtered by the given (inclusion predicate) lambda
@@ -244,7 +244,7 @@ a parameterized block as produced by the puppet syntax:
       
 When the first argument is an Array, the parameterized block should define one or two block parameters.
 For each application of the block, the next element from the array is selected, and it is passed to
-the block if the block has one parameter.args If the block has two parameters, the first is the elements
+the block if the block has one parameter. If the block has two parameters, the first is the elements
 index, and the second the value. The index starts from 0.
   
     $a.each |$index, $value| { ... }
@@ -271,7 +271,7 @@ a parameterized block as produced by the puppet syntax:
 The parameterized block should have either one parameter (receiving an array with the slice), or the same number
 of parameters as specified by the slice size (each parameter receiving its part of the slice).
 In case there are fewer remaining elements than the slice size for the last slice it will contain the remaining
-elements. When the block has multiple parameters, excess parameters are set to :undef for an array, and to
+elements. When the block has multiple parameters, excess parameters are set to `:undef` for an array, and to
 empty arrays for a Hash.
       
       $a.slice(2) |$first, $second| { ... }
@@ -328,12 +328,13 @@ is a hash the entry is an array with `[key, value]`.
 
 #### reject
 
-Works the same way as select, but returns a new array with the entries for which the block does *not* evaluate to true.
+Works the same way as select, but returns a new array with the entries for which the block evaluates
+to false or nil.
 
 #### reduce
 
 Applies a parameterized block to each element in a sequence of entries from the first
-argument (_the collection_) and returns the last result of the invocation of the parameterized block.
+argument (*the collection*) and returns the last result of the invocation of the parameterized block.
 
 This function takes two mandatory arguments: the first should be an Array or a Hash, and the last
 a parameterized block as produced by the puppet syntax:
@@ -366,6 +367,7 @@ next invocation.
 It is possible to provide a starting 'memo' as an argument.    
   
 *Examples*
+
     # Reduce an array  
     $a = [1,2,3]
     $a.reduce(4) |$memo, $entry| { $memo + $entry }
@@ -399,16 +401,16 @@ Appending any object is allowed, when appending an Array it is not flattened.
     {a=>1, b=>2} + { b=>4 } == {a=>1, b=>4 }
     
     
-These additions were made as it was difficult to write transformation logic without this support.
-(Arguably there are functions in standard library that could help with this, but proposal
-feels incomplete without also offering these).
+> These additions were made as it was difficult to write transformation logic without this support.
+> Arguably there are functions in standard library that could help with this, but these should be
+> an integral part of the language).
 
 ### Expression Separator
 
 Since the [expression based grammar](#expression-based-grammar) allows an expression to be "a statement"
 and white-space is used to separate one expression from another, an additional expression separator is required
-in order to deal with two corner cases. The optional separator is `;` (i.e. optional in the sense - not required when
-there is no special case, but may be used).
+in order to deal with two corner cases (explained below).
+The optional separator is `;` (i.e. optional in the sense - *not required when there is no special case, but may be used*).
 
 Consider:
 
@@ -417,9 +419,10 @@ Consider:
 If the intention is to assign `2 + $x` to `$a` and then produce a literal array with the single value `1` then the above is
 wrong as the `[]` operator has high precedence (it must be higher that most other operators to work in general arithmetic
 expressions), and thus, the parsing of the example will instead attempt to access index 1 in the array assigned to `$x` and
-then add 2.
+then add 2. It does not help to place the expression in parentheses i.e. `($a = 2 + $x)[1]` since we now end up with trying to
+get something at index `1` in the value assigned to `$a`.
 
-Now, using the expression separator, the example will be parsed as intended:
+The solution is to use the expression separator. This example will be parsed as intended:
 
     $a = 2 + $x; [1]
     
@@ -441,10 +444,11 @@ Changes that are not directly visible to a user of the puppet language.
 
 The biggest internal change in the implementation of this proposal is the use of a new _expression based grammar_.
 This grammar handles both "statements" and "expressions" as expressions. This style means that some semantics
-are not enforced by the grammar per se (the parser accepts nonsensical input) and it is instead handled by a validator
-that kicks in when the parser has completed its work. In contrast, the current grammar can not enforce all semantics, and many
+are not enforced by the grammar per se (the parser may accept nonsensical input) and the enforement of semantics
+is instead handled by a validator that kicks in when the parser has completed its work.
+In contrast, the current grammar can not enforce all semantics, and many
 issues are not found until the logic is evaluated. The introduction of a validator means that more such runtime validation
-can be performed upfront.
+can be performed up front.
 
 More details about the Expression Based Grammar and how it works is found in the
 document [Implementaion](implementation.md#expression-based-grammar).
@@ -454,7 +458,7 @@ document [Implementaion](implementation.md#expression-based-grammar).
 In order to support lambdas, there is the need to provide a classic _local scope_ where variable definitions
 do not externally visible and (potentially) shadow variable in an outer scope. An implementation of a
 local scope was possible by extending the existing mechanism for "ephemeral scope" (local scope is not simply
-an ephemeral scope, that would not work, but it is part of the same mechanism). 
+an ephemeral scope, (that would not work), but it is part of the same mechanism). 
 
 > Going forward, the scope implementation should be refactored as it is overloaded with complex behavior.
 > The complexities in the current scope implementation is also the main reason why support for Closures is
@@ -478,48 +482,54 @@ produces a single value; the last evaluated expression.
 Some AST objects do not produce a meaningful result, they should either produce nil, or something meaningful.
 
 > This is w.i.p as there are no current tests. As an example, a Resource creation should produce a resource reference, or
-> an array of resource references, and an if statement should produce the last evaluated result of the taken branch.
+> an array of resource references, and an `if` statement should produce the last evaluated result of the taken branch.
 
 
 ### Grammar Switch
 
 This feature allows passing settings to the parser; use the latest, turn on some experimental feature etc.
 
-> T.B.D(escribed) - this is not yet implemented. 
+> T.B.D(escribed) - this is not yet designed. 
 
 Testing and Evaluation
 ======================
 It is intended that this proposal is evaluated by performing UX studies:
+
 * Is the Ruby/java-8 style preferred over the Unix Pipes style?
 * Within the Ruby/Java-8 style what are the preferences for:
   * Parameters outside (`|$x| { ... }`)
   * Parameters inside (`{|$x| ... }`
   * Use of fat arrow (`|$x| => { ... }`), or not
 * The names of the iteration functions
-  * Both `each` and `foreach` are available in the implementation (`each` is recommended).
-  * The names of additional functions where choosen based on the corresponding functions in Ruby (and to some
+  * Both `each` and `foreach` are available in the implementation (`each` is recommended). Which one is preferred?
+  * The names of additional functions where chosen based on the corresponding functions in Ruby (and to some
     extent Java). Are these names good?
 
 The available implementation of the Ruby/Java-8 style allows all of these at the same time to allow for experimentation.
 
-Currently, to evaluate, the implementation is found at: https://github.com/hlindberg/puppet/tree/pops
+Currently, the implementation is found at: https://github.com/hlindberg/puppet/tree/pops and this implementation 
+supports the above mentioned alternatives.
 In addition, the RGen gem must be installed (the current release has an issue that is triggered by puppets unit tests), and
 a patch has been submitted. The patched working version is found here: https://github.com/hlindberg/rgen
 
 Alternatives and Recommendation
 ===============================
 
-Many different options and alternatives were considered. These are broken into three groups; _rejected as not meeting goals_ (these are
-found in a [separate document](alternatives.md), _viable alternatives and options_ to the ruby/java-8 like recommended
-implementation (described below), and the alternative separately documented ["Unix Pipe" proposal](pipe_alternative.md).
+Many different options and alternatives were considered. These are presented in three groups:
+
+* _rejected as not meeting goals_ (these are found in a [separate document](alternatives.md)
+* _viable alternatives and options_ to the ruby/java-8 like recommended implementation (described below)
+* and the separately documented alternative ["Unix Pipe" proposal](pipe_alternative.md).
 
 The recommended implementation is described above in [Description](#description), and a detailed decision tree is found in
 [Evaluation](evaluation.md), and the rationale in the document [Recommendation](recommendation.md).  
 
 The rest of this section contains viable alternatives and options not included in the recommendation.
 
-Alternative: 'Parameters inside' lambda syntax
---------------------------------------------
+Lambda Syntax Alternatives
+--------------------------
+
+### Alternative: 'Parameters inside' lambda syntax
 
 A "ruby like" option is to place the lambda parameters inside the block expression.
 
@@ -540,8 +550,7 @@ Here is an example:
 
 > This option is available in the exploratory implementation.
 
-Alternative: Using Fat Arrow in Lambda
---------------------------------------
+### Alternative: Using Fat Arrow in Lambda
 
 It may be more readable to use a fat arrow between the lambda parameters and the BlockExpression.
 
@@ -549,15 +558,18 @@ It may be more readable to use a fat arrow between the lambda parameters and the
     
 > This option is available in the exploratory implementation.
 
-Option: Bare Expression as body instead of BlockExpression
-----------------------------------------------------------
+
+Options
+-------
+
+### Bare Expression as Body Instead of BlockExpression
 
 The recommended solution uses a BlockExpression as the body of a lambda. It could also have been
 a single expression as in this example:
 
    $array.select |$x| $x == 2
 
-But this increases the amount of ambiguities that has to be addressed by the user, and practically makes
+But this increases the amount of ambiguity that has to be addressed by the user, and practically makes
 chaining be more verbose with required parentheses. This would also expose users to the effect of
 precedence rules in more than just a few corner cases.
 
@@ -567,8 +579,7 @@ Consider:
 
 What is the select applied to? (A: the literal 2).
 
-Option: Function references
----------------------------
+### Function references
 
 It is useful to be able to directly pass a named function where a lambda
 is allowed. The `&` operator can be used for this:
@@ -585,20 +596,50 @@ same locations as a lambda is allowed (i.e. to not support something
 like `&$x` for a dynamic reference, and not accepting `&<NAME>` as an
 r-value) - see "Discussion about Function Reference" below.
 
-The addition of a function reference is optional, it is not required to
-support "iteration".
+> The addition of a function reference is optional, it is not required to
+> support "iteration". It is not included in the recommendation, and can be
+> added later.
+
+### Uncompleted Function Calls
+
+A functional reference with additional arguments is known as
+an *uncompleted function call*, where special variables are used to denote
+where a *curried* argument is inserted. 
+
+As the most common case is to curry one variable, it is proposed that this
+variable is simply `$`. Additional curried variables are expressed with several `$`; i.e. `$$` is the
+second and `$$$` the third.
+
+> This works because in practice only one or two are ever used.
+
+This example shows a call where the curried variable is in the second
+position when the call is made.
+
+    &myfunc(1, $, "text")
+
+Additional rules are:
+
+* if specified without parentheses, the call is made with the single argument `$`
+* else, the `$` (or multiple curried variables) must be specified at the wanted position.
+
+> The addition of uncompleted calls is optional. It is recommended that if 
+> implemented, it is done at the same time as implementing the function reference
+> option.
 
 Discussion about Lambda Syntax
 ------------------------------
+*This section contains a discussion about how the authors of this proposal arrived at the recommended solution.*
 
-When the Ruby like syntax was shown to non-programmers, there seems to
-be an unnecessary cognitive complication due to the placement of the
-parameters inside the braces - as this is different from say a regular
-function declaration which people seems to understand.
+The very first proposal was based on the Ruby like syntax where lambda parameters
+are placed inside the lambdas block expression. When this syntax has been shown to
+non-programmers,there seemed to be an unnecessary cognitive complication due to the placement of the
+parameters inside the braces ("This looks funny") - as this is different from say a regular
+function declaration which people seem to understand.
 
-Moving the lambda parameters outside of the body is somewhat
-grammatically difficult (as we will see in a bit). In Java 8, lambdas
-are written like this:
+At the same time, there seems to be no problem understanding functions. So what happens
+if the parameters simply move outside the body? Are there other languages that do this?
+
+In Java 8, lambdas are written like in the example below. Could this be used?
 
     (x, y) -> { }
 
@@ -628,9 +669,9 @@ Using some other free operator works:
     &(x,y) => {}    
     &{}
 
-This style is used in the "pipe" proposal. because that proposal also
-uses `&` as a function reference, and a lambda is an anonymous function
-(although defined instead of referenced).
+>This style is used in the "pipe" proposal. because that proposal also
+>uses `&` as a function reference, and a lambda is an anonymous function
+>(although defined instead of referenced).
 
 If variables should be preceded with `$` to be consistent with other
 function like declarations it starts to look heavy:
@@ -639,7 +680,7 @@ function like declarations it starts to look heavy:
     &{}
 
 Some languages (e.g. go) uses a keyword `func` to introduce an anonymous
-function. We could do the same (but this adds a keyword), or we could
+function. We could do the same (but this adds a keyword, which is not wanted), or we could
 use the convention that the name `_` means anonymous. If used as an
 operator, and dropping the fat arrow, a lambda would look like this:
 
@@ -652,16 +693,18 @@ That looks quite magical compared to the keyword variant:
     func($x,$y) {}
     func {}
 
-It is possible to use the pipe operators (at least in the "Ruby like"
-proposal):
+So, let's combine the java and ruby styles by using the pipe operator from ruby, but
+with the parameter placement, and arrow from java. Thus arriving at:
 
     |$x, $y| => { }
     || => { }
 
-and also works without the arrow:
+But we can drop the arrow, since it is just syntactic noise:
 
     |$x, $y| { }    
     || { }
+
+And this is what is the recommended solution.
 
 Further, it is of value to be able to write a lambda that is not a block
 (such as a function reference). In this case the fat arrow separator may
@@ -676,29 +719,8 @@ look more appealing. Compare:
 Naturally, both styles (without arrow for a braced block, and with arrow for a function reference) could be
 used - maybe to set them apart, and to provider better error feedback (but this may be of debatable value).
 
-Alternative: Automatic currying
--------------------------------
 
-You may have reacted to examples like this:
-
-    $array.collect |$x| => &upcase($x)
-
-as it has redundant information, this could just as well have been
-written
-
-    $array.collect &upcase
-
-Automatic currying with a lambda could look like this but needs the
-magic variable 'it':
-
-    $array.collect &{ upcase($_) }
-
-Since the introduction of lambda and iteration will be new to the puppet
-community, it is perhaps best to always be explicit as things are
-already complex and magic enough without also adding automatic currying.
-
-Alternative: UTF-8 lambda kwyword
----------------------------------
+### Discussion about UTF-8 lambda keyword
 
 It has been suggested in several conversations about operators and
 lambdas that it would be of value to use operators in the wider UTF-8
@@ -716,8 +738,7 @@ that makes them drop or misinterpret such characters.
 There is already criticism against having too much special punctuation, and
 the addition of Greek letters the syntax starts to look like "math".
 
-Discussion about Function Reference
------------------------------------
+### Discussion about Function Reference
 
 As shown in the summary of the proposals for lambda, a function
 reference could be created by using `&<NAME>. As there is no closure
@@ -735,34 +756,36 @@ used. This may however be far too complex for the target audience. There
 are other obvious issues regarding static validation of such statements
 as the correctness is not known until evaluation time.
 
-The functional reference can allow specification of additional
-arguments, i.e. an uncompleted function call, and the `it` variable
-represents where the curried (value is inserted). A concrete binding for
-`it` is needed; it could be spelled out as `$it`, or use a more special
-`$_` syntax.
+> Consequently, the recommendation is that function reference is
+> not available in the first implementation. And if introduced later
+> it should be restricted to not being a general r-value.
 
-This example shows a call where the curried variable is in the second
-position when the call is made.
+### Discussion about Uncompleted Function Call
 
-    &myfunc(1, $_, "text")
+The recommendation includes an option to support *uncompleted function call* as
+shown in the example:
 
-Additional rules could be:
+    &myfunc(1, $, "text")
 
-* if no arguments are specified, the call is made with the single 
-  argument `$_`
+The big question is how to reference curried variables. A concrete binding is
+needed that allows reference to one or more automatically curried variables (carried forward
+from the left hand side iteration). This could be a named variable such as `$it`, or
+a more special `_`, `$_`, or just a single `$´ could be used.
 
-* if arguments are specified, the `$_` is the first argument (unless
-  it is included in the list)
+Since there is the need to handle more than one curried value it must be possible
+to specify the "index". This could be done by using a count, i.e. `$` is the first,
+and `$$` the second and so forth. This works because it is a rare case to pass more than two, so
+you would almost never see pathological cases like `$$$$$´.
 
-or
+Instead, a number could be used, but numeric variables are already reserved for pattern matching
+result, and may be assigned in the scope (they should not be shadowed). Hence, a different syntax is
+needed. Using `_` is the more viable, i.e. `_` or `_1` is the first `_2` is the second, etc. For consistency,
+the `$` should probably be used thus forming: `$_` or `$_1` for the first `$_2` for the second etc.
 
-* if arguments are specified, the `$_` must be included in order to
-  pass it (this is less magical but also adds noise).
+The recommendation is to use `$`, `$$` simply because it looks less magic / (hackish) than `$_1`.
 
-The addition of uncompleted calls is optional.
-
-Option: Closures
-----------------
+Discussion about Closures
+-------------------------
 
 It is proposed that lambdas are (at least initially) restricted to be
 used in association with calls to functions/the runtime and not be
@@ -783,24 +806,46 @@ Expression Based Grammar Risks
 ------------------------------
 ### Major implementation
 
-The expression based grammar is a major rewrite of the grammar. There is a risk that some corner cases will be handled
-differently as the implementation does not have as a goal to be fully bug compatible.
+The expression based grammar is a major rewrite of the grammar. There are inherent risks with new code. 
+There is a risk that some corner cases will be handled differently as the implementation does not have as a goal
+to be fully bug compatible.
 
 This is mitigated by:
 
 * The design where the parser produces a semantic model that is transformed into an AST model for the execution. This ensures
-  that problems are most likely related to parsing (a possible type of problem is precedence issues).
-* A fairly large test suite (currently 642 examples) covering syntax and transformation in a non trivial way is in place.
-* Unit tests performing catalog compilation based on iteration functions are in place (currently 27 examples).
-* Problems are early in the chain (lexing/parsing) and are easy to find/fix as there is a foundation for
+  that problems are most likely related to parsing (a possible type of problem is precedence issues). Such
+  Problems are early in the chain (lexing/parsing) and are easy to find/fix as there is a foundation for
   conveniently testing the various steps. As an example, a problem reported for 3.x that is also present in the implementation
   of this ARM could have been a lexing problem, a problem in the parser, an evaluation problem, a problem in the resource type,
   or the catalog. (The issue is http://projects.puppetlabs.com/issues/19632). Within about 15 minutes of work (using 3 copy/pasted
   and modified unit tests) it was possible to pinpoint the culprit.
+* A fairly large test suite (currently 642 examples) covering syntax and transformation in a non trivial way is in place.
+* Unit tests performing catalog compilation based on iteration functions are in place (currently 27 examples).
 * The implementation of this ARM was done with a design principle to change as little existing code as possible, and instead
-  re-route and transform the call flow. This makes A/B comparisons much easier.
+  re-route and transform the call flow. This makes A/B comparisons much easier when testing/debugging.
 * If extended tests /UX studies show there are (non anticipated) extensive problems, it is possible to implement this proposal
   on top of the existing grammar (such an implementation has already been made), albeit with some undesirable syntax restrictions. 
+
+## Bloat
+
+The new implementation adds a lot of new code while keeping the old. This adds bloat. 
+
+This is mitigated by:
+
+* The bloat is temporary - the intention is to deprecate and remove the current / "old" implementation when it is safe to do so.
+* The A/B testing is of great value when testing/debugging, and is considered to be worth the "bloat".
+* Although not measured, the runtime memory requirements should not dramatically increase; there is more code loaded, but there
+  are also memory saving in the new implementation.
+  
+## Garbage Collection
+
+One of Ruby's weak points is garbage collection performance. The implementation will generate more garbage objects to collect while
+parsing/building a model.
+
+This is mitigated by:
+
+* Ruby versions are getting better and better at garbage collection.
+* A steady state is eventually reached (all code is loaded)
 
 ## New Technology
 
@@ -842,12 +887,16 @@ Impact
   * Tools such as Geppetto and Puppet Lint needs to be updated to handle the new syntax.
   * Standard Library - While this proposal was being prepared, an unfortunate addition of a "reduce" function was made in the
     standard puppet library.
-* Compatibility: The proposal is future compatible.
+* Compatibility: The proposal is future compatible. (With the exception that functions in the wild could naturally be
+  named 'each', 'collect' etc. and there is a known clash with the 'reject' function in the standard library). At the same time
+  Puppet does not have a mechanism to qualify a function name (this should be the topic of a separate ARM).
+* Other ARMs:  
+  * A new ARM should be written with a proposal to handle qualified references to functions and types.
 * Security: Neutral.
 * Performance/scalability:  
   While the initial implementation is marginally slower (it creates a semantic model that is translated
   into an AST and delegates to the "old" ways of doing things in a less than optimal way), there is potential for better
-  performance in future versions.
+  performance in future versions. (This is discussed under [Risks and Assumptions](#risks-and-assumptions))
 * User experience: THe intention is to make a UX study presenting the various options.
 * I18n/L10n: Neutral
 * Accessibility: Neutral
