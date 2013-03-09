@@ -64,7 +64,7 @@ If the structure is in two arrays, the stdlib function `zip` can be used to comb
 If the structure is in one array, the `slice` function (in this ARM) can be used:
 
     $users = ['someuser', 'some/path', 'differentuser', 'complete/tely/different/path', 'anotheruser', 'another/path']
-    $users.slice(2).collect |$x| { "/bin/mount --bind /home/${paths[$x]}/ /home/$x/www" }.join("\n")
+    $content = $users.slice(2).collect |$x| { "/bin/mount --bind /home/${paths[$x]}/ /home/$x/www" }.join("\n")
 
 ### Iterating over an Array - Creating Resources
 
