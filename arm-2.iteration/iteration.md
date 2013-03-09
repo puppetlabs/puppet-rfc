@@ -189,8 +189,9 @@ Examples:
     $array.each |$x| { }
     $array.slice(2) |$x| { }
     
-Although no such function is proposed in this ARM, it is possible to pass a lambda to a function that does not require
-any parameters (other than the lambda). Here an imaginary custom user defined function collecting data from some source:
+It is possible to pass a lambda to a function that does not require any parameters (other than the lambda) by
+using the function call style. Although no such function is proposed in this ARM, this is of value for custom functions. 
+Here an imaginary user defined function collecting data from some source:
 
     our_data_for_webhosts() |$hostname, $classes| { }
 
