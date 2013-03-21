@@ -137,7 +137,56 @@ necessary from today's execution model:
 
 ### <a name="description_content_service">Content Service</a>
 
-TBD
+The content service replaces the current puppet file_server functionality with 
+a service which, like the 
+[filebucket](http://docs.puppetlabs.com/guides/rest_api.html#file-bucket) does 
+today, implements  a 
+[http://en.wikipedia.org/wiki/Content-addressable_storage](Content-Addressable 
+Storage) system, where the cryptographic checksum of the file's content is the 
+key by which the file is retrieved. This would work in conjunction with the 
+static catalogs to serve up content not included in the catalog itself, such as 
+large binary blobs or system daemon configuration files.
+
+The two main areas where the Content Service should improve on the current 
+filebucket implementation are performance and scalability. It's [widely 
+acknowledged](https://www.google.com/search?q=puppet+file+server+large+files)
+that Puppet today is not performant at serving large files, but the technical 
+origins for this reputation (XML-RPC, Webrick) have largely gone away and at 
+this point it's mostly a matter of not focusing energy on serving files 
+efficiently. Building a distinct Content Service which does not carry extra 
+baggage should enable (or at least, 'not hinder') high perofrmance file 
+serving. 
+
+By 'scalability', I mean primarily that the Content Service should provide a 
+mechanism by which writes to a particular content address will be replicated 
+transparently across the underlying storage. This addresses a limitation that 
+large-scale users with load-balanced puppetmasters have run into with the 
+static compiler:
+
+* the compiler replaces a `puppet:///url/` with a filebucket checksum
+* the compiler fills its own filebucket with the replaced file's contents
+* the agent receives the catalog, attempts to fetch contents, but hits 
+  a different load-balanced server, which does not contain the content
+
+The Content Service should provide an API through which content can be 
+populated by external entities (like the Compiler Service) and should 
+internally provide consistency and availability for each content address. The 
+backend could quite reasonably be implemented on top of third-party products.
+
+### Report Service
+
+The report service is essentially the same storage provided by PuppetDB today.  
+The main potential enhancement to the reporting API to support the asynchronous 
+execution model is a move to event-driven reporting rather than one-shot 
+reporting. 
+
+Currently the agent gathers all events during a run and submits them in a large 
+(sometimes quite large) upload to the report server at the end of the run. To 
+provide more responsive feedback to administrators and shorter convergence for 
+other parts of the ecosystem which rely on reports, it would be beneficial to 
+move to a streaming-event model, where each node publishes an event to the 
+Report Service as soon as it's completed.
+
 
 Testing and Evaluation
 ----------------------
