@@ -104,4 +104,12 @@ Index of ARMs
   <td>March 1, 2013</td>
   <td>New</td>
 </tr>
+</tr><tr>
+  <td>10</td>
+  <td><a href="arm-11.execution_model/index.md">Describe a next-gen execution model for Puppet</a></td>
+  <td>Add a level of scope for nodes</td>
+  <td>0.0.2</td>
+  <td>March 22, 2013</td>
+  <td>New</td>
+</tr>
 </table>
