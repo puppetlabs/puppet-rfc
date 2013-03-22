@@ -105,7 +105,7 @@ Index of ARMs
   <td>New</td>
 </tr>
 </tr><tr>
-  <td>10</td>
+  <td>11</td>
   <td><a href="arm-11.execution_model/index.md">Execution Model</a></td>
   <td>Describe a next-gen execution model for Puppet</td>
   <td>0.0.2</td>
