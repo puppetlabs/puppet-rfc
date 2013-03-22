@@ -28,10 +28,10 @@ matching end. There are several issues related to Ruby HEREDOC:
 Proposal for Puppet Heredoc
 ===========================
 
-To overcome the problems above, this proposal is built on using a new
-operator @ to indicate "here doc, until given end tag", e.g.
+To overcome the problems above, this proposal is built on using the `@()` operator
+to indicate "here doc, until given end tag", e.g.
 
-    $a = @END
+    $a = @(END)
     This is the text that gets assigned to $a.
     And this too.
     END
@@ -41,23 +41,32 @@ contained text, as follows.
 
 <table>
 <tr>
-  <td><tt>@END</tt></td><td>no interpolation and no escapes</td></tr>
+  <td><tt>@(END)</tt></td><td>no interpolation and no escapes</td></tr>
 <tr>
-  <td><tt>@"END"</tt></td>
+  <td><tt>@("END")</tt></td>
   <td>double quoted string semantics (interpolation and escapes except that  double quote <tt>"</tt> may appear without escape).</td>
 </tr>
 <tr>
-  <td><tt>@'END'</tt></td>
+  <td><tt>@('END')</tt></td>
   <td>single quoted string semantics (no interpolation, fewer escapes, accepts single quote <tt>'</tt> without escape).</td>
 </tr>
 <tr>
-  <td><tt>@%END%</tt></td>
+  <td><tt>@(%END%)</tt></td>
   <td>EPP template semantics (no interpolation or escapes),
   signals that the text should be a legal template, but does not evaluate
   the template (it is still a string result, only containing a template).
   See <a href="#combining-heredoc-with-inline-template">Combining heredoc with inline template</a>.</td>
 <tr>
 </table>
+
+The Heredoc Tag
+---------------
+
+The heredoc tag may consist of any text (letters, digits, whitespace and underscore) but not any other characters.
+It may optionally contain a `:` (colon) followed by the name of the syntax used in the text. The name of the syntax allows
+letters, digits, and underscore - the name is case insensitive and it is used to enable syntax checking and for
+tools to perform syntax coloring and provide user with help/validaton etc.
+
 
 End Marker
 ----------
@@ -109,7 +118,7 @@ The position of the | marker before the end tag controls how much
 leading whitespace to trim from the text.
 
     0.........1.........2.........3.........4.........5.........6
-    $a = @END
+    $a = @(END)
       This is indented 2 spaces in the source, but produces
       a result flush left with the initial 'T'
         This line is thus indented 2 spaces.
@@ -119,7 +128,7 @@ Without the leading pipe operator, the end tag may be placed anywhere on
 the line. This will include all leading whitespace.
 
     0.........1.........2.........3.........4.........5.........6
-    $a = @END
+    $a = @(END)
       This is indented 2 spaces in the source, and produces
       a result with left margin equal to the source file's left edge.
         This line is thus indented 4 spaces.
@@ -130,7 +139,7 @@ the present left whitespace is removed, but not further adjustment is
 made, thus altering the relative indentation.
 
     0.........1.........2.........3.........4.........5.........6
-    $a = @END
+    $a = @(END)
       XXX
         YYY
        | END
@@ -152,10 +161,10 @@ line just before the end tag) by starting the end tag with a minus '-'.
 When a '-' is used this is the indentation position.
 
     0.........1.........2.........3.........4.........5.........6
-    $a = @END
+    $a = @(END)
       This line will not be terminated by a new line
       -END
-    $b = @END
+    $b = @(END)
       This line will not be terminated by a new line
       |- END
 
@@ -167,19 +176,17 @@ This is equivalent to:
 It is allowed to have whitespace between the - and the tag, e.g.
 
     0.........1.........2.........3.........4.........5.........6
-    $a = @END    
+    $a = @(END)    
       This line will not be terminated by a new line
       - END
 
 Spaces allowed in the tag
 -------------------------
 
-Spaces are allowed in the tag name when the form is `"`, `'`, or `%`.
-The end marker may use the tag without the quotes. Spaces are insignificant
-between words.
+White space is allowed in the tag name. Spaces are insignificant between words.
 
     0.........1.........2.........3.........4.........5.........6
-    $a = @"Verse 8 of The Raven"    
+    $a = @(Verse 8 of The Raven)
       Then this ebony bird beguiling my sad fancy into smiling,
       By the grave and stern decorum of the countenance it wore,
       `Though thy crest be shorn and shaven, thou,' I said, `art sure no craven.
@@ -197,7 +204,7 @@ Multiple Heredoc on the same line
 It is possible to use more than one heredoc on the same line as in this
 example:
 
-    foo(@FIRST, @SECOND)    
+    foo(@(FIRST), @(SECOND))    
       This is the text for the first heredoc
         FIRST
       This is the text for the second
@@ -205,8 +212,8 @@ example:
 
 If however, the line is broken like this:
 
-    foo(@FIRST,    
-    @SECOND)
+    foo(@(FIRST),    
+    @(SECOND))
 
 Then the heredocs must appear in this order:
 
@@ -227,7 +234,7 @@ shuffling around of the text is a purely lexical exercise.
 Thus, it is possible to continue the heredoc expression, e.g. with a
 method call.
 
-    $a = @END.upcase
+    $a = @(END).upcase
       I am not shouting. At least not yet...
       | END
 
@@ -243,7 +250,7 @@ To help external tools, the heredoc syntax @%tag% is recommended as this
 allows tools like Geppetto to provide syntax coloring, syntax validation
 as well as reference checking also for the inline template strings.
 
-Template wise, an `@END` is equivalent to `@%END%`.
+Template wise, an `@(END)` is equivalent to `@(%END%)`.
 
 
 Syntax checking of heredoc text
@@ -256,12 +263,12 @@ allowing them to be checked?
 This could be done by "tagging the tag" with the name of the syntax.
 e.g.
 
-    @END:EPP    
-    @END:JavaScript
-    @END:Ruby
-    @END:PropertyFile
-    @END:Yaml
-    @END:Json
+    @(END:EPP)
+    @(END:JavaScript)
+    @(END:Ruby)
+    @(END:PropertyFile)
+    @(END:Yaml)
+    @(END:Json)
     @"END":EPP
 
 This way, the checking would take place server side before the content
