@@ -4,4 +4,4 @@ Alternatives
      it was not included/rejected in the proposal/recommendation.
 -->
 
-TODO: - No alternatives were considered since we could not think of any.
+TODO:

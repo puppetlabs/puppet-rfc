@@ -217,17 +217,17 @@ If however, the line is broken like this:
 
 Then the heredocs must appear in this order:
 
-    foo(@FIRST,    
+    foo(@(FIRST),    
       This is the text for the first heredoc
       FIRST
-    @SECOND)
+    @(SECOND))
       This is the text for the second
       SECOND
 
 Additional semantics
 --------------------
 
-The `@tag` is equivalent to a right value (i.e. a string), only that its
+The `@(tag)` is equivalent to a right value (i.e. a string), only that its
 content begins on the next line of not already consumed heredoc text. The
 shuffling around of the text is a purely lexical exercise.
 
@@ -250,13 +250,15 @@ To help external tools, the heredoc syntax @%tag% is recommended as this
 allows tools like Geppetto to provide syntax coloring, syntax validation
 as well as reference checking also for the inline template strings.
 
-Template wise, an `@(END)` is equivalent to `@(%END%)`.
+Template wise, an `@(END:EPP)` is equivalent to `@(%END%)`.
 
+> %END% is quite ugly, and magic - suggest dropping it in favor of using
+> the :EPP style.
 
 Syntax checking of heredoc text
 ===============================
 
-It is proposed that `@%tag%` means that the string has EPP syntax.
+It is proposed that `@(%tag%)` means that the string has EPP syntax.
 Wouldn't it be great to be able to specify additional syntaxes and
 allowing them to be checked?
 
@@ -269,7 +271,7 @@ e.g.
     @(END:PropertyFile)
     @(END:Yaml)
     @(END:Json)
-    @"END":EPP
+    @("END":EPP)
 
 This way, the checking would take place server side before the content
 is (much later) used with possibly very hard to detect problems as a
