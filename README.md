@@ -32,21 +32,21 @@ Index of ARMs
   <td>Describes ARM itself</td>
   <td>1.0.0</td>
   <td>March 26, 2013</td>
-  <td>Submitted</td>
+  <td>Completed</td>
 </tr><tr>
   <td>1</td>
   <td><a href="arm-1.templates/templates">Templates</a></td>
   <td>Templates for creating a new ARM</td>
   <td>1.0.0</td>
   <td>March 26, 2013</td>
-  <td>Submitted</td>
+  <td>Completed</td>
 </tr><tr>
   <td>2</td>
   <td><a href="arm-2.iteration/index.md">Iteration</a></td>
   <td>Add iteration to the Puppet Language</td>
   <td>1.0.0</td>
   <td>March 26, 2013</td>
-  <td>Submitted</td>
+  <td>Completed</td>
 </tr><tr>
   <td>3</td>
   <td><a href="arm-3.puppet_templates/index.md">Puppet Templates</a></td>
