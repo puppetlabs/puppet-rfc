@@ -44,9 +44,9 @@ Index of ARMs
   <td>2</td>
   <td><a href="arm-2.iteration/index.md">Iteration</a></td>
   <td>Add iteration to the Puppet Language</td>
-  <td>0.2.1</td>
-  <td>March 8, 2013</td>
-  <td>Posted</td>
+  <td>1.0.0</td>
+  <td>March 26, 2013</td>
+  <td>Submitted</td>
 </tr><tr>
   <td>3</td>
   <td><a href="arm-3.puppet_templates/index.md">Puppet Templates</a></td>
@@ -59,8 +59,8 @@ Index of ARMs
   <td><a href="arm-4.heredoc/index.md">Heredoc</a></td>
   <td>Add support for Heredoc feature to Puppet Language</td>
   <td>1.0.0</td>
-  <td>February 20, 2013</td>
-  <td>Draft</td>
+  <td>March 26, 2013</td>
+  <td>Submitted</td>
 </tr><tr>
   <td>5</td>
   <td><a href="arm-5.structured_facts/index.md">Structured Facts</a></td>
