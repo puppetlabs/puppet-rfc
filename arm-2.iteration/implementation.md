@@ -50,7 +50,7 @@ and left refactoring by defining a rule chain from lowest to highest precedence.
 used in the Geppetto Xtext/Antlr based grammar).
 
 The expression based grammar is (currently) found
-[here](https://github.com/hlindberg/puppet/blob/pops/lib/puppet/pops/impl/parser/egrammar.ra)
+[here](https://github.com/puppetlabs/puppet/blob/feature/master/future-parser/lib/puppet/pops/impl/parser/egrammar.ra)
 for anyone interested.
 
 To enable use of this approach, it is important to add validation of the

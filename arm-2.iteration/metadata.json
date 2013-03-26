@@ -1,17 +1,16 @@
 {
    "arm": 2,
    "title": "Iteration",
-   "revision":"0.2.1",
+   "revision":"1.0.0",
    "champion": hlindberg,
    "project":"https://github.com/hlindberg/arm",
    "requires":[
    ],
    "issues":[
-     "http://projects.puppetlabs.com/issues/11331"
+     "http://projects.puppetlabs.com/issues/11331",
+     "http://projects.puppetlabs.com/issues/18764"
    ],
    "implementation":[
-   "https://github.com/hlindberg/puppet/tree/pops/"
-   "https://github.com/hlindberg/rgen/"
-   "https://github.com/hlindberg/puppet/tree/11331-add-foreach",
+   "https://github.com/puppetlabs/puppet/tree/feature/master/future-parser"
    ]
 }

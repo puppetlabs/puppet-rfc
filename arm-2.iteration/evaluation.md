@@ -13,7 +13,7 @@ is what is described in the [main document's description](iteration.md#descripti
     1.  If you do not care about forward compatibility some of the non
         explored ideas may be more appealing to you, or you may have other
         ideas to present.
-        
+
 2.  As both of the proposals are built on lambdas being added to the
     language, this is naturally the first decision point.
 
@@ -77,7 +77,7 @@ is what is described in the [main document's description](iteration.md#descripti
         with some special cases, and is sprinkled with magic variables. It
         may also seem like mixed idioms and is not like anything seen
         elsewhere.
-        
+
     2.  If you like the ruby-java8-like approach better you may have issues
         with the names of the functions:
 
@@ -88,7 +88,7 @@ is what is described in the [main document's description](iteration.md#descripti
             only a select (with user having to put a not first to get
             reject functionality). Do you prefer the more generic term
             filter (used in java8)?
-            
+
     3.  If you like the ruby-java8-like approach better you may have issues
         with the "picking" from the enumerable:
 

@@ -507,10 +507,9 @@ It is intended that this proposal is evaluated by performing UX studies:
 
 The available implementation of the Ruby/Java-8 style allows all of these at the same time to allow for experimentation.
 
-Currently, the implementation is found at: https://github.com/hlindberg/puppet/tree/pops and this implementation 
-supports the above mentioned alternatives.
-In addition, the RGen gem must be installed (the current release has an issue that is triggered by puppets unit tests), and
-a patch has been submitted. The patched working version is found here: https://github.com/hlindberg/rgen
+Currently, the implementation is found at: "https://github.com/puppetlabs/puppet/tree/feature/master/future-parser"
+and this implementation supports the above mentioned alternatives. (It includes a vendored copy of the gem rgen and does
+thus contain everything needed to use the implementation).
 
 Alternatives and Recommendation
 ===============================
@@ -878,6 +877,10 @@ This ARM does not depend on any other ARM being implemented.
 The implementation has a dependency on [RGen](https://github.com/mthiede/rgen).
 RGen in turn has an optional dependency on [Nokogiri](http://nokogiri.org/) if XML features are used (which they are not
 in the proposed implementation).
+
+The RGen gem has been vendored (included in the Puppet packaging) and does not have to be separately installed.
+The optional Nokogiri is not used by the implementation of this arm, and is only needed if someone want to do work
+with the models in this arm in XML form).
 
 Impact
 ======
