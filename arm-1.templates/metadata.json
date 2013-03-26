@@ -1,7 +1,7 @@
 {
    "arm": 1
    "title": "Templates"
-   "revision":"0.1.0",
+   "revision":"1.0.0",
    "project":"https://github.com/puppetlabs/armatures",
    "requires-arms":[
    ],
