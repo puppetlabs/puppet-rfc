@@ -30,16 +30,16 @@ Index of ARMs
   <td>0</td>
   <td><a href="arm-0.arm/arm.md">ARM</a></td>
   <td>Describes ARM itself</td>
-  <td>0.2.0</td>
-  <td>March 1, 2013</td>
-  <td>Draft</td>
+  <td>1.0.0</td>
+  <td>March 26, 2013</td>
+  <td>Submitted</td>
 </tr><tr>
   <td>1</td>
   <td><a href="arm-1.templates/templates">Templates</a></td>
   <td>Templates for creating a new ARM</td>
-  <td>0.1.0</td>
-  <td>March 1, 2013</td>
-  <td>Draft</td>
+  <td>1.0.0</td>
+  <td>March 26, 2013</td>
+  <td>Submitted</td>
 </tr><tr>
   <td>2</td>
   <td><a href="arm-2.iteration/index.md">Iteration</a></td>
