@@ -111,5 +111,12 @@ Index of ARMs
   <td>0.0.2</td>
   <td>March 22, 2013</td>
   <td>New</td>
+</tr><tr>
+  <td>12</td>
+  <td><a href="arm-12.star_resource_data_type/index.md">Star Resource Data Format</a></td>
+  <td>Adds new resource data format to describe a resource without automatically declaring it</td>
+  <td>0.0.1</td>
+  <td>April 1, 2013</td>
+  <td>New</td>
 </tr>
 </table>
