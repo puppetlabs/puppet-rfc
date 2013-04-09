@@ -1,5 +1,7 @@
 {
    "arm": 8,
    "title": "Data in Modules",
-   "revision":"0.1.0",
+   "champion": "jdwelch",
+   "project":"https://github.com/puppetlabs/armatures",
+   "revision":"0.1.0"
 }
