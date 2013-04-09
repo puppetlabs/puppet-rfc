@@ -1,10 +1,11 @@
 {
    "arm": 7,
-   "title": "Puppet Types"
+   "title": "Puppet Types",
+   "champion": "hlindberg",
    "revision":"0.0.0",
    "project":"https://github.com/hlindberg/armatures",
    "implementation" : [
-   ]  
+   ],
    "requires-arms":[
    ],
    "issues":[

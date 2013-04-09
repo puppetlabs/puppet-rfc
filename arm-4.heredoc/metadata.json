@@ -1,10 +1,11 @@
 {
    "arm": 4,
-   "title": "Heredoc"
+   "title": "Heredoc",
+   "champion": "hlindberg",
    "revision":"1.0.0",
    "project":"https://github.com/hlindberg/armatures",
    "implementation" : [
-   ]  
+   ],
    "requires-arms":[
    ],
    "issues":[
