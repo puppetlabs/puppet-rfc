@@ -184,12 +184,13 @@ Metadata
 A proposal always has one root file `manifest.json` that describes:
 
 1.  **arm** - (required) self reference, the ARM number
-2.  **champion** - (required) Github handle of the primary author
-3.  **organization** - a list of Github handles for contributors
+2.  **title** - (required) Human-readable title for the ARM
+3.  **champion** - (required) Github handle of the primary author
+4.  **organization** - a list of Github handles for contributors
     to the ARM, or a Github organization name
-4.  **effort** - quantity of work required to fully implement. Resonable
+5.  **effort** - quantity of work required to fully implement. Resonable
     values: XS, S, M, L, XL, XXL
-5.  **revision** - (required) a sequence number indicating the revision/version of the
+6.  **revision** - (required) a sequence number indicating the revision/version of the
     proposal. Revision uses semver (Major, Minor, Micro, where micro
     changes means that only typos or formatting have changed). The first
     version made available for consideration to be implemented should be
@@ -197,19 +198,19 @@ A proposal always has one root file `manifest.json` that describes:
     be considered for implementation. Changes of the Minor number are
     work in progress revisions up to the next release, mostly of concern
     to those collaborating on the ARM
-6.  **requires** - a list of ARMs that must be implemented before
+7.  **requires** - a list of ARMs that must be implemented before
     this ARM can be implemented
-7.  **project** - (required) a URL or list of URLs to the project's homepage (typically
+8.  **project** - (required) a URL or list of URLs to the project's homepage (typically
     a github repository complete with issue tracker); i.e. as simple/complex
     as required by the size/complexity of the ARM. Further information about
     the project/work should be found there, like URLs to puppet project
     branches where exploratory/reference implementions, issue tracking,
     meetings, schedule, who's who, etc. as dictated by the complexity/size of
     the project
-8.  **issues** - when the ARM is in the late stages, there will be
+9.  **issues** - when the ARM is in the late stages, there will be
     one or several Puppet Labs tickets tracking implementation work; URLs to
     these are also included in this file
-9.  **implementation** - when the ARM is in the late stages, there
+10. **implementation** - when the ARM is in the late stages, there
     will be one or several Puppet Labs tickets tracking implementation work such as
     target versions, work assignments, compatibility, and so on. These are
     also included in this file

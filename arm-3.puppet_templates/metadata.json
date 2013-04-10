@@ -1,10 +1,11 @@
 {
    "arm": 3,
-   "title": "Puppet Templates"
+   "title": "Puppet Templates",
+   "champion": "jdwelch",
    "revision":"0.1.0",
    "project":"https://github.com/puppetlabs/armatures",
    "implementation" : [
-   ]  
+   ],
    "requires-arms":[
    ],
    "issues":[
