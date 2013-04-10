@@ -65,7 +65,7 @@ class Armature
 end
 
 task :validate do
-  Dir.entries(".").find_all { |d| d =~ /^arm-[\d+]\./ }.each do |d|
+  Dir.entries(".").find_all { |d| d =~ /^arm-[\d]+\./ }.each do |d|
     begin
       arm = Armature.new(d)
       arm.load
