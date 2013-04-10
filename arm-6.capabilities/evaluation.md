@@ -2,9 +2,9 @@ Evaluation / Decision Support
 =============================
 There are a number of important questions to resolve about this proposal:
 
-* Should the solution be part of Puppet, like this is, or a separate tool that integrates with Puppet?
+* Should the solution be part of Puppet, like this is, or a separate tool that integrates with Puppet?  That is, should cross-host relationships in Puppet be specified and managed outside of Puppet?
 
-* Should the solution be as magical as this one is, such that Sql instances (in our examples) are created for you, or should the user be forced to specifically create them?
+* Should capabilities be global to an environment, or should they default to being local to a host?
 
 * Should capabilities actually be required for this kind of dependency injection to work, or should any resource be usable?
 
@@ -14,7 +14,7 @@ The current proposal assumes an answer to all of them:
 
 * The solution must be a part of Puppet.  We could not conceive of a solution that didn't essentially exactly duplicate the objects and semantics already present in Puppet resources and graphs, which did not make sense.  Note that the orchestration itself -- that is, the process of triggering a set of hosts to run in the right order -- does actually need to be done by a separate tool, but all of the semantics and data are in Puppet.
 
-* This solution is too magical.  It's unclear at this point how to make it less so.
+* Capabilities should be global to an environment.  We want our users to think in terms of applications and populations, not nodes, and this helps/encourages them to do so.
 
 * It would be nice to allow any resource to be used like this, but it's unclear how to do so.
 
