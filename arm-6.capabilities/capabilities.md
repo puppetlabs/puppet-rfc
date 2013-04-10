@@ -1,27 +1,156 @@
-Puppet Capabilities
-==========================
-This document is two things:  A postulate about a step toward application (rather than node) management, and a longer description of how I came to believe that postulate.  The postulate is multipart:
-
-* Puppet's RAL needs to be extended to include the concept of a 'capability', such that one resource can provide a capability and another resource can require that capability
-* This 'capability' definition must include sufficient information for the requiring resource to test whether the capability is available and functional - e.g., if the capability is a database service, then we must include sufficient information to connect to that service and confirm it is functional
-* Testing this 'capability' is functionally equivalent to monitoring it, and if everything in a Puppet network can monitor all required capabilities, then we have essentially achieved a self-monitoring infrastructure (albeit without data aggregation or alerting); we could, for instance, ping the network and ask everyone to run a quick check on everything they rely on, without having a central polling server
-
-How I came to believe this
-==========================
-My vision for how we will accomplish application management can be decomposed into two major pieces:  The central piece responsible for compiling the Infrastructure graph, which is all of the applications in the infrastructure and their composite services, and the per-node piece, which is any given node's piece of that infrastructure graph.  My prototyping has primarily focused on the central piece, but having not made progress recently, I decided to refocus on the individual node piece.
-
-One of the questions we've been wrestling with is whether the agent needs to be able to speak directly to the required service (e.g., does the agent on a web server need to be able to talk to a required database?), so as an exercise I began with the assumption that it did (which is the simplest case).  In that model, every resource essentially needs to be able to speak every protocol (e.g., sql, http) and test every capability.  Once this requirement became clear, it was obvious that there couldn't be a general requirement for any resource to do all of these connection types.  At the same time, I realized that monitoring applications have been able to categorize these kinds of capabilities into a relatively small (e.g., 2 to 3 digits) finite list of types of things they need to monitor.
-
-This link between the dependencies on capabilities and the ability to break these capabilities down into monitoring-like categories led me to conclude that (if all of the previous theories are true) we could and should extend the model of a resource to include, along with the existing Type and Provider, the concept of a Capability, which would also have various drivers (e.g., SQL, HTTP).  Some of these capabilities would be network-oriented, i.e., all of the network protocols, but some would also be inherently local, such as disk space and user access.
-
-If we extended the Resource model to include Capabilities, and our configurations defined all of the capability dependencies, then we have an infrastructure that knows how to tell if its dependencies are met in a functional way, not just an ordering way.  I.e., a web service can tell if its needed database service is working and accessible, rather than just if it's been configured.
-
-Things this doesn't address
+(ARM-6) Puppet Capabilities
 ===========================
-I've made no attempt to discuss how the two ends of a dependency know about each other - that is, if a service provides a database capability, I'm not yet saying how its configuration information gets to the requiring web service.  I expect that some part of this needs to be solved in the (currently theoretical) central tool - it's the only tool capable of managing configurations on multiple nodes, and thus information passing between multiple nodes must be at least shepherded by this application.
 
-There is no discussion of ordering across multiple hosts.  I believe that most of the problems that are truly hard are encountered in the single-node scenario, other than the basic problem of building a central Infrastructure graph independently of the individual node graphs, but any complete solution must of course cover how we make sure that the database server is brought up before the web server, in our example.  I believe the central tool will need the ability to trigger host recompiles and runs based on the order of the graph it has built and based on the need to resolve information - i.e., ordering will be based on that central graph, and managed by that central tool.  If a web server needs a database capability, but no host has been allocated and provided that capability, then the web server's catalog cannot be compiled, and a human must be notified to allocate a host for database functionality.  (Or, of course, some kind of automatic allocator must be available.)  One possibility for simplifying the initial version would be to require that all hosts be allocated before the application can be compiled, which would eliminate the possibility of valid configurations with unresolved data and thus make a lot of this much simpler.
+Background
+----------
+There are multiple related problems in Puppet today:
+* Module Reusability: It is difficult to build reusable modules that are not hardwired to their dependent or depending modules.  For instance, if one is building a mysql module and a related apache module, it is difficult to build them such that someone else can use the mysql module without also using the apache module.
+* Dependency Injection: It is difficult to configure related services on multiple hosts at once.  For instance, if you want to build a database and web service on different hosts, you generally have to duplicate configuration to make it work.  Exported resources kind of make this work, but it is far harder than it should be.  In particular, there is no visibility of such dependencies, in general use of exported resources results in hard-wiring of those dependencies, and they are just not very easy to use.
+* Orchestration: When running Puppet on related hosts, it is relatively difficult today to figure out the order in which to run Puppet.  That is, if you would like to orchestrate the deployment of related changes, you must essentially manually do it, and you almost certainly must use a separate tool to manage the ordering.
 
-On the note of the central infrastructure graph, my entire conception of a central tool is predicated on the assumption that we won't allow cycles in the infrastructure graph, just like we don't in a node graph.  An important thing to keep in mind here is that a cycle in the infrastructure graph can be detected at compile time, and a complete graph, with all dependencies and data resolved, can be compiled before it's ever deployed.  If all needed hosts are allocated, their facts can be used to compile the complete infrastructure graph and each node's graph, and only if that works would you deploy it to production.  As the graph changes over time, any given change needs to result in a viable state.
+This proposal provides a single solution for almost all of them.  It does not completely solve the Orchestration problem, but it provides all of the information necessary to do so.
 
-How data for these capabilities gets resolved is also a critical question.  Some data is obviously manually specified - if you want http instead of https, or postgresql instead of mysql, you need to configure that - but plenty of other data can be resolved with more general strategies, and we will at some point need a general mechanism for managing these strategies.  For instance, every machine knows its IP address (during the compile process), because that's collected as one of the facts, so we need a strategy that knows how to look information for a host up in its facts.  We also can rely heavily on convention for things like database names - in general, the user shouldn't be asked to pick a name for those.  Lastly, things like port numbers and passwords should be able to be generated or dynamically allocated on demand, as appropriate, rather than again asking the user.  It's unclear at this point how those resolution strategies would be tied to the capabilities, but then, the entire process of specifying capabilities is unclear at this point.
+As a specific example, given these definitions:
+```
+define db($port = 80, $user = root, $password, $host = "127.0.0.1", $database = $name) {
+  notify { "db $name, password $password": }
+}
+
+define web($dbport, $dbuser, $dbpassword, $dbhost, $database) {
+  notify { "web $name, password $dbpassword user $dbuser": }
+}
+```
+and two hosts, ``web1`` and ``db1``, you would normally need to do this:
+```
+node db1 {
+  db { one: password => "passw0rd" }
+}
+node web1 {
+  web { one:
+    dbport => 80,
+    dbuser => root,
+    dbpassword => "passw0rd",
+    dbhost => db1,
+    database => one
+  }
+}
+```
+Note that we're not just duplicating configuration here, we're having to actually specify default values as hard-coded values in the web1 configuration.
+
+**A note on terminology**: The term ``capability`` is less than ideal, and it is considered temporary.  Ideally we will choose more appropriate terms before we ship.
+
+Proposal for Puppet Capabilities
+--------------------------------
+This proposal adds multiple parts to the Puppet ecosystem: A syntactical addition, added semantics to PuppetDB, and a new concept to the overall architecture.
+
+The key to the proposal is that, given two related resources (e.g., a Web instance and a required Database instance), we would like to specify the required resource and a dependency to it, and to have a) the requiring resource be automatically configured to use the required resource and b) both resources deployed appropriately on the appropriate host.  The mechanism for this connection is a resource-like object type, which I am calling a ``capability``, that abstracts the configuration of (in this case) the web service to use the database service.
+
+Taking our above example of db and web hosts, note that the key configuration information can be abstracted into the key bits needed to configure a database.  That is, the information that the web server needs from the database server is exactly and specifically the information needed to speak to the database.  Thus, we propose an abstract 'sql' type:
+```
+Puppet::Type.type(:sql) {
+  newparameter(:name)
+  newparameter(:port)
+  newparameter(:user)
+  newparameter(:password)
+  newparameter(:host)
+}
+```
+
+What we want is for the database specification to create an instance of this resource type, and then some mechanism for the web server to discover this instance and use it to configure itself, even if the two services are running on two separate hosts.
+
+Capability Creation
+-------------------
+The first challenge is how to get the database service to create an instance of the ``sql`` capability.  We do that by adding an optional syntax to defined resource types:
+```
+define db($port = 80, $user = root, $password, $host = "127.0.0.1", $database = $name) produces sql() {
+  notify { "db $name, password $password": }
+}
+```
+Note that we have slightly modified our ``define`` syntax; we now specify that we ``produce`` "sql".  Note, also, that the parameters of our database resource happen to exactly match the parameters of our sql resource.  This isn't that surprising, but it makes one wonder why we even need this new concept.  In answer to that, I ask, what do you do if you use postgresql, mysql, and oracle?  They each need the same parameters, but they would almost definitely be implemented in different ways with different names.
+
+By default, creating an instance of ``db`` does **not** result in the creation of an ``sql`` instance.  Thus:
+```
+db { one: password => "passw0rd" }
+```
+behaves exactly as before.
+
+However, if you modify this slightly to:
+```
+db { one: password => "passw0rd", produce => Sql[one] }
+```
+then an instance of the Sql resource type will be created.  Ok, so we've got this abstract resource; how do we use it to configure our web server?
+
+Capability as Configuration
+---------------------------
+We're going to start with the simpler case where both web and database servers are running on the same host.  We'll solve the harder case of them running on separate hosts next.
+
+In this case, we need to "teach" the web service how to configure itself using an sql instance.  To do this, we introduce a new syntax for mapping the sql parameters to the web parameters:
+```
+define web($dbport, $dbuser, $dbpassword, $dbhost, $database) consumes sql(
+  $port      = dbport,
+  $user      = dbuser,
+  $password  = dbpassword,
+  $host      = dbhost,
+  $database  = database
+) {
+  notify { "web $name, password $dbpassword user $dbuser": }
+}
+```
+Note that we can't just use exactly the same parameter names.  Both web and database servers specify ports, for instance.  You could build modules that did map directly, but that would be another case of hard-coding the connection between your modules; you could use modules with this mapping, but few other people would be able to.
+
+So, this syntax tells us how to take the sql server's port and convert it to our web server's dbport attribute.  How do we use this in practice?
+```
+web { one: consume => Sql[one] }
+```
+This specifies that Puppet should find the 'one' instance of the 'sql' capability and use its parameters to configure itself.
+
+Note that the mapping presented here can also be used to map during the 'produce' syntax; if your defined resource uses a different parameter than the capability, then you map just like above.
+
+Look how compact our configuration is here.  Almost no duplication (just that of the name of the sql instance), and certainly no repetition of default values or hard-coding of dependencies.
+
+You could also skip the sql instance entirely and configure the services by directly specifying a relationship:
+```
+db { one: password => "passw0rd" }
+web { one: require => Db[one] }
+```
+In this case, we don't create an sql instance, but the compiler knows how to use the db instance to configure the web instance.
+
+Configuring Separate Hosts
+--------------------------
+Now, how do we configure services spread across multiple hosts?
+
+The key to this solution is understanding that it is unlikely within a given infrastructure to need to have multiple capability instances with the same name.  That is, you are unlikely to have many databases with exactly the same name, and unlikely to have multiple web servers with exactly the same name.  In fact, one could argue that such an occurrence would be a bad thing.
+
+So, I propose that capability instances be unique, by type and title, across a given environment.  That is, using our above exactly, Sql[one] would uniquely identify that instance across whichever environment it is in.  This way, you don't have to worry about complicated querying, exporting, or anything else.  If you create a capability, then it's global to that environment.
+
+With this, we just put all of the capabilities into PuppetDB, like we do the rest of the catalog, and make sure 1) we can distinguish capabilities from other resources and 2) we test on catalog insertion that we're not duplicating capabilities.
+
+Crucially, this begins to treat an environment analogously to single host - it has a set of resources which are related to each other and must be unique within that environment.  We can also view the graph for that environment, just like we could view the graph for a given host.
+
+In this situation, the code to configure the separate hosts looks like:
+```
+node db1 {
+  db { one: password => "passw0rd", produce => Sql[one] }
+}
+
+node web1 {
+  web { one:
+    consume => Sql[one]
+  }
+}
+```
+The configuration is just as compact as when they're on a single host.
+
+Benefits
+--------
+Given that you can now graph the relationship between resources across any number, you can now easily figure out the appropriate order in which to run your hosts.  Given the above dependency, you know you must first configure your database server, and then your web server.
+
+Further, you can relatively easily ask a given environment which services are provided and/or needed.  You can, of course, ask that of a normal environment to some extent, but it's not normalized.  You might show a postgres and mysql instance, but you won't see two db instances.
+
+Alternatives and Modifications
+------------------------------
+A desire to be able to extract values from any resource, not just special capabilities has been expressed.  To me, it's unclear how to do this without providing a far more complicated syntax for mapping attribute names, which is the critical bit.
+
+Concerns
+--------
+The primary concern I've heard about this proposal is that capabilities are inherently global.  It has been expressed that it would be better if users had to explicitly mark instances as available to other hosts, rather than defaulting that way, and in fact, not being able to restrict them to a single host.  One of the things I specifically like about this proposal is that it begins to treat environments like a kind of über-host, with a catalog, and the same uniqueness requirements on a catalog.  The whole concept of exporting has always been challenging, and I think this would allow us to remove it.
