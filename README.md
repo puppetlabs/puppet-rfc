@@ -118,5 +118,14 @@ Index of ARMs
   <td>0.0.1</td>
   <td>April 1, 2013</td>
   <td>New</td>
+</tr><tr>
+  <td>13</td>
+  <td><a href="arm-13.ssl_behaviour/index.md">SSL Behaviour</a></td>
+  <td>Describe Puppet's use of SSL, configuration options, and best practices.
+</td>
+  <td>0.0.1</td>
+  <td>April 1, 2013</td>
+  <td>New</td>
 </tr>
+
 </table>
