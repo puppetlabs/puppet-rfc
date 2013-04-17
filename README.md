@@ -124,7 +124,7 @@ Index of ARMs
   <td>Describe Puppet's use of SSL, configuration options, and best practices.
 </td>
   <td>0.0.1</td>
-  <td>April 1, 2013</td>
+  <td>April 17, 2013</td>
   <td>New</td>
 </tr>
 
