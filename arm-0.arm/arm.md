@@ -181,7 +181,7 @@ auxiliary files such as diagrams. Such files should be named
 Metadata
 --------
 
-A proposal always has one root file `manifest.json` that describes:
+A proposal always has one root file `metadata.json` that describes:
 
 1.  **arm** - (required) self reference, the ARM number
 2.  **title** - (required) Human-readable title for the ARM
