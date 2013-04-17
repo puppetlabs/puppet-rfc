@@ -1,0 +1,13 @@
+{
+   "arm": 13,
+   "title": "SSL Behaviour",
+   "champion":"djmitche",
+   "project":"https://github.com/<REPLACE with ref to project at github>",
+   "revision":"0.0.1",
+   "requires":[
+   ],
+   "issues":[
+   ],
+   "implementation":[
+   ],
+}
