@@ -1,0 +1,7 @@
+{
+   "arm": 14,
+   "title": "Managing System Reboots",
+   "champion":"joshcooper",
+   "project":"https://github.com/joshcooper/puppetlabs-reboot",
+   "revision":"0.0.1"
+}

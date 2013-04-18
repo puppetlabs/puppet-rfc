@@ -126,6 +126,14 @@ Index of ARMs
   <td>0.0.1</td>
   <td>April 17, 2013</td>
   <td>New</td>
+</tr><tr>
+  <td>14</td>
+  <td><a href="arm-14.reboot/index.md">Managing System Reboots</a></td>
+  <td>Describe Puppet's ability for managing system reboots.
+</td>
+  <td>0.0.1</td>
+  <td>April 17, 2013</td>
+  <td>New</td>
 </tr>
 
 </table>
