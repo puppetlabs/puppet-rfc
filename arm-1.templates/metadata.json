@@ -1,6 +1,7 @@
 {
-   "arm": 1
-   "title": "Templates"
+   "arm": 1,
+   "title": "Templates",
+   "champion": "ahpook",
    "revision":"1.0.0",
    "project":"https://github.com/puppetlabs/armatures",
    "requires-arms":[
