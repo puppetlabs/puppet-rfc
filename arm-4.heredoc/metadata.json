@@ -4,10 +4,11 @@
    "revision":"1.0.0",
    "project":"https://github.com/hlindberg/armatures",
    "implementation" : [
-   ]  
+     "https://github.com/hlindberg/puppet/tree/feature/master/heredoc"
+   ]
    "requires-arms":[
    ],
    "issues":[
-     "http://projects.puppetlabs.com/issues/13196"
+     "http://projects.puppetlabs.com/issues/19886"
    ]
 }

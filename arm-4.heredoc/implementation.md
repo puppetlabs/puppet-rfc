@@ -1,7 +1,4 @@
 Implementation
 ==============
-<!-- If there is an exploratory/reference implementation of the proposal available, describe it
-     in this document.
--->
 
-There is no implementation of this ARM.
+An implementation of this proposal is available. Currently at https://github.com/hlindberg/puppet/tree/feature/master/heredoc
