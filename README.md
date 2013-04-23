@@ -58,8 +58,8 @@ Index of ARMs
   <td>4</td>
   <td><a href="arm-4.heredoc/index.md">Heredoc</a></td>
   <td>Add support for Heredoc feature to Puppet Language</td>
-  <td>1.0.0</td>
-  <td>March 26, 2013</td>
+  <td>2.0.0</td>
+  <td>April 23, 2013</td>
   <td>Submitted</td>
 </tr><tr>
   <td>5</td>
