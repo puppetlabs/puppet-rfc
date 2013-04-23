@@ -82,10 +82,10 @@ contained text, as follows:
 </table>
 
 It is possible to optionally specify a **syntax** that allows validation of the heredoc text, as in this example specifying
-that this text is a puppet template.
+that this text should be valid JSON.
 
-    $a = @(END:epp)
-    This is Embedded PuPpet with the result of an expression <% 1 + 2 %>
+    $a = @(END:json)
+    This is supposed to be valid JSON text
     END
 
 And finally, it is possible to specify the processing of escaped characters. By default both 
@@ -98,29 +98,35 @@ In this example, the user specifies that `\t` should be turned into tab characte
     There is a tab\tbefore 'before'
     END
 
+
+These features are explained in more details in the following sections.
+
 The Heredoc Tag
 ---------------
-
-The heredoc tag may consist of any text (letters, digits, whitespace and underscore) but not any other characters.
-It may optionally contain a `:` (colon) followed by the name of the syntax used in the text. The name of the syntax allows
-letters, digits, period, plus (as name part separator) and underscore - the name is case insensitive and it is used to enable syntax checking and for
-tools to perform syntax coloring and provide user with help/validaton etc. It may also optionally be followed by a specification
-of characters that have special meaning when escaped.
+The heredoc tag is written on the form:
 
     @( <endtag> [:<syntax>] [/<escapes>] )
 
-where
 
-  * <endtag> is any text not containing :, /, ) or \r, \n (This is the text that indicates the end of the text)
-  * <syntax> is [a-z][a-zA-Z0-9_]*, and is the name of a syntax
-  * <escapes> zero or more of the letters t, s, r, n, L, $ where
+The heredoc endtag may consist of any text except the delimiters (see details below).
+Syntax is optionally specified with a `:` (colon) followed by the name of the syntax used in the text.
+Escapes are optionally spcified with a `/` followed by the possible escapes.
+
+Here are the details:
+
+  * &lt;endtag&gt; is any text not containing `:`, `/`, `)` or `\r`, `\n` (This is the text that indicates the end of the text)
+  * &lt;syntax&gt; is [a-z][a-zA-Z0-9_+]*, and is the name of a syntax. This is validated to not contain empty segments between
+    `+` signs. The result is always downcased.
+  * &lt;escapes&gt; zero or more of the letters t, s, r, n, L, $ where
     * \t is replaced by a tab character
     * \s is replaced by a space
     * \r is replaced by carriage-return
     * \n is replaced by a new-line
     * \L replaces escaped end of line (\r?\n) with nothing
     * \$ is replaced by a $ and prevents any interpolation
-  * if <escapes> is empty (no characters) all escapes t, s, r, n, L, and $ are turned on.
+    * If any of the other escapes are specified \\ is replaced by one \
+  * if &lt;escapes&gt; is empty (no characters) all escapes t, s, r, n, L, and $ are turned on.
+  * It is an error to specify any given escape character more than once in the specification.
 
 The three parts in the heredoc tag may be surrounded by whitespace for readability.
 
@@ -242,7 +248,7 @@ It is allowed to have whitespace between the - and the tag, e.g.
 Spaces allowed in the tag
 -------------------------
 
-White space is allowed in the tag name. Spaces are insignificant between words.
+White space is allowed in the tag name. Spaces are significant between words.
 
     0.........1.........2.........3.........4.........5.........6
     $a = @(Verse 8 of The Raven)
@@ -254,8 +260,9 @@ White space is allowed in the tag name. Spaces are insignificant between words.
       Quoth the raven, `Nevermore.'
       | Verse 8 of The Raven
 
-The comparison of opening and end tag is performed by first removing any quotes, then
-trimming leading/trailing whitespace, and then comparing the endtag against the text
+The comparison of opening and end tag is performed by first removing any quotes from the opening tag, then
+trimming leading/trailing whitespace, and then comparing the endtag against the text. The endtag must be written with the same
+internal spacing and capitalization as in the opening tag to be recognized.
 
 Escapes
 -------
@@ -264,7 +271,8 @@ heredoc is most often used for verbatim text, where any escapes makes it very te
 special characters. There are however usecases where it is important to have detailed control over escapes.
 
 The set of allowed escapes are fixed to: t, s, r, n, $, and L (as shown earlier). The 'L' is special in that it allows the
-end of lines to be escaped (with the effect of joining them)
+end of lines to be escaped (with the effect of joining them). The 'L' automatically handles line endings with carriage return/
+line feed combinations. (In case it is not obvious: You can not insert an \L in the text). Here is an example:
 
     $a = @(END/L)
     First line, \
@@ -385,10 +393,15 @@ This implementation is currently available here: https://github.com/hlindberg/pu
 When evaluating this, here are some things to consider:
 * What do you think of the syntax?
 * Is the described implemented features what you expect? Is something you commonly want to do missing?
-* Do you find the lack of detailed mapped source position information a big problem and something that important to implement?
+* Do you find the lack of detailed mapped source position information a big problem and something that is important to implement?
+  (This affects the ability of a syntax checker to correctly report source positions relative to the original source where
+  the text was embedded. It is quite complicated as the checked string may have interpolations, joined lines, and other
+  processing of escapes. Also external tools can not be told about the relative positions and would require complicated
+  mapping back to the source).
 * Do you think it was the right decision to treat both non and interpolated string variants alike (i.e. no escapes by default)?
 * Are you ok with the use of punctuation/syntax in the heredoc tag, or would you have liked something more explicit like
-  (until=>marker, escapes =>nst, syntax=>xxx) or something similar?
+  (until=>marker, escapes =>nst, syntax=>xxx) or something similar? (The reason for the design is that this parsing happens
+  in the lexer and there is limited ability to parse in more advanced ways).
 * Do you think existing string capabilities in Puppet are enough and heredoc support is not needed?
 * [Support spaces in tags](heredoc.md#spaces-allowed-in-the-tag) or not?  
   Allowing spaces in the tags offers self documentation, but could potentially
@@ -398,8 +411,8 @@ When evaluating this, here are some things to consider:
   happens unless you say so').
 * Is the suggested handling of tabs enough? [Tabs in input](heredoc.md#tabs-in-the-input-and-indentation)
 * Should there be a way to right trim all lines?
-* Should there be a way to join all lines (without space/nl, or with specificed chars)?
-* Do you like using the @ operation for heredoc, or would you like to see something else?
+* Should there be a way to join all lines (without space/nl, or with specified chars)? (You can do that by doing a split and
+  a join on the resulting text using functions from the standard library, but would it be convenient to do so directly in the heredoc?).
 * Do you like the syntax checking feature?
 
 
@@ -411,16 +424,19 @@ a more direct fashion as a string with more elaborate delimiters keeping the tex
 line). The same escape and margin handling could be allowed (somehow).
 
 Other alternatives include using more explicit (wordy) specification of the heredoc tag; say something like
-(until=>marker, escapes =>nst, syntax=>xxx), thereby also making it possible to pass more parameters to syntax validation.
+(until=>marker, escapes =>nst, syntax=>xxx), thereby also making it possible to pass more parameters to syntax validation. (This
+is a bit difficult to implement as there is limited parsing ability inside the lexer - it must be something reasonably simple
+to lex).
 
 Risks and Assumptions
 ---------------------
 
-The implementation is aproximately 90% in the lexer which is already covered with detailed tests. Any issues are
+The implementation is approximately 90% in the lexer which is already covered with detailed tests. Any issues are
 going to be local, easily reproducible and fixed.
 
 The complexity of the lexer naturally increases, but the implementation has already broken out and generalized some
-of the concepts that should make it easier to understand the lexer logic.
+of the concepts that should make it easier to understand the lexer logic. Further refactoring is certainly possible and expected
+to take place after also implementing puppet templates as the full set of lexer requirements should then be understood.
 
 Dependencies
 ------------
@@ -428,7 +444,10 @@ Dependencies
 There are no dependencies (except the 3.2 --parser future). The implementation of this introduces changes in the lexer that
 are of value when implementing ARM-3 puppet templates.
 
-The use of heredoc syntax checking based on functions is not 
+The use of heredoc syntax checking based on functions is not ideal. It is based on functions because there is no other suitable
+plugin mechanism in puppet. A registry where modules can register things like syntax checkers would be much better. (Such syntax
+checkers typically also come with external dependencies - XML processing gems, or custom ruby code that does not fit easily into
+the internal function DSL format).
 
 Impact
 ------
@@ -441,14 +460,17 @@ and the contributors working on them?  Omit any irrelevant items.
 
 - User experience:
   This brings new capabilities that it is assumed are easier to use than the alternatives. At the same time,
-  heredoc is inherently somehwat complex to grasp at fist site.
+  heredoc is inherently somehwat complex to grasp at fist sight.
 
 - Portability:
   Implementation is aware of things like different line endings.
 
 - Documentation:
-  The documentation impact is local; simply a new feature.
+  The documentation impact is local; simply a new language feature.
 
 - Spin-offs/Future work:
   A real plugin system for puppet extensions would be beneficial for adding syntax checkers instead of relying on functions.
+
+- Other tools
+  This has impact on both puppet lint and Geppetto as they need to be able to lex and make sense of puppet heredoc.
 
