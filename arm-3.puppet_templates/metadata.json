@@ -1,13 +1,15 @@
 {
    "arm": 3,
    "title": "Puppet Templates",
-   "champion": "jdwelch",
-   "revision":"0.1.0",
-   "project":"https://github.com/puppetlabs/armatures",
+   "champion": "hlindberg",
+   "revision":"1.0.0",
+   "project":"https://github.com/hlindberg/arm",
    "implementation" : [
+     "https://github.com/hlindberg/puppet/tree/feature/master/templates"
    ],
    "requires-arms":[
    ],
    "issues":[
+     "http://projects.puppetlabs.com/issues/20516"
    ]
 }

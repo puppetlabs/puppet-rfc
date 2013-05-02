@@ -1,8 +1,20 @@
 (ARM-3) Puppet Templates - EPP
 ==============================
-A proposal for Embedded Puppet Templates (EPP)
 
-Background
+Summary
+-------
+This ARM defines Embedded Puppet Templates (EPP) - ERB "compatible" templates where the logic
+is written in the Puppet Language instead of Ruby.
+
+Goals
+-----
+Offer a Puppet Language based replacement for ERB templates.
+
+Non Goals
+---------
+It is not a goal to enhance the ERB template syntax.
+
+Motivation
 ----------
 
 It is currently possible to evaluate templates using ERB by calling
@@ -15,12 +27,14 @@ be able to avoid problems.
 By adding support for templates with puppet logic the problems
 associated with using ERB/Ruby/Puppet API are eliminated.
 
-Proposal
-========
+Longer term, the support for ERB can be dropped from Puppet.
 
-It seems natural to base the solution on how ERB works although not
-required. The idea being that migration from ERB to EPP by using the
-same tags.
+Description
+===========
+
+EPP is an ERB "compatible" template solution. It is compatible with respect to the tags used to embed logic, but
+supports Puppet DSL instead of Ruby. The support is compatible with the configuration currently used for ERB (options turned on/off)
+as shown in the following table of supported tags.
 
 EPP Tags
 --------
@@ -52,7 +66,7 @@ When in text mode:
   </td>
 </tr>
 <tr>
-  <td><tt>&lt;%\#</tt></td>
+  <td><tt>&lt;%#</tt></td>
   <td>Comment<br/>
   A comment not included in the output (up to the next <tt>%&gt;</tt>, or right
   trimming <tt>-%&gt;</tt>). Continues in text mode after having skipped the comment
@@ -81,16 +95,28 @@ When ending puppet mode the result of the puppet logic is rendered to
 the output for a puppet expression tag `<%=`, but not for `<%`.
 
 Invocation
-==========
+----------
 
-Currently a template is evaluated with the template function. This
-function could probably be modified to support puppet templates as well.
-In this exploratory document a new function is used while exploring a
-suitable api.
+Currently an ERB template is evaluated with the `template()` or `inline_template()` functions.
+These functions cannot be modified in a backwards compatible way to support both ERB and EPP templates since
+type of template can not be derived from filenames (since it is not required to use .erb or .epp as extension). The same
+applies to the inline function where it is not possible to detect if a string is .erb or .epp in a straight forward way.
 
-One idea is that EPP templates are recognized by either ending with
-`.epp`, or having an `.epp` pseudo ending before an ending indicating the
-type of file (to make editing easier). e.g.
+Instead, two new functions `epptemplate()` and `inline_epptemplate()` are introduced to process EPP templates.
+
+These functions work as their non 'epp' equivalences with the addition that they support passing a hash with named arguments
+as the last parameter. The entries in the hash become available as variables in the local scope used when evaluating the
+template. (This is explained further in [Passing Arguments to the Template](#passing-arguments-to-the-template)).
+
+Suggested File Extensions
+-------------------------
+
+It is suggested, but not mandatory to give EPP templates an extension that identities them as such.
+The reason why it is optional is because some files have to have a precise and fixed name (in order to be able to
+open/edit it with a suitable editor).
+
+By convention, EPP templates should be named with the extension `.epp`, or with the extension next to last in order to
+preserve the real extension as a description of the content type; e.g. `.epp.html`.
 
     404page.epp
     404page.epp.html
@@ -98,138 +124,118 @@ type of file (to make editing easier). e.g.
 Both of these signal that this is an epp file, and could be used like
 this:
 
-    pptemplate ('404page.epp')
+    epptemplate ('404page.epp')
 
-Passing (local) arguments to the template
+The `epptemplate()` functions will attempt to parse the file as given, and if it does not exist, the file with `.epp` appended to
+its name.
+
+Passing Arguments to the Template
 -----------------------------------------
 
-Since the template is evaluated in the calling context it has access to
-all variables visible in this context. If the template is parameterized
-and there is a need to use it more than once (with different parameter
-values, it becomes difficult.
+Since the template is evaluated with access to the calling context it has access to
+all variables visible in this context. If the template is not parameterized
+and there is a need to use it more than once with different values, it quickly
+becomes difficult.
 
-Since a template evaluation creates a lambda scope for the evaluation of
+To make it easier to create reusable templates, EPP offers a way to declare required and optional parameters
+directly in a template. The caller of the template must supply the values of the required parameters (it is an error
+if they are not given). This provides additional isolation between templates and the scope/closure where they are evaluated.
+Security concerned users may want to go as far as dictating that templates are only allowed to use values given to them as
+arguments (this is not defined in this ARM, but could be added later if shown to be valuable).
+
+Since a template evaluation creates a local scope for the evaluation of
 the template to prevent the template from leaking variable values this
 can be used by also passing additional parameters into the context.
 
-These are quivalent:
-
-    $message = "This is not the $x you are looking for"
-    
-    pptemplate('404page.epp')
-    
-    pptemplate('404page.epp') |$template| { $template.render() }
-
-> R.I. Pienaar:
-> 
-> I don't like the new syntax here - pptemplate("the\_template.epp",
-> {"message" =\> "hello world"}) seems to fit better
-> or better add the much requested named arguments:
-> pptemplate("foo.epp", :message =\> "hello world")
-> and it seems we should just use template() and let it detect what the
-> template is based on file names?
->
->* * * * *
->
->> Henrik Lindberg:
->>
->> mostly agree (call by named parameter is an interesting separate topic I
->> think, has some intrinsic problems combined with varargs, and parameter
->> overloading; but separate topic I think).
->>
->> Regarding using the same function - all for it, but I did not want to
->> start out by being constrained by current function's signature)
->>
->> We can use lambda parameters to pass arguments instead. Either by
->> setting the variable in the context, or passing it to the template
->> function.
-
-
 These are equivalent:
 
-    pptemplate('404page.epp') |$template| {    
-      $message = "This is not the $x you are looking for"
-      $template.render()
-    }
+    $message = "This is not the $x you are looking for."
+
+    $message = inline_epptemplate('This is not the <%= $x %> you are looking for.')
+
+    $message = epptemplate('404page.epp') # Assuming it contains the text above
+
+In the two EPP examples, we can pass arguments:
+
+    $x = 'page'
+    inline_epptemplate('This is not the <%= $x %> you are looking for.', { 'x' => 'droid'})
     
-    pptemplate('404page.epp',
-      "This is not the $x you are looking for") |$template, $message| {
-      $template.render()
-    }
+    # => 'This is not the droid you are looking for.'
 
-> surplus.address:
->
-> What does the lamdba yield without the assignment to
-> \$template.render()?
->
-> I'm just imagining a bunch of users who get as far as seeing it's a
-> block to pass parameters, omit the call to .render() and get something
-> unexpected.
->
->* * * * *
->
->> Henrik Lindberg:
->>
->> they would get nil back, but pptemplate should check the return and
->> issue an error "Did you forget to call render?"
->>
 
-The `render` function requires an instance of a Template, an internal
-object that is created by parsing a template file. It triggers the
-rendering of the entire template. It can only be called once in a given
-context if the template adds local variables (since they are immutable).
+Note that it is possible to pass arguments (i.e. set variables in the template's local scope) irrespective of the template
+having declared parameters or not.
 
-The name of the internal template variable is `$template` by default, but
-an author may pick something else (and would then use that varible name
-to reference the template if there is a need to produce output (see the
-output method below).
+Also note that it is not possible to pass qualified names (they can not be set in a local scope). Thus, if there is a desire
+to shadow a name, the template should be designed to take an (unqualified) parameter and it is the callers responsability to override
+a default setting as in the following example:
 
-Also see Discussion at the end containing an idea to specify local
-parameters inside the template. The lambda way shown above would still
-be valid since that is the way the template function works, but it
-reduces the need to use the lambda and more naturally place the
-parameter declarations inside the template.
+    <%- ($foo = $some::where::foo) -%>
 
-Appending output in puppet code
--------------------------------
+Now, a user will get the default `$some::where::foo` or can pass an overriding value for `foo`.
 
-Consider the following EPP template
+Declaring Template Parameters
+-----------------------------
 
-    Here is a list of servers:
-    <ul>
-    <% $array.foreach |$x| { %>
-      <li><%= $x %>\</li>
-    <% } %>
-    <ul>
-    </p>
+It is possible to declare required and optional parameters (with default values) inside the template by starting the template
+with a parenthesized parameters list in the same fashion parameters are declared for a `define`. Since the "call" passes arguments
+by name instead of by position it is allowed to place required and optional parameters in any order (although the convention is
+to place optional parameters last).
 
-And instead using an output method on the template.
+    <%- ($x, $y, $z = 'unicorn') -%>
+    Here are your values: <%= $x %>, <%= $y %>. Don't forget to feed the <%= $z %>
 
-    Here is a list of servers:    
-    <ul>
-    <% $array.foreach |$x| {
-      $template.output('  <li>', $x, '</li>\n'>) } %>
-    <% } %>
-    </ul>
+In this example, the template is declared to take three parameters, the required `$x` and `$y`, and the optional `$z`, which
+if not given is assigned the value `unicorn`.
 
-The template output method simply appends its input to what has already
-been rendered in the template's output buffer.
+Note the use of `<%-` and `-%>` which suppresses the leading and trailing whitespace (if there is leading whitespace before
+the epp tag containing the parameters they are not recognized as parameters to the EPP template and will result in a syntax error).
 
-Switching Puppet / Text mode constraints
-----------------------------------------
+Nesting
+-------
+As in ERB it is not possible to nest template tags. It is however possible to call the epp template functions.
+
+No EPP in regular logic
+-----------------------
+
+It is not possible to switch to EPP/text mode when parsing regular manifests. (One could imagine turning the epp tags
+"inside out", and switch mode, but this is not supported.
+
+The following is illegal and will result in Syntax error when parsed with --parser future as a regular manifest:
+
+    $a = 10
+    $b = %>This is template text with <%= $a %> %<
+
+In fact, any EPP tags in a manifest (.pp) will result in a syntax error. The EPP tags are only recognized when
+performing template parsing.
+
+Mixing Text and Logic
+---------------------
+
+It is important to consider how text and logic combine in a template.
+A text segment in the template results in evaluation of a "render" operation
+that appends the text to the overall result. The rendering always returns nil as
+it is of questionable value to return the appended text (probably just a
+source of errors). Thus, if an attempt is made to assign the result of
+rendered text as in this example:
+
+    Hello <% $x = %>world<%= $x %>
+
+The result is simply 'Hello world' since $x is assigned nil/undef
+which renders as an empty string.
 
 Switching to text mode is only supported at positions in the puppet
 language where a function call may appear. This limitation should have
-no practical consequence, but it required since the lexer/parser
+no practical consequence, but is required since the lexer/parser
 combination needs to be able to look ahead in certain circumstances, and
-the semantics for evaluation of certain grammar positions is simply not
-defined.
+the semantics for evaluation order of certain grammar positions is simply not
+defined (or there is nothing there to evaluate in the first place).
 
-As an example:
+As an (illegal) example:
 
     Here is a list of servers:    
     <ul>
-    <% $array.foreach %> TEXT <% |$x|
+    <% $array.each %> TEXT <% |$x|
       <li><%= $x %></li>
     <% } %>
     </ul>
@@ -237,86 +243,37 @@ As an example:
 
 This will produce a syntax error.
 
-Inline Templates
-================
-
-Just as with the inline template support for ERB this can be supported
-for puppet. It is just a string being interpreted instead of loading the
-template from a file. To also support passing additional parameters, the
-`pp_inline_template` takes a single template string, or an array of one
-or more template strings as input for the first parameters.
-
-Discussion
-==========
-
-> R.I. Pienaar:
->
-> would very much like to see this expand to use cases that this solves -
-> nice and all to say its a puppet eval - but why? What can we not do
-> today? what actual use cases can a user now solve once we have this?
->
-> * * * * *
->
->> Henrik Lindberg:
->>
->> The general idea is to not depend on Ruby for template support. Other
->> than that I think it is the same use cases as for why Ruby templates are
->> used.
->>
->> Great to have real world examples, and I love to get more input on this.
-
-Templates are like "puppet eval"
-================================
-
-The template support (esp. in the inline form), makes it possible to
-construct puppet logic from strings and then evaluate it. This is better
-than the ERB templates, as there is at least protection against things
-that does not makes sense (see "Allowed Expressions").
-
-A problem is that external files are easily recognized as being puppet
-templates and can thus be syntax checked by tools like Geppetto. Inline
-templates however are just strings, and therefore much harder to syntax
-check. The Puppet Heredoc proposal includes a solution to this where it
-is allowed to tag a heredoc with a language (for the purpose of syntax
-checking the result).
 
 Allowed expressions
-===================
+-------------------
 
-Since templates can contain puppet code and this can contain any type of
+Since templates can contain puppet code and thus can contain any type of
 expression it is important to constrain the set of legal
 expressions/statements.
 
 Variable assignment is by virtue of the implementation already protected
 (assigned variables go out of scope when the template has been
-evaluated). Clearly, defines, classes, and nodes can not be declared,
-but is it ok to create resources from within a template? (Although "No"
-would be a reasonable answer - this may however be a common use case, as
-this is possible using an ERB template, and we want users to migrate).
-Is it ok to include or require classes? Declare dependencies? Realize
-resources, collect exported resources?
+evaluated, and it is not possible to refer to them from other scopes).
 
-> surplus.address:
->
-> I'd say no, not directly.  That ERB users can do any of this is
-> accidental feature due to not sandboxing the template evaluation well
-> enough in the first place.
->
-> There's already the parser functions available as an extension point, so
-> if a template called on create\_resources then that should allowed, but
-> generally restricting the template authors to the harm they can do in
-> the DSL should be enough power.
->
->* * * * *
->>
->> Henrik Lindberg:
->>
->> the reason I am asking is that EPP means they \*are\* in the DSL in the
->> template as well. I do want to restrict the available expressions, but I
->> want to know if there are valid use cases not to be restrictive.
+Defines, classes and nodes can not be created in logic embedded in EPP as they
+must appear in "toplevel" constructs (which an EPP template is not).
 
-`<%= $x %>` is clunky
----------------------
+There is however no protection against users creating resources inside
+the template (nor if they do this via function calls to `create_resources`).
+There is also no protection against realizing/collecting resources.
+
+Arguably, these operations are not intended to be used inside templates (as a side effect of
+producing text) and should probably be validated as not being allowed.
+The current reference implementation does not validate these expressions, but this can be
+added. (As a comparison, it is possible to create resources by sideeffect in an interpolated string).
+If someone chooses to use these questionable expressions inside a template, there is no real harm;
+only poor design.
+
+Alternatives and Recommendation
+===============================
+
+Alternative: Use Puppet Style Interpolation
+-------------------------------------------
 
 Why not simply use Puppet string interpolation? The `<%= $x %>` syntax
 is very heavy compared to puppet's simple `$x`, or `${x}`?
@@ -325,44 +282,68 @@ The idea is that the EPP tags are different enough to not clash with
 most types of file content. If we pick `$x`, or `${x}`, the author may
 instead have to use lots of escapes.
 
-The proposal is based on using the ERB tags.
+The proposal is based on using the ERB tags to make it easy to transition from
+existing ERB templates by just replacing variable references from the `@form`, to `$form`.
 
-Declaring parameters inside the templates
+Alternative: Recognize `@x` as a Variable
 -----------------------------------------
 
-The proposal shows how addition of local parameters can be made at the
-calling side. Should it be possible to declare parameters with default
-values inside the template as an alternative? If so, the best solution
-is probably to allow an EPP tag that does this (if starting in puppet
-mode, I suspect this will enable lambdas to leak and closures to be a
-required feature).
+One consideration was to allow `@x` to be a variable reference in EPP. This would mean
+that some ERB templates would immediatly work as EPP templates. There is however grammar problems
+with using `@` in this fashion and the idea was abandoned. (Having more than one way to reference variables is
+also unwanted, so they would come with deprecation warnings. Doing a search/replace is easy enough).
 
-> R.I. Pienaar:
->
-> would very much like to see this expand to use cases that this solves -
-> nice and all to say its a puppet eval - but why? What can we not do
-> today? what actual use cases can a user now solve once we have this?
->
-> * * * * *
->
->> Henrik Lindberg:
->>
->> The general idea is to not depend on Ruby for template support. Other
->> than that I think it is the same use cases as for why Ruby templates are
->> used.
->>
->> Great to have real world examples, and I love to get more input on this.
 
-Here are ideas for such a tag, it must appear first in the template:
+Risks and Assumptions
+---------------------
 
-    <%| $path_to_fame, $optional_riches = false %>
+The implementation mostly concerns lexing. The model objects (EppExpression, RenderStringExpression, RenderExpression)
+are straight forward and small. Since the functionality is isolated it is easy to test, and
+should not have any far-reaching implication.
 
-That looks a bit magic
+The implementation makes use of a scope variable `@epp` that is impossible to access from the puppet language. It is
+assumed that scope will continue to not enforce variable naming rules (it does not do this today). If at some point
+this is added to scope, it will need to provide direct support for collecting render operations.
 
-    <% parameters: $path_to_fame, $optional_riches = false %>
+Dependencies
+------------
 
-That works because `parameters:` is not a normal puppet expression, it is
-much clearer.
+The reference implementation is based on work done to support ARM 4 - Heredoc, but does not directly
+depend on the Heredoc support. Combining Heredoc and inline templates is however beneficial
+as it is otherwise tedious to construct complex inline EPP strings (as they may require extensive escaping).
 
-This syntax opens up for other textual oriented processing instruction
-tags for future use.
+The reference implementation is built on the `--parser future` implementation.
+
+Impact
+------
+
+- Compatibility:
+  EPP does not introduce any non backwards compatible constructs.
+
+- Security:
+  Potentially a positive effect on security as ERB templates have access to anything in puppet. EPP does not.
+
+- Performance/scalability:
+  Should be on par with ERB.
+
+- User experience:
+  Non Rubyist users of Puppet will welcome EPP.
+
+- I18n/L10n:
+  Neutral.
+
+- Portability:
+  Helps with portability since EPP is based on Puppet. When Puppet is ported so is EPP. There is not dependencies on ERB.
+
+- Packaging/installation:
+  Neutral. The implementation is part of Puppet.
+
+- Documentation:
+  The documentation describing the ERB support is easily edited to use Puppet Language. It should be recommended
+  in favor of the ERB support.
+
+- Spin-offs/Future work:
+  This makes it possible to deprecate the use of ERB. It reduces the dependency on Ruby thus removing one (out of many) issues
+  if there is a future desire to implement a puppet runtime on something other than Ruby.
+
+
