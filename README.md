@@ -51,9 +51,9 @@ Index of ARMs
   <td>3</td>
   <td><a href="arm-3.puppet_templates/index.md">Puppet Templates</a></td>
   <td>Add support to write templates in the Puppet Language</td>
-  <td>0.2.0</td>
-  <td>March 1, 2013</td>
-  <td>Draft</td>
+  <td>1.0.0</td>
+  <td>May 1, 2013</td>
+  <td>Submitted</td>
 </tr><tr>
   <td>4</td>
   <td><a href="arm-4.heredoc/index.md">Heredoc</a></td>
