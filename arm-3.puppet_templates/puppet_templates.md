@@ -115,11 +115,10 @@ It is suggested, but not mandatory to give EPP templates an extension that ident
 The reason why it is optional is because some files have to have a precise and fixed name (in order to be able to
 open/edit it with a suitable editor).
 
-By convention, EPP templates should be named with the extension `.epp`, or with the extension next to last in order to
-preserve the real extension as a description of the content type; e.g. `.epp.html`.
+By convention, EPP templates should be named with the extension `.epp`.
 
     404page.epp
-    404page.epp.html
+    404page.html.epp
 
 Both of these signal that this is an epp file, and could be used like
 this:
