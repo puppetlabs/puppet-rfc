@@ -53,7 +53,7 @@ Index of ARMs
   <td>Add support to write templates in the Puppet Language</td>
   <td>1.0.0</td>
   <td>May 1, 2013</td>
-  <td>Submitted</td>
+  <td>Submitted<br/><a href="https://groups.google.com/forum/?fromgroups=#!topic/puppet-dev/HZXt_G0nZLE">Discuss</a></td>
 </tr><tr>
   <td>4</td>
   <td><a href="arm-4.heredoc/index.md">Heredoc</a></td>
