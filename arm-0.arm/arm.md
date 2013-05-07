@@ -146,7 +146,14 @@ it may contain - link at the end of this document).
 
 Contributions to a ARM are done via github pull requests. The ARM is
 worked on until there is a first acceptable draft. It is then merged to
-the master ARM repository.
+the master ARM repository. At that point the champion should announce the ARM 
+on a thread on the puppet-dev mailing list and reference the thread at 
+https://groups.google.com/d/topic/puppet-dev/ in the top-level ARM index and 
+metadata.json. The mailing list thread should be the canonical place for 
+commentary, questions, suggestions and feedback about the ARM. (For the record, 
+we experimented with using a Github-based workflow for collaboration using pull 
+request comments and issues but found that useful commentary got lost when the 
+pull requests were closed; mailing list threads are more permanent.)
 
 We suggest that people working on a larger ARM fork the repository and use the 
 fork (and its issue tracker) as the collaboration point to drive that ARM to
@@ -156,7 +163,7 @@ The issue tracker for the master ARM project is used only for the
 lifecycle of ARMs, not for handling issues/work related to the content
 of the ARMs.
 
-The master ARM repository is owned/goverened by Puppet Labs but commit access
+The master ARM repository is owned/governed by Puppet Labs but commit access
 should be opened to community members who have demonstrated interest in working 
 on ARMs.
 
@@ -214,6 +221,9 @@ A proposal always has one root file `metadata.json` that describes:
     will be one or several Puppet Labs tickets tracking implementation work such as
     target versions, work assignments, compatibility, and so on. These are
     also included in this file
+11. **discussion** - link to the canonical thread discussion the ARM on
+    groups.google.com
+    
 
 Example metadata.json
 
@@ -242,6 +252,7 @@ Example metadata.json
     "https://projects.puppetlabs.com/...",
     "...."
   ],
+  "discussion":"https://groups.google.com/d/topic/puppet-dev/HZXt_G0nZLE/discussion"
 }
 ~~~
 
