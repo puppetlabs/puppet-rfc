@@ -1,0 +1,7 @@
+{
+   "arm": 8,
+   "title": "Hiera 2",
+   "champion": "hlindberg",
+   "project":"https://github.com/puppetlabs/armatures",
+   "revision":"0.0.1"
+}
