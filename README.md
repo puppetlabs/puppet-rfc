@@ -84,10 +84,10 @@ Index of ARMs
   <td>Draft</td>
 </tr><tr>
   <td>8</td>
-  <td><a href="arm-8.data_in_modules/index.md">Data In Modules</a></td>
-  <td>Separate Data from Code in Modules</td>
-  <td>0.1.0</td>
-  <td>March 1, 2013</td>
+  <td><a href="arm-8.hiera_2/index.md">Hiera 2 Specification</a></td>
+  <td>Unified dependency injection framework for Puppet</td>
+  <td>0.0.1</td>
+  <td>June 1, 2013</td>
   <td>Draft</td>
 </tr><tr>
   <td>9</td>
