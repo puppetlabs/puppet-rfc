@@ -34,19 +34,217 @@ Why should this work be done?  What are its benefits?  Who's asking
 for it?  How does it compare to the competition, if any?
 
 Description
------------
+===========
+Hiera2 is an injection service catering to a variety of needs related to "dependency injection" ranging from simple
+lookup of data to advanced cases of implicit bindings, mappings, and binding of runtime services. The principles for
+the Hiera2 implementation is to provide a common injection mechanism (that can replace the current disjunct handling
+of injection like behavior), and that all configuration can be expressed in the Puppet DSL Language.
 
-REQUIRED -- Describe the enhancement in detail: Both what it is and,
-to the extent understood, how you intend to implement it.  Summarize,
-at a high level, all of the interfaces you expect to modify or extend,
-including APIs, command-line switches, network protocols,
-and file formats.  Explain how failures in applications using this
-enhancement will be diagnosed, both during development and in
-production.  Describe any open design issues.
 
-This section will evolve over time as the work progresses, ultimately
-becoming the authoritative high-level description of the end result.
-Include hyperlinks to additional documents as required.
+An Introduction to Dependency Injection
+---------------------------------------
+The term "Dependency Injection", or just Injection means that constructs that form static/hard dependencies between
+logical parts of a system are broken out to form a separate concern. A basic example is data injection; a generic module
+needs a piece of data passed to it as a parameter but it can not define exactly how this data is obtained - if it did it
+would form a hard dependency not on data, but the behavior how to obtain the data. Likewise, another module that makes use
+of the first module may also be generic, and they are used in combination by yet another module (or top level construct)
+and this top level construct may thus need to influence how an intermediate module passed parameters to the first module.
+As you can imagine, if this was implemented with only parameter passing, the amount of parameters that needs to be exposed
+at the top level would need to contain a staggering amount of parameters.
+
+When we separate the concern and break the dependencies into the various aspects of the system we can use a "divide and
+conquer" strategy where we are given powerful control of the system's composition in terms of its data and behavior ranging
+from the most general (common/global) to the most specific (a specific point in the logic).
+
+An injection system consists of bindings that binds
+a *key* to data and/or behavior, a mechanism to compose such bindings wrt. scopes/precedence/transactions, and a mechanism to
+obtain the bound data/behavior where it is needed. The basic injection framework is then used to build higher order services.
+
+At the core, the binding system binds a key that consists of a Type/Name combination that uniquely identifies a point of
+injection. The system defines certain "special" names (typically for implicit injections done automatically if a
+binding exists for that key), and a user may define other keys for implicit injection.
+
+Further, the binding system binds the key to a *producer* of the bound value; the simplest producer handles literal values such
+as numbers, strings and other simple data types as well as structures (arrays and hashes) of data types. Other types of producers
+may do early or late binding to more advanced data objects, create connectors to other systems, allow parameters to be passed
+and much more.
+
+Examples of Current Injection-Like Behavior in Puppet
+-----------------------------------------------------
+Puppet already has some injection like mechanisms, some (like hiera) perform "true injection", and others deal with
+similar problems with varying degree of success in separating caller and called logic and providing detailed control
+of the mechanism:
+
+* Hiera 1 (injects data, classes and parameters for parameterized classes, and does explicit injection)
+* Settings (inject data configured per environment)
+* Resource type defaults
+* ENC (injection of environment and classes)
+* `site.pp` ("injection" of classes (and variables) based on node matching (a form of categorization))
+* UFO operators that queries and "injects" results
+
+
+Hiera2
+------
+Hiera2 is a new implementation based on the ideas in Hiera and general injection frameworks such as Google Guice (the leading
+injection framework for Java).
+
+Hiera2 consists of the following parts:
+
+* Categorization of Requests
+* Composition of Bindings
+* Bindings
+  * named data
+  * parameters and parameter mapping
+  * producers
+* Explicit Injection
+* Implicit Injection
+* API for use in Ruby
+* API for binding provider extensions
+* API for Puppet Extension Points
+* Models (used by framework and for system interchange)
+
+Categorization of Requests
+--------------------------
+The Puppet System needs to be able to create and configure an injector at the start of processing a request (a request
+in the most general term; asking the system to do something). This injector is then used throughout the servicing of
+that request.
+
+Since we want to be able to express bindings hierarchically (in general vs. something specific) and we want users
+to be able to define the hierarchy as the needs between organizations vary we need a mechanism that defines these. In
+Hiera2 this is called Categorization and it is expressed using the Puppet Language. Before jumping into the details,
+examples of categories are "data_center", "rack", "physical_hw", "security_zone", as well as the built in categories
+for "node", "environment", and "common".
+
+Before explaining categorization (which may vary per environment) we must first define how the system establishes
+which environment to use, and this is best explained by first looking at the sequence of processing for a request.
+
+### Request Sequence
+
+In Puppet 3.x the sequence of setting up, and processing a request to the point where evaluation in the root (site.pp) manifest
+takes place is somewhat complex and includes murky / buggy areas. As a side effect of implementing Hiera2 it is of great
+value to also clean this up. The proposed sequence is as follows:
+
+* request reaches new node terminus
+* all facts are turned into top scope variables
+* the $environment variable if set is cleared (it is unsafe in its current form)
+* if the request contains trusted data (from cert or encrypted facts), these are made available using a mechanism
+  that is to be specified separately (i.e. via a different mechanism than just setting $environment in top scope).
+* if an external (current API) ENC is configured it is called to obtain environment and classes data, these are
+  processed a special way - see [Integration with Existing ENC] (#integration-with-existing-enc)
+* settings refer to a single manifest that enumerates the available environments, and for each environment the modulepath and
+  environment root manifest.
+* the entry point manifest can set $environment
+* if $environment is not set, it defaults to "production"
+* if the entry point manifest is not present, the environment defaults to "production"
+* if nothing else was specified, the execution delegates to the site.pp in the same location as the entry point manifest.
+
+### environments.pp
+
+The entry point manifest is named `environments.pp` and is placed in the same directory as `puppet.conf`.
+
+> Decision: Should environments.pp be a hard-coded name, or be configurable in puppet-conf?
+> Pro hard-coded: less confusion
+> Pro configurable: easier to test different overriding configuration (dev/test)
+
+The concrete syntax for an environment is specified by borrowing the resource syntax. It is made special by
+being placed inside of a `site { }` expression.
+
+    site {
+      environment { 'production':
+        modulepath  => 'colon separated path',
+        manifest    => 'path to environment root manifest'
+        manifestdir => 'directory'
+        templatedir => 'directory'
+      }
+      environment { '...':
+        # ...
+      }
+    }
+    $environment = 'production'
+
+> Note: The rationale is that things inside the new top level keyword `site` are different, and that
+> this top level keyword contains other new keywords that are not special outside of "site". This reduces
+> potential clashes with existing logic. It also logically relates these kinds of statements with other
+> statements about the "site" (as you will see in later sections).
+
+The following rules apply:
+
+* It is no longer possible to introduce stanzas in puppet.conf for environments. (There are several issues related to
+  this as any stanza that is not one of the known stanzas become an environment stanza, and only some settings can be
+  made per environment).
+* Restriction on environment names is lifted (it is ok, but still not recommended to use the previously restricted
+  names `main`, `master`, `agent` or `user`).
+* If `environments.pp` is missing, one default "production" environment is added by default, with default values for all
+  parameters.
+* If `environments.pp` exists, and it does not contain a "production" environment, it is added by default, with default
+  values for all parameters.
+* A defined "production" environment is authoritative.
+* Any number of environments may be added
+* When execution reaches the end of the `environments.pp` and `$environment` has not been defined, it is set to "production".
+* If `$environment` is set to a value other than one of the defined environments, an error is raised, and processing stops.
+* The RHS parameter values may be any non top level puppet expression, but may not use injection
+* facts and secure data have been bound to variables when evaluation of `environment.pp` starts
+* any variables set in `$environment.pp` are set in a local scope not visible to the rest of the system.(with the exception of
+  $environment which is picked up from this scope).
+* the `environment.pp` may contain other puppet expressions (non top scope) - the use case is to support data
+  manipulation, common definitions reused in several environment specifications, etc.
+* only functionality available in puppet core may be used (functions and plugins/extensions) since the environment, and
+  hence no module-path, has been setup.
+
+> Discuss: Since the new evaluator will return the value of the last executed expression as the result, we could simply
+> return a value that way, but it is slightly magical in this context.
+
+> Discuss: A parameter value of `default` could be used to initiate the parameter to a sane/typical default in an
+> environment.
+
+### Integration with existing ENC
+
+The use of the current ENC API requires special handling as it is believed that users
+that have an ENC will want to use it in parallel with the new functionality until they have completely migrated. The current
+ENC may be deprecated, or re-purposed.
+
+The ENC can return a list of classes, and the environment to use. If these are produced, a local scope is created where these
+values are bound to `$classes`, and `$environment`. Yet another local scope (with visibility into the local scope created for
+the ENC (if any)) is created where the evaluation of the `environment.pp` body takes place. It is thus possible to refer to the
+ENC set $environment or set it to a new value. The resulting `$environment` is the visible value at the end of the evaluation
+of `environments.pp` (before the two scopes are abandoned).
+
+> Discuss: It is probably of questionable value to have access to the defined classes since environments.pp only
+> influences the selection of an environment.
+
+The binding of classes to nodes are done using the Hiera2 Layering mechanism; see TBD "layers" and "enc binding provider"
+
+### Categorization
+
+When system has finished computing `environments.pp´ it delegates to the manifest specified by the selected
+environment's `manifest` property. This allows further configuration of the injector to be created for the request.
+
+The categorization syntax looks like this:
+
+    site {
+      categories {
+        # TBD - Copy from google doc
+      }
+    }
+
+TO BE CONTINUED...
+
+### Summary of Categorization
+
+The above design should be powerful enough to deal with:
+* An existing ENC that determines the environment
+* Blocking unsafe `$environment` from facts
+* Allowing user logic to determine what $environment should be set to since the logic can consider:
+  * $environment set by an ENC
+  * environment passed as secure data via mechanism defined in a future ARM
+  * Logic involving other facts/fqdn/certname, using general puppet logic such as case/if/pattern matching that results
+    in the $environment to use.
+* TO BE CONTINUED...
+
+In essence, the "power of an ENC" moves into the Puppet language and is given a richer set of data as the basis for the
+decision.
+
+IT ALSO TO BE CONTINUED...
 
 Testing and Evaluation
 ----------------------
