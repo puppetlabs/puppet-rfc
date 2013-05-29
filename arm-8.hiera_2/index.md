@@ -35,39 +35,45 @@ for it?  How does it compare to the competition, if any?
 
 Description
 ===========
-Hiera2 is an injection service catering to a variety of needs related to "dependency injection" ranging from simple
+Hiera2 is an injection service catering to a variety of needs related to "dependency injection", ranging from simple
 lookup of data to advanced cases of implicit bindings, mappings, and binding of runtime services. The principles for
-the Hiera2 implementation is to provide a common injection mechanism (that can replace the current disjunct handling
-of injection like behavior), and that all configuration can be expressed in the Puppet DSL Language.
+the Hiera2 implementation are: 
 
+* to provide a common injection mechanism that can replace the current disjunct handling of injection-like behavior 
+* to express all configuration in the Puppet DSL language to provide a consistent user experience
+* to base the technology on a common Model-Driven Engineering approach for robustness and interoperability.
 
 An Introduction to Dependency Injection
 ---------------------------------------
-The term "Dependency Injection", or just Injection means that constructs that form static/hard dependencies between
-logical parts of a system are broken out to form a separate concern. A basic example is data injection; a generic module
-needs a piece of data passed to it as a parameter but it can not define exactly how this data is obtained - if it did it
-would form a hard dependency not on data, but the behavior how to obtain the data. Likewise, another module that makes use
-of the first module may also be generic, and they are used in combination by yet another module (or top level construct)
-and this top level construct may thus need to influence how an intermediate module passed parameters to the first module.
-As you can imagine, if this was implemented with only parameter passing, the amount of parameters that needs to be exposed
-at the top level would need to contain a staggering amount of parameters.
+The term "Dependency Injection" (or just "Injection") means that constructs which form static/hard dependencies between
+logical parts of a system are broken out to form a separate concern. A basic example is data injection: a module
+needs a piece of data passed to it as a parameter, but it can not define exactly how this data is obtained -- if it did, that 
+would form a hard dependency on the behavior how to obtain the data (which would be brittle), not simply on the data 
+(which is desirable).  Likewise, another module that makes use of the first module may also be used by a top level construct
+like a `node` declaration which needs to influence how an intermediate module passed parameters to the first module.
+As you can imagine, if this were implemented with only parameter passing, the amount of parameters that would need to be exposed
+at the top level would be staggeringly complex.
 
 When we separate the concern and break the dependencies into the various aspects of the system we can use a "divide and
 conquer" strategy where we are given powerful control of the system's composition in terms of its data and behavior ranging
 from the most general (common/global) to the most specific (a specific point in the logic).
 
-An injection system consists of bindings that binds
-a *key* to data and/or behavior, a mechanism to compose such bindings wrt. scopes/precedence/transactions, and a mechanism to
-obtain the bound data/behavior where it is needed. The basic injection framework is then used to build higher order services.
+An injection system consists of bindings, which attach a *key* to data and/or behavior; a mechanism to compose such 
+bindings with regard to scopes, precedence, and transactions; and a mechanism to
+obtain the bound data/behavior when it is needed. The basic injection framework is then used to build higher order services.
 
 At the core, the binding system binds a key that consists of a Type/Name combination that uniquely identifies a point of
 injection. The system defines certain "special" names (typically for implicit injections done automatically if a
-binding exists for that key), and a user may define other keys for implicit injection.
+binding exists for that key), and a user may define other keys for implicit injection. As an example of implicit
+injection, Puppet 3's "Data Bindings" provide such a service today by automatically looking up the parameter 
+`ipaddress` for a class named `ntp::server` in a hiera data store as the key `ntp::server::ipaddress`.
 
 Further, the binding system binds the key to a *producer* of the bound value; the simplest producer handles literal values such
 as numbers, strings and other simple data types as well as structures (arrays and hashes) of data types. Other types of producers
 may do early or late binding to more advanced data objects, create connectors to other systems, allow parameters to be passed
-and much more.
+and much more. To carry on the example above, the current injection system uses Hiera's configurable backends to determine how,
+and in which order, a particular binding ought to be resolved; many users search first in the encrypted `hiera-gpg` backend
+for secure data like database passwords, then fall through to an unencrypted YAML backend if no encrypted key is found.
 
 Examples of Current Injection-Like Behavior in Puppet
 -----------------------------------------------------
@@ -75,18 +81,17 @@ Puppet already has some injection like mechanisms, some (like hiera) perform "tr
 similar problems with varying degree of success in separating caller and called logic and providing detailed control
 of the mechanism:
 
-* Hiera 1 (injects data, classes and parameters for parameterized classes, and does explicit injection)
-* Settings (inject data configured per environment)
-* Resource type defaults
-* ENC (injection of environment and classes)
-* `site.pp` ("injection" of classes (and variables) based on node matching (a form of categorization))
-* UFO operators that queries and "injects" results
-
+* Hiera 1 -- injects data, classes and parameters for parameterized classes, and does explicit injection
+* puppet.conf and command line settings -- inject data configured per environment
+* Resource defaults -- inject values to resources which don't provide more closely-scoped overrides
+* ENC -- injects environment, classes with or without parameters, and top-scope variables
+* `site.pp` -- "injection" of classes and variables based on node name matching (a form of categorization)
+* Spaceship operators that query virtual or exported resources and "inject" results
 
 Hiera2
 ------
-Hiera2 is a new implementation based on the ideas in Hiera and general injection frameworks such as Google Guice (the leading
-injection framework for Java).
+Hiera2 is a new implementation based on the ideas in Hiera and general injection frameworks such as 
+[Google Guice](http://code.google.com/p/google-guice/), which is the leading injection framework for Java.
 
 Hiera2 consists of the following parts:
 
@@ -105,32 +110,33 @@ Hiera2 consists of the following parts:
 
 Categorization of Requests
 --------------------------
-The Puppet System needs to be able to create and configure an injector at the start of processing a request (a request
-in the most general term; asking the system to do something). This injector is then used throughout the servicing of
+The Puppet System needs to be able to create and configure an injector at the start of processing a request (and here we mean 
+a request in the most general sense: asking the system to do something). This injector is then used throughout the servicing of
 that request.
 
-Since we want to be able to express bindings hierarchically (in general vs. something specific) and we want users
-to be able to define the hierarchy as the needs between organizations vary we need a mechanism that defines these. In
-Hiera2 this is called Categorization and it is expressed using the Puppet Language. Before jumping into the details,
+Since we want to be able to express bindings hierarchically (searching for something specific first, then falling back to
+more generally applicable defaults), and we want users to be able to define their hierarchy based on their organization's needs, 
+we require a flexible, user-configurable framework. In Hiera2 this is called Categorization and it ie expressed using the 
+Puppet DSL. Before jumping into the details,
 examples of categories are "data_center", "rack", "physical_hw", "security_zone", as well as the built in categories
 for "node", "environment", and "common".
 
 Before explaining categorization (which may vary per environment) we must first define how the system establishes
-which environment to use, and this is best explained by first looking at the sequence of processing for a request.
+which environment to use, and so we'll first look at the sequence of processing for a catalog request.
 
 ### Request Sequence
 
-In Puppet 3.x the sequence of setting up, and processing a request to the point where evaluation in the root (site.pp) manifest
-takes place is somewhat complex and includes murky / buggy areas. As a side effect of implementing Hiera2 it is of great
-value to also clean this up. The proposed sequence is as follows:
+In Puppet 3.x the sequence of setting up and processing a catalog request to the point where evaluation in the 
+root (site.pp) manifest takes place is somewhat complex and includes murky areas. As a side effect of implementing 
+Hiera 2 it is of great value to also clean this up. The proposed sequence is as follows:
 
 * request reaches new node terminus
-* all facts are turned into top scope variables
+* all facts are turned into top scope variables (or, optionally, put into a `$facts[]` hash)
 * the $environment variable if set is cleared (it is unsafe in its current form)
 * if the request contains trusted data (from cert or encrypted facts), these are made available using a mechanism
   that is to be specified separately (i.e. via a different mechanism than just setting $environment in top scope).
 * if an external (current API) ENC is configured it is called to obtain environment and classes data, these are
-  processed a special way - see [Integration with Existing ENC] (#integration-with-existing-enc)
+  processed a special way - see [Integration with Existing ENC](#integration-with-existing-enc)
 * settings refer to a single manifest that enumerates the available environments, and for each environment the modulepath and
   environment root manifest.
 * the entry point manifest can set $environment
