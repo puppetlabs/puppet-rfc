@@ -92,10 +92,10 @@ Index of ARMs
 </tr><tr>
   <td>9</td>
   <td><a href="arm-9.data_binding/index.md">Data Bindings</a></td>
-  <td>Next iteration of automatic data bindings</td>
-  <td>0.1.0</td>
-  <td>March 1, 2013</td>
-  <td>Draft</td>
+  <td><del>Next iteration of automatic data bindings</del></td>
+  <td><del>0.1.0</del></td>
+  <td><del>March 1, 2013</del></td>
+  <td>Withdrawn</td>
 </tr><tr>
   <td>10</td>
   <td><a href="arm-10.additional_node_scope/index.md">Additional Node Scope</a></td>

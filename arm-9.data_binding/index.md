@@ -1,4 +1,4 @@
-Index
-=====
+ARM-9 Data Bindings
+===================
 
-* [Data Binding](data_binding.md)
+* This ARM was withdrawn because its problem scope was subsumed in ARM-8.
