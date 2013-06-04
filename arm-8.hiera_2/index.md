@@ -29,7 +29,6 @@ such data transformations - instead Hiera2 defines ways in which existing data t
 upon when needed. If data transformation power is lacking for a particular use case, this should be added as
 specific functions.
 
-
 Success Metrics
 ---------------
 
@@ -205,13 +204,13 @@ The following rules apply:
 * When execution reaches the end of the `environments.pp` and `$environment` has not been defined, it is set to "production".
 * If `$environment` is set to a value other than one of the defined environments, an error is raised, and processing stops.
 * The RHS parameter values may be any non top level puppet expression, but may not use injection
-* Facts and secure data have been bound to variables when evaluation of `environment.pp` starts
-* Any variables set in `$environment.pp` are set in a local scope not visible to the rest of the system.(with the exception of
+* Facts and secure data have been bound to variables when evaluation of `environments.pp` starts
+* Any variables set in `environments.pp` are set in a local scope not visible to the rest of the system.(with the exception of
   `$environment` which is picked up from this scope).
-* The `environment.pp` may contain other puppet expressions (non top scope) - the use case is to support data
+* The `environments.pp` may contain other puppet expressions (non top scope) - the use case is to support data
   manipulation, common definitions reused in several environment specifications, etc.
-* Only functionality available in puppet core may be used (functions and plugins/extensions) since the environment, and
-  hence no module-path, has been setup.
+* Only functionality available in puppet core may be used (functions and plugins/extensions) since the environment has not been setup, and
+  hence no module-path.
 
 > Discuss: Since the new evaluator will return the value of the last executed expression as the result, we could simply
 > return a value that way, but it is slightly magical in this context.
@@ -226,13 +225,13 @@ that have an ENC will want to use it in parallel with the new functionality unti
 ENC may be deprecated, or re-purposed.
 
 The ENC can return a list of classes, parameters for classes, top scope variables, and the environment to use.
-If these are produced, a local scope is created where the ENC provided data of value during the evaluation of
-`environments.pp` are bound to corresponding variables e.g. any given top scope variables, `$classes`, and `$environment`.
+If these are produced, a local scope is created, and the ENC provided data that are of value during the evaluation of
+`environments.pp` are bound to corresponding variables (e.g. any given top scope variables, `$classes`, and `$environment`).
 Yet another local scope (with visibility into the local scope created for the ENC (if any)) is created where the
-evaluation of the `environment.pp` body takes place. It is thus possible to refer to the
-ENC set top scope variables and `$environment`  or set them to a new value.
+evaluation of the `environments.pp` body takes place. It is thus possible to refer to the
+ENC set top scope variables and `$environment` or set them to a new value.
 The resulting `$environment` is the visible value at the end of the evaluation
-of `environments.pp` (before the two scopes are abandoned), all other local variable values are discarded
+of `environments.pp` (before the two scopes are abandoned), all other local variable values are discarded.
 
 > Discuss: It is probably of questionable value to have access to the defined classes since environments.pp only
 > influences the selection of an environment. Likewise, class parameters are of little value.
@@ -246,7 +245,6 @@ see [Composition of Bindings](#composition-of-bindings) and [Enc Bindings Provid
 > We can continue in this style - say by making all variable assignments in `environments.pp` be top scope
 > assignments, and simply mix in variables from the ENC, or change them into named bindings allowing them
 > to be composed (see [Named Bindings](#named-bindings)).
->
 
 ### Categorization
 
@@ -299,13 +297,12 @@ always with sane defaults.
       }
     }
 
-> Discuss: We have to option to allow categories to be specified in conditional logic. This may be of value
+> Discuss: We have the option to allow categories to be specified in conditional logic. This may be of value
 > if the user wants to share the same `site.pp` across environments, and only need a small change to the
 > setup.  
 > Pro: Flexible for users  
 > Con: Potentially more complex to read/understand, and makes static analysis harder, also adds a point of
 > indirection that may lead users to choose the path of least resistance and thus end up with bad design.
-
 
 ### Summary of Categorization
 
@@ -338,12 +335,12 @@ This section defines how bindings are made using concrete Puppet language syntax
 The Puppet syntax hides almost all of the internal details; in most cases the actual internally used [Type](#type-system)
 and Name are not visible as bindings are expressed in terms of Puppet syntax elements where type and name are inferred.
 
-The internal representation in general is really only a concern when adding extensions, but advanced users needs to be
+The internal representation in general is really only a concern when adding extensions, but advanced users need to be
 aware of the [Naming Scheme](#naming-scheme), as certain Type/name keys have special meaning.
 
 ### How and Where are Bindings Defined
 
-Bindings are either defined in `.pp` files or provided by an [Bindings Provider](#bindings-provider) that consults some
+Bindings are either defined in `.pp` files or provided by a [Bindings Provider](#bindings-provider) that consults some
 external source.
 
 A (set of) bindings defined in a `.pp` file must have a filename that reflects the symbolic name of these bindings.
@@ -380,7 +377,7 @@ The rationale for using symbolic names is to separate the concerns of identity, 
 
 ### Category Specific Bindings
 
-Bindings are category specific. If not nested inside a explicit category the bindings are in the common category.
+Bindings are category specific. If not nested inside an explicit category the bindings are in the common category.
 
 The keyword `when` states the categorization and the category the _[current state](#term-current-state)_ should
 be in for the bindings to be in effect.
@@ -423,7 +420,7 @@ precedented category in the nesting - see discussion below as this simple rule m
 > it is "more specific" (compare CSS), but this leads to the need to also use tricks like CSS "important" to
 > raise the precedence. Since we are not dealing with extremely general constructs (like a "letter in a document")
 > the simplified rule will probably pose no practical problems and should be easier to understand, reason-about, and
-> debug. OTOH, users have to be aware that bindings for 'kermit' and 'virtual kermit' may not be in conflict which seems
+> debug. OTOH, users have to be aware that bindings for 'kermit' and 'virtual kermit' must not be in conflict which seems
 > quit unnatural.
 >
 > Alternative: A simple CSS mechanism where precedence is a score (sum of precedences) 
@@ -431,7 +428,6 @@ precedented category in the nesting - see discussion below as this simple rule m
 > must instead add a fraction to the highest precedence so that the score does not pass the ceiling. Thus combinations
 > increase the precedence like numbered paragraphs: 'environment' (2) and 'virtual' (3) is given the score '3.2' which is
 > lower than 'node' (4). The segments are ordered in descending precedence order.
->
 
 It is also allowed to declare multiple categories with the same semantics as when a `when` clause is used in
 a `case` expression - e.g.:
@@ -449,6 +445,7 @@ to avoid repetition. (If overused there is probably something wrong with how the
 
 Bind Operations
 ---------------
+
 Bind operations are used to define the individual bindings (binding one or several Type/Name keys to a corresponding
 producer of an object). The expressive power of bindings is achieved with a relatively small syntax that offers support for:
 
@@ -593,7 +590,7 @@ is explained in the section [Composition of Bindings](#composition-of-bindings))
 
 When composing a system out of pieces, where the pieces are glued together via names it is easy to end up with bindings
 to names that have no meaning -- e.g. binding "bananas" to 42 is probably meaningless.
-In order to handle this, it is of value to declare that something must be an override of something that is declared/exist.
+In order to handle this, it is of value to declare that something must be an override of something that is declared/exists.
 This helps catch spelling errors as well as errors introduced by API changes.
 
 Using the same example as before, our override of the abstract meaning of life can thus be written:
@@ -719,7 +716,7 @@ Rebinding comes in three forms (examplified):
 
     rebind "the meaning of life"
     bind alias "the meaning of life" AS "the meaning of love
-    bind renamed "the meaninf of life" AS "the meaning of love"
+    bind renamed "the meaning of life" AS "the meaning of love"
 
 Rebinding, as you may guess re-binds an already bound key's producer in a higher precedence (If it is not higher,
 the operation is meaningless).
@@ -768,7 +765,6 @@ The second example collects fragment bindings that contribute to the multibindin
 The result is a `Hash` of `Data`. In this case the contributions must be named, but type can be omitted since it
 can be inferred. As you can see, since the Hash is allowed to contain any `Data`, it is possible to bind things
 like an `Array` to the key `'Fred'`.
-
 
 #### Overriding Multibindings
 
@@ -852,7 +848,7 @@ flatten). The example produces [1,2,3,4,5,6]:
 #### Multibind Hash Combinator Option
 
 When performing a multibind of `Hash` type, all contributions must have unique keys or an error is raised.
-If something else is wanted, a lambda can be assigned to the binding optinon `combinator`. The lambda is
+If something else is wanted, a lambda can be assigned to the binding option `combinator`. The lambda is
 passed the key, and the existing value for the key (or undef if no value) and the new value. The lambda should
 produce the new value for the key.
 
@@ -888,7 +884,6 @@ a welcome addition to the standard lib, and that is more flexible and handling a
   _combinator_ should be defined that either overrides or merges the result.
 * Fragment collection order is undefined (if the order matters, the result should be sorted by the user)
 
-
 ### Binding Classes
 
 Classes (or rather, class inclusion) is performed with (examplified):
@@ -915,7 +910,7 @@ An include wins over an exclude if the exclude has lower precedence.
 
 ### Binding Parameters
 
-Binding parameters is done on this form:
+Binding parameters is done in this form:
 
     bind parameters <instantiateable-type> to <parameter-producer>
 
@@ -971,8 +966,8 @@ The injector will search for a parameter binding, and if it finds a binding to a
 try to find this instance (or if there is a producer, create it). If the instance is not of the same type as the
 LHS side a search is made of a `Hash[String, String]/Type[ParamMap[LHSType, RHSType]]` binding. If no such binding
 is found the operation fails unless parameters happen to have equal names in the two types. If a mapping is found, it
-is used to translate the a LHS parameter to a RHS parameter and the mapped parameter is then used to lookup a value
-in the object bound as proucer of the parameter value.
+is used to translate an LHS parameter to an RHS parameter and the mapped parameter is then used to lookup a value
+in the object bound as producer of the parameter value.
 
     # bind the parameters of Web[one] resource to the resource Sql[one]
     # and map the parameters from Sql[one].
@@ -996,7 +991,7 @@ With the binding above in effect, the mapping can now be skipped when the instan
 
     bind parameters Web[one] to Sql[one]
 
-In this example, the map bound for the combination Web/Sql will be in effect, and paramters will be mapped without
+In this example, the map bound for the combination Web/Sql will be in effect, and parameters will be mapped without
 having to be specified where such a binding is made.
 
 #### Advanced Parameter Bindings
@@ -1008,19 +1003,19 @@ In order for this to work, the bound producers can not produce overlapping param
 undefined as the lookup order is undefined).
 
 Thus, the bound producers of parameter values must either produce values for disjunct parameters, or there must
-be bound parameter maps that contains mappings for the parameters to make them disjunct.
+be bound parameter maps that contain mappings for the parameters to make them disjunct.
 
 As an example, for a bound hash it is easy to break it into individual parameter bindings
 based on the given parameter names in the hash, but for a binding of an arbitrary object this becomes more complex.
 Should all of its parameters be used? What about parameters that do not exists in the target, should they be skipped or
-mapped, is it an error if there is not map entry, or does this indicate that it should be skipped - etc.
+mapped, is it an error if there is no map entry, or does this indicate that it should be skipped - etc.
 
 It is not allowed to bind a type more than once as a parameters producer; i.e. this is illegal:
 
     bind parameters Web[one] to Sql[one]
-    bind parameters Web[one] to Sql[two] # error, a Sql is already bound.
+    bind parameters Web[one] to Sql[two] # error, an Sql is already bound.
 
-Diffrerent types may however be bound:
+Different types may however be bound:
 
     bind parameters Web[one] to Sql[one]
     bind parameters Web[one] to DbUserInfo[general]
@@ -1128,7 +1123,6 @@ If there is no `LimitedServices[web]` included in the catalog the binding is sil
 > some about binding, and some about a query producer. It should either be a separate section, or 
 > the parts should be moved to their respective category (text needs to be revised to ensure readability and
 > explain/link future references).
->
 
 It has been discussed if the existing query (spaceship) operators should be modified to be general purpose
 queries, but there are several issues associated with doing this. The operators `<| |>` and `<|| ||>` imply _local
@@ -1156,8 +1150,8 @@ knows about the syntax and validate etc.
 
 A general purpose query is very useful in Hiera2. Concrete syntax was therefore added that allows a query expression
 to be used as an expression that is recognized when performing a bind. This means that a QueryProducer is internally
-being used, an it gets the query expression to execute when the producer is asked to produce the result.
-(This was favored over explicetly selecting a query producer and giving it the query as an argument).
+being used, and it gets the query expression to execute when the producer is asked to produce the result.
+(This was favored over explicitly selecting a query producer and giving it the query as an argument).
 
 To bind the result of a query, simply write the query in the bindings to clause.
 
@@ -1183,17 +1177,17 @@ queries the Puppet DB.
 One issue when binding a query is what to do in case zero or more than one object is returned by the query.
 In all cases except the parameter binding case, it is up to the receiver/user to transform the produced array.
 
-The simplest is naturally to let the QueryProducer have a standard behavior a result of 0 or > 1 raises an error, and
-a match of one unfolds the one object from the array and prouces this object. This is however not always a good
+The simplest is naturally to let the QueryProducer have a standard behavior where a result of 0 or > 1 raises an error, and
+a match of one unfolds the one object from the array and produces this object. This is however not always a good
 strategy if a user wants to be able to pick _the best_, or do something more advanced).
 
 In order to solve this issue in an open ended way, it is proposed that a lambda is assigned to the option
-`select_result`. The lambda has one parameter and expected to return an instance of the type at hand.
+`select_result`. The lambda has one parameter and is expected to return an instance of the type at hand.
 
 Composition of Bindings
 -----------------------
 
-It is important to remember that Modules can come with default bindings and abstract bindings that needs to 
+It is important to remember that Modules can come with default bindings and abstract bindings that need to 
 be overridden. The modules can come from a variety of sources and the available name space in which they
 can bind things is not divided/reserved. As an example module A binds `color` to `blue` and module B binds it to `red`.
 Both bindings are in the common category. In our configuration we want to be able to define that in general
@@ -1257,7 +1251,6 @@ A Bindings Provider is responsible for producing an instance of a [Bindings Mode
 [ecore](#term-ecore) model. Three such providers are supplied with Hiera2 corresponding
 to the schemes confdir, module and enc. An extension point is also offered for 3d party plugins.
 
-
 #### Confdir Bindings Provider
 
 The confdir scheme refers to the root of the configuration, the final part of the path is a symbolic
@@ -1320,18 +1313,17 @@ are given access to the URIs and the include/exclude information given by the us
 receives one call per layer where the scheme is used. (Naturally, the instantiation of such a provider is
 via injection to allow it in turn to inject what it needs).
 
-
 ### Resolution of Inconsistencies
 
-If there is an inconsistency between bindings in a strata/layer, these needs to be resolved. We can resolve
+If there is an inconsistency between bindings in a strata/layer, it needs to be resolved. We can resolve
 by simply stating a binding in a higher strata, but we may want to declare these separately.
 There are several options depending on the type of issue, and if it is meaningful to create something
 that is reusable.
 
-We could place a resolution in the site layer as a separate inclusion or even in the  site::default bindings, but
+We could place a resolution in the site layer as a separate inclusion or even in the site::default bindings, but
 if we are dealing with an override that we may want to reuse across puppet installations, or that is a fix
-when using a particular combination of modules we may want to keep this fix in a reusable module (perhaps only
-containing this fix, or we may want to keep it in our module that makes use of the conflicting
+when using a particular combination of modules, we may want to keep this fix in a reusable module (perhaps only
+containing this fix), or we may want to keep it in our module that makes use of the conflicting
 modules (i.e. it is stored close to the "source of the problem").
 
 Lets say we place this as a source file in the module "X" that requires modules that cause
@@ -1372,7 +1364,7 @@ Here is a list of references to types and instances using concrete syntax, and t
 | `Number`    | Integer of Float                                            |
 | `String`    | A string (no interpolation)                                 |
 | `Pattern`   | A regular expression pattern                                |
-| `Data`      | Array, Hash, Boolean, Integer, Float, or String (reqursive) |
+| `Data`      | Array, Hash, Boolean, Integer, Float, or String (recursive) |
 | `Literal`   | Boolean, Integer, Float, or String                          |
 | `Type[x]`   | Runtime type x (i.e. runtime classname x)                   |
 | `Array[x]`  | Array with values of type x                                 |
@@ -1415,7 +1407,7 @@ they are guaranteed that such objects can be safely represented as JSON while st
 type information.
 
 Hashes always have `Literal` key (i.e. it is not possible to use a hash, array, or some runtime object as
-a hash key) in the Puppet Language. Keys of different literal type are different even if their string reprsentation
+a hash key) in the Puppet Language. Keys of different literal type are different even if their string representation
 is the same - i.e. `"1"` and `1` are different keys.
 
 The type argument feature allows a single type arg for Array and Hash. If deeper typed structures are needed they
@@ -1424,6 +1416,7 @@ to declare a Hash with values that in turn are Hashes of Integer value type.
 
 Puppet Functions
 ----------------
+
 The following puppet functions are envisioned:
 
     # args is type and/or name, and an optional hash of parameters
@@ -1443,10 +1436,9 @@ is however useful to support optional injections, this could be made via a diffe
 ith the same signature as inject, or by passing a lambda to inject() that is invoked with either a value, or
 undef/nil if nothing was bound.
 
-
-
 Modus Operandi
 --------------
+
 (TODO: Simplify and move to introduction)
 The model is far from everything that is needed - it describes the possible input to an injection mechanism,
 not how it is obtained, or operated on.
@@ -1475,6 +1467,7 @@ A created Injector is bound to an environment.
 
 Naming Scheme
 -------------
+
 Internally some bindings results in bindings where the name is based on puppet language elements/types.
 As a consequence regular names used by users should not start with a '/'.
 
@@ -1501,7 +1494,8 @@ key is:
     /map/Web/Sql
 
 ### Instance names
-When instance names are using in a `/map` or `/param` named binding the name needs to be escaped
+
+When instance names are used in a `/map` or `/param` named binding the name needs to be escaped
 as there is a (small) risk that the name may lead to overlapping keys.
 Internally, instance names are URL encoded (wrt. the characters that needs escaping `/`, `[`, ´]´, and `%`) e.g:
 
@@ -1511,12 +1505,10 @@ Is encoded as:
 
     File[foo%2Fbar%5Bx%5D]
 
-Note that this takes place internall, and is only a concern in Ruby extensions.
+Note that this takes place internally, and is only a concern in Ruby extensions.
 
 Ruby API
 --------
-
-
 
 Testing and Evaluation
 ======================
@@ -1527,7 +1519,6 @@ a substantial test suite.
 Users evaluating the ARM should focus on a) feature completeness -- does it meet expectations/requirements
 b) usability -- how easy/difficult it is to achieve the wanted result.
 
-
 Alternatives and Recommendation
 -------------------------------
 
@@ -1536,9 +1527,9 @@ There are currently many discussion points througout the document with open desi
 There were never any real alternatives to the main feature; use of injection. This since injection
 or injection like behavior is already in Puppet.
 
-Unifying these and at the same time offer new possibilities for future services (like better cross node
-dependencies (than the simple but useful query mechanism proposed as a starting point)), simpler mechanism
-for handling extensions/plugins than having to write them as functions lead to the conclusiong that
+Unifying these and at the same time offering new possibilities for future services (like better cross node
+dependencies (than the simple but useful query mechanism proposed as a starting point)), and a simpler mechanism
+for handling extensions/plugins than having to write them as functions, lead to the conclusion that
 a unified and powerful injection framework would suit the needs best.
 
 The recommendation to use the Puppet language to describe data, and bindings, and to use better typing is
@@ -1546,7 +1537,6 @@ a step in the direction of providing users with a higher quality service; reason
 mysterious or erroneous behavior.
 
 A search for injection frameworks for Ruby did not turn up anything of substance.
-
 
 Risks and Assumptions
 ---------------------
@@ -1559,7 +1549,7 @@ Dependencies
 ------------
 
 This ARM does not directly depend on any other ARM, but will be easier to implement when
-ARM-8 Types in Puppet has been implemented, and the evaluator compiler has transitioned to
+ARM-7 Types in Puppet has been implemented, and the evaluator compiler has transitioned to
 technology similar to that used in eparser.
 
 Also, this ARM proposed a general purpose Query mechanism that is currently available
@@ -1595,14 +1585,14 @@ and the contributors working on them?  Omit any irrelevant items.
     Hiera 2. Naturally, since Hiera2 addresses issues that either just does not work in Puppet 3, or has mysterious
     concequences a user may wish long for the perceived "simpler times".
 - I18n/L10n:
-  * Neutral, to improved since logic moves from JSON where there is little that can be done, whereas if I18n, L10n is
+  * Neutral to improved, since logic moves from JSON where there is little that can be done, whereas if I18n, L10n is
     needed somewhere in the puppet logic this should be easier to handle.
 - Accessibility:
   * Neutral
 - Portability:
   * The proposal means moving logic/data into the puppet language as this is portable.
   * The proposal is based on modeling which makes it easier to integrate with implementation in other languages
-  * The type system is design to deal with "runtime classes" in a manner that should map to language such as Java
+  * The type system is designed to deal with "runtime classes" in a manner that should map to language such as Java
 - Packaging/installation:
   * Care has been taken to not introduce functionality that requires additional packages.
 - Documentation:
@@ -1610,7 +1600,7 @@ and the contributors working on them?  Omit any irrelevant items.
     basic mechanism are quite abstract. It is a new vocabulary for many.
 - Spin-offs/Future work:
   * Opens for retirement of current `node` expression
-  * Operns for retirement of resource defaults in puppet logic
+  * Opens for retirement of resource defaults in puppet logic
   * Makes it possible to migrate certain settings to instead be composable injections
   * Opens for (current) ENC removal
 
@@ -1625,7 +1615,7 @@ A binding that contributes to a multibinding is said to be a _fragment_.
 
 #### <a id="term-category-value-expression"></a> Category Value Expression
 An expression that determines the [current state's](#term-current-state) value in a categorization. If
-there exist a categorization called `color`, the category value expression may return strings
+there exists a categorization called `color`, the category value expression may return strings
 such as ´red`, or `blue`.
 
 #### <a id="term-concrete-binding"></a> Concrete Binding
@@ -1667,11 +1657,9 @@ A binding of a parameter of a parameterized class/resource/type.
 #### <a id="term-query-binding"></a> Query Binding
 A binding of a result that is obtain via querying.
 
-
-
-
 TODO
 ====
+
 There should be documentation in the model elements.
 
 model, needs to group multiple parameter bindings using the same mapping
