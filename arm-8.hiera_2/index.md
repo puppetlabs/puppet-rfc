@@ -329,7 +329,7 @@ The above design should be powerful enough to deal with:
 In essence, the "power of an ENC" moves into the Puppet language and is given a richer set of data as the basis for the
 decision than what is currently available in the ENC API.
 
-As you will see in [Bindings](#bindgins), and [Composition of Bindings](#composition-of-bindings), the categories are
+As you will see in [Bindings](#bindings), and [Composition of Bindings](#composition-of-bindings), the categories are
 used when expressing bindings, and the composition section defines how overrides and shadowing of bindings can be made.
 
 Bindings
@@ -618,7 +618,7 @@ as that would just be silently ignored.
 > Note: This is similar to how the Java @Override annotation works.
 
 > ##### Is override too overloaded?
-> Discuss: If deemed that the term 'override' is to overloaded (one binding overrides another because of
+> Discuss: If deemed that the term 'override' is too overloaded (one binding overrides another because of
 > categorization and layering) another term that suggests 'in error if not bound elsewhere' should be invented.
 > This type of protection may seem too sophisticated at first, but is really a great help in maintaining sanity in an
 > evolving system.
