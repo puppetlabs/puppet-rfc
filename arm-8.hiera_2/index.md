@@ -162,7 +162,8 @@ Hiera 2 it is of great value to also clean this up. The proposed sequence is as 
 
 The entry point manifest is named `environments.pp` and is placed in the same directory as `puppet.conf`.
 
-> Decision: Should `environments.pp `be a hard-coded name, or be configurable in puppet-conf?
+> ##### Use hardcoded environments?
+> Decision:  Should `environments.pp `be a hard-coded name, or be configurable in puppet-conf?
 > Pro hard-coded: less confusion
 > Pro configurable: easier to test different overriding configuration (dev/test)
 
@@ -212,9 +213,11 @@ The following rules apply:
 * Only functionality available in puppet core may be used (functions and plugins/extensions) since the environment has not been setup, and
   hence no module-path.
 
+> ##### Use magical return?
 > Discuss: Since the new evaluator will return the value of the last executed expression as the result, we could simply
 > return a value that way, but it is slightly magical in this context.
 
+> ##### Use literal default for environment parameters?
 > Discuss: A parameter value of `default` could be used to initiate the parameter to a sane/typical default in an
 > environment.
 
@@ -233,13 +236,16 @@ ENC set top scope variables and `$environment` or set them to a new value.
 The resulting `$environment` is the visible value at the end of the evaluation
 of `environments.pp` (before the two scopes are abandoned), all other local variable values are discarded.
 
+> ##### Provide access to $classes and $parameters in environments.pp?
 > Discuss: It is probably of questionable value to have access to the defined classes since environments.pp only
 > influences the selection of an environment. Likewise, class parameters are of little value.
 
 The binding of classes to nodes are done using the Hiera2 Layering mechanism;
 see [Composition of Bindings](#composition-of-bindings) and [Enc Bindings Provider(#enc-bindings-provider).
 
-> Discuss: The handling of top scope variables needs further thought/discussion. Top scope variables
+> ##### Top scope variables - how?
+> Discuss: Inject them from vars set in environements.pp, as named bindings, provide other mechanism (bind variables using bind operations)?
+> The handling of top scope variables needs further thought/discussion. Top scope variables
 > are bad in general because they may be introduced without being declared in Puppet Logic which makes static analysis
 > of code referencing top scope variables impossible.
 > We can continue in this style - say by making all variable assignments in `environments.pp` be top scope
@@ -297,6 +303,7 @@ always with sane defaults.
       }
     }
 
+> ##### Conditional categories, or not?
 > Discuss: We have the option to allow categories to be specified in conditional logic. This may be of value
 > if the user wants to share the same `site.pp` across environments, and only need a small change to the
 > setup.  
@@ -392,6 +399,7 @@ be in for the bindings to be in effect.
 The same categorization can be used multiple times, i.e. `when node 'kermit'` can occur multiple times to allow logical
 grouping of bindings related to some common concern.
 
+> ##### Explicit when common{}, or not?
 > Discuss: We can allow `when common {}` to be used as well to bind in the common category (or require that
 > global bindings are always done this way and that bindings are not allowed outside of a when declaration) - in both
 > cases the internal representation would be one and the same).
@@ -416,6 +424,7 @@ This makes it very flexible to chose what is done in "general" and what is "spec
 Nesting is an _and_ operation. Internally, this results in one binding with the precedence of the highest
 precedented category in the nesting - see discussion below as this simple rule may break 'the law of least surprise'.
 
+> ##### Precedence score - how?
 > Discuss: One could argue that a nested binding should have higher precedence than a non-nested since
 > it is "more specific" (compare CSS), but this leads to the need to also use tricks like CSS "important" to
 > raise the precedence. Since we are not dealing with extremely general constructs (like a "letter in a document")
@@ -439,6 +448,7 @@ a `case` expression - e.g.:
 This is an _or_ operator. (Internally, this results in two bindings with different precedence). This is of value
 to avoid repetition. (If overused there is probably something wrong with how the user defined the categorizations).
 
+> ##### Support when with or semantics?
 > Discuss: This may lead to hard to understand error messages as one of the precedented bindings may cause
 > a conflict - it should however be possible to explain the issue well enough to the user to make it understandable
 > - e.g. "The binding of x (on line n, file f) in category 'virtual true' is in conflict with the same binding in..."
@@ -525,6 +535,7 @@ TODO: Query is missing
 > lower case names are rules, quoted characters are punctuation tokens. The rule `expression` is the general
 > expression rule in the egrammar, and `literal` refers to literal strings, numbers, booleans, arrays and hashes.
 
+> ##### Use of term Literal?
 > Discuss: The term 'literal' is a misnomer, but that is what it is currently called in the grammar; interpolated strings
 > are not really literals as they require interpolation - it also clashes with the defined `Literal` defined
 > in the [Type System](#type-system) where `Data` means a structure, and `Literal` is a leaf.
@@ -579,6 +590,7 @@ An explicit injection calling `inject("the meaning of life")` will then produce 
 See [Named Binding](#named-binding) and [Type System](#type-system) for details about
 type (in case you wonder why the error message contains the text `Data` and what it means).
 
+> ##### Is abstract too abstract?
 > Discuss: If the Computer Science term 'abstract' is to abstract [sic] a more populistic name like `placeholder`
 > could be used, but this would probably alienate developers.
 
@@ -605,6 +617,7 @@ as that would just be silently ignored.
 
 > Note: This is similar to how the Java @Override annotation works.
 
+> ##### Is override too overloaded?
 > Discuss: If deemed that the term 'override' is to overloaded (one binding overrides another because of
 > categorization and layering) another term that suggests 'in error if not bound elsewhere' should be invented.
 > This type of protection may seem too sophisticated at first, but is really a great help in maintaining sanity in an
@@ -826,6 +839,7 @@ lambda can then use other data transformation functions to produce the wanted re
 merge function and available functions have varying power and flexibility). This should not be used as an excuse
 to instead build such functionality into Hiera2.
 
+> ##### Lambda or Type reference (to get an instance), or support both?
 > Discuss: A lambda is convenient, it could also be allowed to use a Type reference to a subclass of Combinator
 > to allow a runtime class to be plugged in.
 
@@ -901,6 +915,7 @@ Internally, this is handled as multibindings to 'included-classes' and 'excluded
 
 An include wins over an exclude if the exclude has lower precedence.
 
+> ##### Use keywords include (and exclude) for class inclusion (and erasure)?
 > Discuss: Class inclusion (and exclusion) was given concrete syntax rather than being multibind contributions.
 > Both forms will naturally work, but the multibind contribution style is primarly for external services that
 > act as a bindings provider. The rationale for the concrete syntax is that inclusion is one of the first things
@@ -1168,6 +1183,7 @@ queries the Puppet DB.
 > Note: The result never includes resources from the catalog under compilation
 > because of parse order dependencies.
 
+> ##### Subcatalogs, workflows - implications on Hiera2, if any?
 > Discuss: R.I. suggests it would be of great value to be able to break a catalog into "sub catalogs" and compose
 > them, when doing so, the order between the parts is known, and it should be allowed to query already processed
 > subcatalog. (This is concern for the future and is an implementation detail outside of the scope for Hiera2.
@@ -1242,6 +1258,7 @@ module (called MySpecial) instead of its default bindings the config could be:
        }
     ]
 
+> ##### Are Include/Exclude as keywords overloaded - use something else?
 > Discuss: include and exclude are overloaded; elsewhere 'include' means include class in catalog. Include is
 > also a bind operation (to bind class inclusion). Maybe use other terms in layers?
 
@@ -1284,6 +1301,7 @@ addressed as a path - e.g:
 
 The rationale for allowing selection of parts would be to aid in migration (but may be of limited value).
 
+> ##### Is it of value to pick parts from an ENC to Hiera2 transformation?
 > Discuss: Are these detailed selection of value? Should it always be just enc: ?
 
 #### Custom Bindings Provider
