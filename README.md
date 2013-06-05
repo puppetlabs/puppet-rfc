@@ -88,7 +88,7 @@ Index of ARMs
   <td>Unified dependency injection framework for Puppet</td>
   <td>0.0.1</td>
   <td>June 1, 2013</td>
-  <td>Draft</td>
+  <td>Draft<br><a href="https://groups.google.com/d/topic/puppet-dev/ITIqQrEY9ZY/discussion">Discuss</a></td>
 </tr><tr>
   <td>9</td>
   <td><a href="arm-9.data_binding/index.md">Data Bindings</a></td>
