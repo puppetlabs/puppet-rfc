@@ -171,13 +171,21 @@ The concrete syntax for an environment is specified by borrowing the resource sy
 being placed inside of a `site { }` expression.
 
     site {
+      # Production environment
       environment { 'production':
         modulepath  => 'colon separated path',
-        manifest    => 'path to environment root manifest'
-        manifestdir => 'directory'
-        templatedir => 'directory'
+        manifest    => 'path to environment root manifest',
+        manifestdir => 'directory',
+        templatedir => 'directory',
       }
+      # Additional environments
       environment { '...':
+        # ...
+      }
+      # Environment defaults
+      Environment {
+        modulepath => "colon separated paths which may use ${environment}",
+        manifest   => "path to environment root manifest which may use ${environment}",
         # ...
       }
     }
@@ -198,12 +206,21 @@ The following rules apply:
   names `main`, `master`, `agent` or `user`).
 * If `environments.pp` is missing, one default "production" environment is added by default, with default values for all
   parameters.
-* If `environments.pp` exists, and it does not contain a "production" environment, it is added by default, with default
-  values for all parameters.
+* If `environments.pp` exists, and it does not contain a "production"
+  environment, it is added by incorporating `Environment` resources defaults in addition to
+  default puppet values for all parameters.
 * A defined "production" environment is authoritative.
 * Any number of environments may be added
 * When execution reaches the end of the `environments.pp` and `$environment` has not been defined, it is set to "production".
-* If `$environment` is set to a value other than one of the defined environments, an error is raised, and processing stops.
+* Dynamic environments may be enabled or disabled via a `dynamic_environments =
+  <bool>` puppet configuration parameter. It defaults to `true`.
+* If `$environment` is set to a value other than one of the defined
+  environments and dynamic environments are enabled, then an environment of the
+  given `$environment` value is added by incorporating `Environment` resource
+  defaults in addition to default puppet values for all parameters.
+* If `$environment` is set to a value other than one of the defined
+  environments and dynamic environments are disabled, an error is raised and
+  processing stops.
 * The RHS parameter values may be any non top level puppet expression, but may not use injection
 * Facts and secure data have been bound to variables when evaluation of `environments.pp` starts
 * Any variables set in `environments.pp` are set in a local scope not visible to the rest of the system.(with the exception of
