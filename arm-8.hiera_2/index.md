@@ -171,6 +171,12 @@ The concrete syntax for an environment is specified by borrowing the resource sy
 being placed inside of a `site { }` expression.
 
     site {
+      # Environment defaults
+      Environment {
+        modulepath => 'colon separated path',
+        manifest   => 'path to environment root manifest',
+        # ...
+      }
       # Production environment
       environment { 'production':
         modulepath  => 'colon separated path',
@@ -180,12 +186,6 @@ being placed inside of a `site { }` expression.
       }
       # Additional environments
       environment { '...':
-        # ...
-      }
-      # Environment defaults
-      Environment {
-        modulepath => "colon separated paths which may use ${environment}",
-        manifest   => "path to environment root manifest which may use ${environment}",
         # ...
       }
     }
@@ -199,34 +199,29 @@ being placed inside of a `site { }` expression.
 
 The following rules apply:
 
-* It is no longer possible to introduce stanzas in `puppet.conf` for environments. (There are several issues related to
-  this as any stanza that is not one of the known stanzas become an environment stanza, and only some settings can be
-  made per environment).
-* Restriction on environment names is lifted (it is ok, but still not recommended to use the previously restricted
-  names `main`, `master`, `agent` or `user`).
-* If `environments.pp` is missing, one default "production" environment is added by default, with default values for all
-  parameters.
-* If `environments.pp` exists, and it does not contain a "production"
-  environment, it is added by incorporating `Environment` resources defaults in addition to
-  default puppet values for all parameters.
-* A defined "production" environment is authoritative.
-* Any number of environments may be added
-* When execution reaches the end of the `environments.pp` and `$environment` has not been defined, it is set to "production".
-* Dynamic environments may be enabled or disabled via a `dynamic_environments =
-  <bool>` puppet configuration parameter. It defaults to `true`.
-* If `$environment` is set to a value other than one of the defined
-  environments and dynamic environments are enabled, then an environment of the
-  given `$environment` value is added by incorporating `Environment` resource
-  defaults in addition to default puppet values for all parameters.
-* If `$environment` is set to a value other than one of the defined
-  environments and dynamic environments are disabled, an error is raised and
-  processing stops.
+* It is no longer possible to introduce stanzas in `puppet.conf` for environments.
+* Restriction on environment names is lifted
+* Any number of environments may be available
+* The `--environment` flag is ignored from agents. See [Integration with existing ENC](#integration-with-existing-enc) and [Request
+  Sequence](#request-sequence) for details.
+* Environments incorporate `Environment` resources defaults from `environments.pp` in addition to default puppet values for all parameters
+  derived from `puppet.conf`.
+* If `environments.pp` is absent, a default "production" environment is automatically defined.
+* If `environments.pp` is present but does not define a "production" environment and an environment by the name of "production" is not
+  available in `$environmentdir` then one is automatically defined.
+* If execution reaches the end of the `environments.pp` and `$environment` has not been defined, it is set to "production".
+* A parameter `$environmentdir` may be defined with a value of an absolute directory path. It defaults to `/etc/puppet/environments`
+* If `$environment` is set to a value other than one of the statically-defined environments in `environments.pp` and `$environmentdir` is
+  configured, then a directory of `$environmentdir/$environment` is assumed to be the environment directory.
+* If the environment directory does not exist and no statically-defined environment matches then an error is raised and processing stops.
+* If the environment directory does exist then `$manifest` is attempted to be read from `$environmentdir/$environment/manifests/site.pp`
+* If the environment directory does exist then each non-absolute path in `$modulepath` is read from `$environmentdir/$environment`
+* Absolute paths in `$modulepath` are absolute and do not vary per environment.
 * The RHS parameter values may be any non top level puppet expression, but may not use injection
 * Facts and secure data have been bound to variables when evaluation of `environments.pp` starts
-* Any variables set in `environments.pp` are set in a local scope not visible to the rest of the system.(with the exception of
-  `$environment` which is picked up from this scope).
-* The `environments.pp` may contain other puppet expressions (non top scope) - the use case is to support data
-  manipulation, common definitions reused in several environment specifications, etc.
+* With the exception of `$environment`, any variables set in `environments.pp` are set in a local scope not visible to the rest of the system.
+* The `environments.pp` may contain other puppet expressions - the use case is to support data manipulation, common definitions reused in
+  several environment specifications, etc.
 * Only functionality available in puppet core may be used (functions and plugins/extensions) since the environment has not been setup, and
   hence no module-path.
 
