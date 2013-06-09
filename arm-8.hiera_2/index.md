@@ -1229,6 +1229,7 @@ multiple objects:
 Here we resolve the issue that both Y and Z have parameters a, b, and c. By defining the maps it is clear what to
 pick from the respective type.
 
+
 ### Binding Variables
 
 The binding of top scope variables is similar to binding of parameters, but here no mapping is offered. Each
@@ -1927,4 +1928,22 @@ Write example where X has parameters a, b, c, these should come from two differe
 
 TODO: To bind custom ruby code there is probably also the need to specify what to require in order to load
 the code (or maybe this is part of some underlying registration of "plugins").
+
+#### One to One Map
+
+Since a map both defines mapping of names as well as which names to map it may be of value to allow binding an array
+of names as a 1:1 map.
+
+One could imagine the syntax:
+
+    bind map T1 to T2 [a, b, c]
+
+But this is not possible using the proposed grammar as an options hash is expected after T2, and this hash doubles as
+the mapping hash in a bind map expression. This could be solved by making the options map requiring a map=> key also for
+bind map and accept an array as a "unit map". 
+
+Uncertain if it is of great value to make bind map worse to gain the unit ability. It can be done with an explicit unit
+map { a => a, b => b }. Since the use case is both advanced and esotheric it seems not worth the cost as it is possible
+to achieve the result with a bit more typing.
+
 
