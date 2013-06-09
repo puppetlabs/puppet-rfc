@@ -243,6 +243,7 @@ All paths except `envdir` may be relative (this is explained in more detail belo
         manifestdir => ... # path to directory containing manifests, may be relative, defaults to 'manifests/'
         manifest    => ... # path to environment root manifest, may be relative, defaults to '<manifestdir>/site.pp'
         templatedir => ... # path to templates directory, may be relative, defaults to 'templates/'
+        bindingsdir => --- # path to root of bindings directory, may be relative, defaults to '<envdir>/bindings'
       }
 
       # A static environment
