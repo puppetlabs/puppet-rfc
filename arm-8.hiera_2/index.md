@@ -1292,6 +1292,26 @@ Typing a variable in combination with abstract is a valuable way of constraining
 
 Abstract untyped variable bindings are made using the type `Any`.
 
+### Binding Dependencies
+
+Since the bindings system is used to compose the content of a catalog, it is important to also be able to compose
+dependencies that define the order.
+
+While it is possible to bind to the meta-parameters `before`, `require`, `notify` and `subscribe` it is possible to
+define the order using parameter bindings.
+
+I is naturally also possible to define concrete syntax. (This is not included in the proposed grammar, as the topic needs
+to be discussed). Here are some examples what it could look like:
+
+    bind dependency File['/etc/ssh/sshd_config'] ~> Service['sshd']
+
+Syntax should support `->` and `~>` (but not right to left arrows). Syntax should also support an array of references.
+The semantics are: if both left and right side are in the catalog, then add the dependency.
+
+>##### How should dependencies/ordering be handled?
+> Discuss: Is it enough to only bind order using meta parameters?
+> Are the semantics the correct semantics? (i.e. ignored if not both sides are present)
+
 ### Summary of Binding Options
 
 The concrete syntax for bind operations allows options to be declared in `{ }` at the end of the clause.
