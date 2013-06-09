@@ -329,6 +329,7 @@ The following rules apply:
   definitions reused in several environment specifications, etc.
 * Only functionality available in puppet core may be used (functions and plugins/extensions) since the environment has not been setup, and
   hence no module-path.
+* `environments.pp` is reevaluated on each request (if changed) as the master would otherwise need to be restarted.
 
 > ##### Use magical return?
 > Discuss: Since the new evaluator will return the value of the last executed expression as the result, we could simply
