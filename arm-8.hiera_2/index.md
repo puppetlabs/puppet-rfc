@@ -565,10 +565,19 @@ This makes it very flexible to chose what is done in "general" and what is "spec
           # when kermit is virtual bind something special than for all other virtual
         }
        # for anything else that is virtual
-     }
+    }
 
 Nesting is an _and_ operation. Internally, this results in one binding with the precedence of the highest
 precedented category in the nesting - see discussion below as this simple rule may break 'the law of least surprise'.
+
+Since (as you will see later) it is possible to use an `or` operator it is symmetrical to also allow `and` to have
+the same effect as a simple nesting - using the same example as above:
+
+    bindings x {
+      when virtual true and node 'kermit.example.com' {
+          # when kermit is virtual bind something special than for all other virtual
+      }
+    }
 
 > ##### Precedence score - how?
 > Discuss: One could argue that a nested binding should have higher precedence than a non-nested since
@@ -584,20 +593,18 @@ precedented category in the nesting - see discussion below as this simple rule m
 > increase the precedence like numbered paragraphs: 'environment' (2) and 'virtual' (3) is given the score '3.2' which is
 > lower than 'node' (4). The segments are ordered in descending precedence order.
 
-It is also allowed to declare multiple categories with the same semantics as when a `when` clause is used in
-a `case` expression - e.g.:
+It is also allowed to declare multiple categories using `or`:
 
-    when virtual true, node 'kermit.example.com' {
+    when virtual true or node 'kermit.example.com' {
       # bindings when virtual or when node is kermit
     }
 
-This is an _or_ operator. (Internally, this results in two bindings with different precedence). This is of value
+Internally, this results in two bindings with different precedence. This is of value
 to avoid repetition. (If overused there is probably something wrong with how the user defined the categorizations).
 
-> ##### Support when with or semantics?
-> Discuss: This may lead to hard to understand error messages as one of the precedented bindings may cause
-> a conflict - it should however be possible to explain the issue well enough to the user to make it understandable
-> - e.g. "The binding of x (on line n, file f) in category 'virtual true' is in conflict with the same binding in..."
+This may lead to hard to understand error messages as one of the precedented bindings may cause
+a conflict - it should however be possible to explain the issue well enough to the user to make it understandable
+- e.g. "The binding of x (on line n, file f) in category 'virtual true' is in conflict with the same binding in..."
 
 Bind Operations
 ---------------
