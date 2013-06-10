@@ -92,7 +92,7 @@ modulepath).
 ### Provide a mechanism that makes it possible to plugin functionality to defined extension points
 
 Lack of definition of runtime extension points makes it difficult to plugin behavior (in Ruby) other that functions
-and types/providers which have well reasonably well defined APIs (internal DSLs). One example of a simple extension point
+and types/providers which have reasonably well-defined APIs (internal DSLs). One example of a simple extension point
 (used as an example in this ARM) is the support for syntax checkers that is proposed in ARM-4 Heredoc where the only reasonable
 option was to implement the syntax checker as a function; in this case not terribly bad since it may be of value to also
 call such a function from user code. But other such plugins would not make sense to expose to users - several examples
@@ -263,7 +263,7 @@ All paths except `envdir` may be relative (this is explained in more detail belo
     $environment = 'production'
 
 Here is an example where dynamic environments are turned on and then put to use. A dynamic environment comes into
-existence by a user that checks out a branch; e.g. `/etc/puppet/environments/test36' becomes the environment called
+existence by a user checking out a branch; e.g. `/etc/puppet/environments/test36` becomes the environment called
 `test36` with the configuration shown below). The selection of environment sets the `envdir` to either the
 static `$confdir/master` if "production" was selected, or one of the dynamic environments if the selected environment
 name matches a a name of a subdirectory of the `dynamic_environments` specified directory; e.g. `test36` 
@@ -298,13 +298,13 @@ The following rules apply:
 
 * It is no longer possible to introduce stanzas in `puppet.conf` for environments.
 * Restriction on environment names is lifted
-* Any number of environments may be used; statically declared or (and if enabled) dynamically placed under one directory
+* Any number of environments may be used; statically declared or (if enabled) dynamically placed under one directory
   specified by the _environment resource_ `dynamic_environments`.
 * Environment resources are not placed in the catalog.
 * The `--environment` flag is _by default_ ignored from agents. See [Environment from Agents](#environment-from-agents),
   [Integration with existing ENC](#integration-with-existing-enc) and [Request Sequence](#request-sequence) for details
   and discussion.
-* Environments incorporate `Environment` resources defaults from `environments.pp` in addition to default puppet values
+* Environments incorporate `Environment` resource-defaults from `environments.pp` in addition to default puppet values
   for all parameters derived from `puppet.conf` (i.e. where defaults/defaults are set if factory settings are not
   wanted - but this is really not needed since user has full control in `environments.pp`).
 * If `environments.pp` is absent, a default "production" environment is automatically defined.
@@ -316,11 +316,11 @@ The following rules apply:
   after the environment they represent.
 * If `$environment` is set to a value other than one of the statically-defined environments in `environments.pp`,
   or (if allowed) a subdirectory of `dynamic_environments`, an error is raised ("unknown environment") and processing stops.
-* In case `$environment` is successfully resolved against an existing directory the variable `$envdir` is determined;
+* In case `$environment` is successfully resolved against an existing directory the `envdir` parameter is determined;
   it must be explicitly set in a statically environment (or set from `Environment` defaults), and it is automatically
   set when `$environment` is successfully resolved to a dynamic environment.
-* Then `$manifest` is resolved against the selected environment resource (relative paths resolved against `$envdir`)
-* The `$modulepath` is resolved against the selected environment resource (relative paths resolved against `$envdir`)
+* Then `$manifest` is resolved against the selected environment resource (relative paths resolved against `envdir`)
+* The `$modulepath` is resolved against the selected environment resource (relative paths resolved against `envdir`)
 * (Absolute paths remain absolute).
 * The RHS parameter values may be any non top level puppet expression (just as for regular resources), but may not use injection
 * Facts and secure data have been bound to variables when evaluation of `environments.pp` starts
@@ -359,7 +359,7 @@ under a different name e.g. `$agent_environment`. If `--environment` has not bee
 `undef`. The logic in `environments.pp` can then resolve the various cases:
 
 * ignore the `$agent_environment` completely
-* compare it against ´$environment` and if different issue a warning or raise an error
+* compare it against `$environment` and if different issue a warning or raise an error
 * use it if there is a desire to override the decision in an ENC
 * use it in combination with other data supplied from the agent to determine the environment to use.
 
@@ -384,12 +384,19 @@ of `environments.pp` (before the two scopes are abandoned), all other local vari
 The new implementation is best made as an extension point that defines a new API for ENC (enables a new ENC to be written
 that has access to facts). An implementation (adapter) is made that adapts to the existing ENC.
 
+> ##### How to have bindings before evaluating `envbironments.pp`?
+> Discuss: There should be a mechanism that allows bindings to be in effect before getting to the environment specific
+> bindings - these bindings are internal, and should be expressed in a `.pp` file that is evaluated before `environments.pp`.
+> (The boot sequence is indeed complicated). Should `environments.pp` contain two things? i.e. a stanza that is first evaluated
+> even before having access to facts and secure variables, and before an environment is selected; i.e prior to calling *any*
+> external service.
+
 > ##### Provide access to $classes and $parameters in environments.pp?
 > Discuss: It is probably of questionable value to have access to the defined classes since environments.pp only
 > influences the selection of an environment. Likewise, class parameters are of little value.
 
 The binding of classes to nodes are done using the Hiera2 Layering mechanism;
-see [Composition of Bindings](#composition-of-bindings) and [Enc Bindings Provider(#enc-bindings-provider).
+see [Composition of Bindings](#composition-of-bindings) and [Enc Bindings Provider](#enc-bindings-provider).
 
 > ##### Top scope variables - how?
 > Discuss: Inject them from vars set in environements.pp, as named bindings, provide other mechanism (bind variables using bind operations)?

@@ -31,24 +31,27 @@ They do however need a `dev` environment. So that is the first task they tackle.
 
 Akunna Adds a "dev" Environment
 -----------------------------
-Akunna learns that this is done in a new file called `environments.pp` and she writes the following (specifying all options):
+Akunna learns that this is done in a new file called `environments.pp` and she writes the following (specifying all options as
+she wants to see them and think about their use). She marks the one that are restating the defaults:
 
     site {
-      environment { 'dev':
-        manifest    => "$confdir/dev/site.pp",
-        bindingsdir => "$confidr/dev/bindings,
-        manifestdir => "$confdir/dev/manifests",
-        modulepath  => "$confdir/dev/modules",
-        templatedir => "$confdir/dev/templates"
+      # Environment defaults
+      Environment {
+        envdir      => '$confdir/master'
+        modulepath  => 'modules/'     # default
+        manifestdir => 'manifests/',  # default 
+        manifest    => 'site.pp',     # default
+        templatedir => 'templates/',  # default
+        bindingsdir => 'bindings'     # default
       }
+
     }
+    
+    $environment = 'production'
 
 Akunna understands from the documentation that an entry for "production" is added by default so she leaves that out.
 
 Akunna runs this with the existing classic `site.pp` and sees that it works.
-
-> Improvement: Use a basedir, if set the other paths are relative. Then there is no need to specify the others
-> if they are default.
 
 
 Akunna Wants Authoritative Setting of Environment
@@ -56,7 +59,7 @@ Akunna Wants Authoritative Setting of Environment
 Akunna wants authoritative setting of environment (like in the ENC) and not use an environment that is specified on the
 agent. Akunna could naturally use the ENC - if so, nothing needs to be done - the ENC will then provide the authoritative
 mapping from a node request to environment. But Akunna wants to try out the new features so they leave out their existing ENC,
-well aware that she could have used that to save him some work. She is mainly interested in being able to later set up a
+well aware that she could have used that to save themselves some work. She is mainly interested in being able to later set up a
 review process and she likes the fact that everything is written in .pp manifests and kept in a git repo.
 
 Akunna is happy to learn that the full set of facts is available when deciding which environment the request should use. This was
@@ -65,10 +68,34 @@ of processing incoming requests.
 
 To start off, Akunna keeps it simple. All machines except those that are named after the seven dwarfs in German
 should be in production, the rest are "dev" machines.
-Since "production" is default this is done with a simple `if` expression in `environments.pp`
+Since "production" is default this is done with a simple `if` expression in `environments.pp` - she also adds
+the definition of the production and dev environments.
+
+      # Environment defaults
+      Environment {
+        envdir      => '$confdir/master'
+        modulepath  => 'modules/'     # default
+        manifestdir => 'manifests/',  # default 
+        manifest    => 'site.pp',     # default
+        templatedir => 'templates/',  # default
+        bindingsdir => 'bindings'     # default
+      }
+
+
+      # A static environment
+      environment { 'production':
+        # All default
+      }
+      # Additional static environment
+      environment { 'dev':
+        envdir => "$confdir/dev"
+      }
 
     if $hostname in [huckelpack, naseweis, packe, pick, puck, purselbaum, rumbelbold] {
       $environment = 'dev'
+    }
+    else {
+      $environment = 'production'
     }
 
 Akunna likes that she can make this as simple or complex as required (using `if`, `case`, calling functions etc.).
@@ -262,56 +289,86 @@ Akunna writes:
       }
     }
 
+
+
 Now, she does not have to worry that someone makes statements about nodes and roles that are not in the dev
-environment. She can easily check this when doing a review.
+environment. She can easily check this when doing a review. The dev environment does after all run in the same
+master as production.
 
 The experiment bindings are not included by default in site.pp. Akunna decides to have two different site.pp, one for
-production, and one for dev. The production site.pp can use the defaults, so nothing is needed there. Akunna writes
-the following in `$confdir/dev/manifests/site.pp`:
+production, and one for dev. The production site.pp can use the defaults, so nothing is needed there. Akunna starts to
+wtite things into the `$confdir/dev/manifests/site.pp`, but realises that is is an easily made mistake to merge `site.pp` from
+dev into the master which is used for production, so she renames it to `devsite.pp`. As soon as she starts writing she
+realizes that if the `envrionments.pp` refers to the `devsite.pp` directly, then basically the dev environment can perform
+all sorts of bindings that Akuna does not quite trust others to tamper with.
 
-Akunna writes this in `devsite.pp` (copy pasting from the documentation, and then modifying it to add
-the experiment.pp bindings).
+Akuna and Vatsan discusses how they want to solve this, and they come up with an idea. They really do want to reserve the
+right to define the layering of bindings for everything that runs on the master, so delegation to site.pp files that are not
+strictly managed is a bad idea - they want to reserve the right to be able to override any bindings at the stie level (above
+all environments, and the way to do this is to control which site.pp to use.
+
+They decide to use three different site.pp files; one for production, one for dev and one for dynamic environments.
+They do not yet know if the dynamic environments will be different, but they think they need to do different things
+there later as the dynamic environments are mostly used to run various tests.
+
+In `$confdir/manifests/site.pp` she writes this (this is how "production" works)
 
     site {
       bindings => [
-        layer { 'site'    : include => ['confdir:/default', 'environment:/experiment'] }
+        layer { 'site'    : include => 'confdir:/default' }
+        layer { 'env'     : include => 'env:/default' }
         layer { 'modules' : include => 'module:/*::default' }
         ]
     }
 
-> ISSUE: The confdir is in the ARM documented as being relative to confdir, but what about relative to the
-> base of an environment? There is no variable for that, and no setting in an Environment. Should there be?
-> The issue here is which files needs to be touched, and which ones are checked in and shared during development,
-> and which ones are gitignored and only local.
-> There is the need to specify optional bindings in the layering, or it will fail / unless loading all from
-> a directory using a * mechanism like for modeules.
->
+i.e., the site level confdir overrides anything that comes from the environment, which in turn overrides anything
+that comes from modules.
 
-Vatsan, points out that they can do this a smarter way if they name the bindings files after the environment.
-Akunna likes this, but points out that they only have two at the moment. Vatsan counters with that they now can start using
-dynamic environments so there is potentially many environments, and it is good to separate the configuration of each
-environment and not call them `site.pp` everywhere as they may get merged by mistake.
+For development it is of value to override things for various reasons (testing, while refactoring, doing experiments)
+and these bindings are not known in advance. If experiments are successful, the changes should be made in the defaults
+bindings and later merged into the master.
 
-Akunna agrees and uses the Environment defaults in `environments.pp` as follows:
+Akunna now writes  `$confdir/manifests/devsite.pp`:
 
-    Environment {
-      manifest => "$environment.pp"
-    }
     site {
-      environment { 'dev':
-        manifest    => "$confdir/dev/manifests/site.pp",
-        bindingsdir => "$confidr/dev/bindings,
-        manifestdir => "$confdir/dev/manifests",
-        modulepath  => "$confdir/dev/modules",
-        templatedir => "$confdir/dev/templates"
-      }
+      bindings => [
+        layer { 'site'        : include => 'confdir:/default' }
+        layer { 'devpatches'  : include => 'env:/patches::*' }
+        layer { 'env'         : include => 'env:/default' }
+        layer { 'modules'     : include => 'module:/*::default' }
+        ]
     }
 
-THIS IS A MESS ! Needs simplification of the setup, too many slippery slopes and things named the same way
-(a site.pp in a dynamic environment being a branch of what is mounted at the top later to be merged vs. special
-thnigs for that environment (while developing) that should not be merged. All of that vs. statically configured
-environments... this is royally confusing). (Also new comment that relative paths are added to absolute ones, makes
-it difficult to remove things).
+Now developers can drop bindings into `$confdir/dev/bindings/patches` and they will be automatically picked up.
+The bindings under `patches` will override those in the dev environments default, and will override all modules.
+
+Akunna updates the experiments binding and moves it to `$confdir/dev/bindings/patches/experiment.pp`, and edits the file
+to start with:
+
+    bindings patches::experiment {
+      # the rest is the same
+
+Vatsan points out that they need to address the module path since some modules should always be included and
+configured the approved way, so they need to layer the bindings for thos modules as well. They decide to
+come back to that later.
+
+> ISSUE: The `env:` scheme is not described yet in the ARM text.  
+> DISCUSS: Are users more comfortable with file paths than symbolic names / URI's even if that means more
+> using interpolated strings with paths (which is less robust/secure since the environments.pp defines the paths
+> and can be made more secure.
+
+Vatsan, points out that they must update the `environments.pp` as well to refer to `site.pp` and `devsite.pp` resectively
+and Vatsan edits those parts to read:
+
+      environment { 'production':
+        envdir   => "$confdir/master"
+        manifest => "$confdir/manifests/site.pp"
+      }
+      environment { 'dev':
+        envdir   => "$confdir/dev"
+        manifest => "$confdir/manifests/devsite.pp"
+      }
+
 
 A basic configuration
 ---------------------
