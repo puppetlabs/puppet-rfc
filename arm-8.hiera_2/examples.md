@@ -66,8 +66,8 @@ Akunna is happy to learn that the full set of facts is available when deciding w
 something that made things difficult in their existing ENC, and they had to cheat and read facts stored as a side effect
 of processing incoming requests.
 
-To start off, Akunna keeps it simple. All machines except those that are named after the seven dwarfs in German
-should be in production, the rest are "dev" machines.
+To start off, Akunna keeps it simple. All machines named after the seven dwarfs (in German) should be in "dev", the rest
+are in "production".
 Since "production" is default this is done with a simple `if` expression in `environments.pp` - she also adds
 the definition of the production and dev environments.
 
@@ -112,7 +112,7 @@ Akunna decides to come back to that when she understands what she wants to do.
 
 > Note: Assumes improvement to spec as above (basedir)
 
-In the given configuration, the bindings for the dev environment are in `$confidr/dev/bindings`. Akunna edits the
+In the given configuration, the bindings for the dev environment are in `$confdir/dev/bindings`. Akunna edits the
 file called `default.pp`. She wants to use the same set of classes and the same set of parameters (i.e. top
 scope variables) on all nodes.
 
@@ -129,16 +129,14 @@ scope variables) on all nodes.
       
       # bind parameters for classes
       #
-      bind parameters ntp to { ntpserver => '0.pool.ntp.org' }
-      bind parameters aptsetup to {
+      bind parameters class ntp to { ntpserver => '0.pool.ntp.org' }
+      bind parameters class aptsetup to {
         additional_apt_repos => [
           'deb localrepo.example.com/ubuntu lucid production',
           'deb localrepo.example.com/ubunty lucid vendor'
           ]
       }
     }
-
-> Note: bind variables not in ARM text yet, may change...
 
 Vatsan points out that in the "dev" environment they want to include the development apt repo, and that they do
 not want autoupdate for ntp. Akunna adds the following at the end in the `bindings default { }`:
@@ -297,14 +295,14 @@ master as production.
 
 The experiment bindings are not included by default in site.pp. Akunna decides to have two different site.pp, one for
 production, and one for dev. The production site.pp can use the defaults, so nothing is needed there. Akunna starts to
-wtite things into the `$confdir/dev/manifests/site.pp`, but realises that is is an easily made mistake to merge `site.pp` from
+write things into the `$confdir/dev/manifests/site.pp`, but realises that is is an easily made mistake to merge `site.pp` from
 dev into the master which is used for production, so she renames it to `devsite.pp`. As soon as she starts writing she
 realizes that if the `envrionments.pp` refers to the `devsite.pp` directly, then basically the dev environment can perform
 all sorts of bindings that Akuna does not quite trust others to tamper with.
 
 Akuna and Vatsan discusses how they want to solve this, and they come up with an idea. They really do want to reserve the
 right to define the layering of bindings for everything that runs on the master, so delegation to site.pp files that are not
-strictly managed is a bad idea - they want to reserve the right to be able to override any bindings at the stie level (above
+strictly managed is a bad idea - they want to reserve the right to be able to override any bindings at the site level (above
 all environments, and the way to do this is to control which site.pp to use.
 
 They decide to use three different site.pp files; one for production, one for dev and one for dynamic environments.
@@ -349,7 +347,7 @@ to start with:
       # the rest is the same
 
 Vatsan points out that they need to address the module path since some modules should always be included and
-configured the approved way, so they need to layer the bindings for thos modules as well. They decide to
+configured the approved way, so they need to layer the bindings for those modules as well. They decide to
 come back to that later.
 
 > ISSUE: The `env:` scheme is not described yet in the ARM text.  
