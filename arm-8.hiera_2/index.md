@@ -4,21 +4,42 @@ ARM-8 Hiera 2
 Summary
 -------
 
-REQUIRED -- Provide a one-paragraph summary of the proposal, no more
-than a few sentences.  This summary will be rolled up into feature
-lists and other documents, so please take the time to make it short
-and sweet.
+> TODO:  
+> REQUIRED -- Provide a one-paragraph summary of the proposal, no more
+> than a few sentences.  This summary will be rolled up into feature
+> lists and other documents, so please take the time to make it short
+> and sweet.
 
 Goals
 -----
 
-What are the goals of this proposal?  Omit this section if you have
-nothing to say beyond what's already in the summary.
+> TODO: Tenative goals below - to be defined/edited (@eric0)  
+> What are the goals of this proposal?
+
+* Provide injection capabilities at par with or exceeding the capabilities of current Hiera directly in the Puppet Language that
+  can be the foundation for all injection like behavior in Puppet.
+* Be backwards compatible with Hiera to protect users investment and offer a migration path.
+* Offer as much backwards compatibility as possible when introduced (exception: behavior that it is undesirable) where users
+  can gradually opt-in to use new features.
+* Provide a mechanism that makes it possible to plugin functionality to defined extension points to aid in the process
+  of breaking up the monolithic puppet into separate pieces, and to define internal APIs.
+* Provide injection like behavior that can operate with different configuration per environment
+* Clearly define the chain of responsibilities for processing a request wrt. environment selection.
+* Make selection of environment in Puppet Language possible.
+* Be backwards compatible with ENC and node declarations.
+* Provide an extension point for ENC (new API).
+* Implement support for current ENC as an extension.
+* Provide the foundation for x-node injection.
+* Solution should allow users to be able to define a review/authorization process of configuration - manual or via CI.
+* Provide a richer set of user organization business driven configuration selection criteria than the current node / ENC mechanism.
+* Data structures interchanged via APIs should be made in a fashion that is transferable between different implementation
+  languages with preservation of a high degree of semantics.
 
 Non-Goals
 ---------
-Describe any goals you wish to identify specifically as being out of
-scope for this proposal.
+> TODO: W.I.P  
+> Describe any goals you wish to identify specifically as being out of
+> scope for this proposal.
 
 ### Data Transformations
 
@@ -29,17 +50,58 @@ such data transformations - instead Hiera2 defines ways in which existing data t
 upon when needed. If data transformation power is lacking for a particular use case, this should be added as
 specific functions.
 
+### Review/Authorization Process
+
+It is the goal of this ARM to offer a solution that is easily integrated into a review and authorization process defined
+by a user organization. It is not the goal to define any such processes - only the basic mechanisms on which it is based.
+
+### Secure Facts
+
+It is not a goal for this ARM to define how secure facts may be handled/implemented.
+(This ARM does not depend on such facts to be available, but discusses their importance and where they surface).
+
 Success Metrics
 ---------------
 
-If the success of this work can be gauged by specific numerical
-metrics and associated goals then describe them here.
+> TODO:  
+> If the success of this work can be gauged by specific numerical
+> metrics and associated goals then describe them here.
 
 Motivation
 ----------
+> TODO: The goals need motivation - W.I.P  
+> (There are issues reported for many of these...)  
+> Why should this work be done?  What are its benefits?  Who's asking
+> for it?  How does it compare to the competition, if any?
 
-Why should this work be done?  What are its benefits?  Who's asking
-for it?  How does it compare to the competition, if any?
+### Cleanup of Environment selection
+
+* Dynamic environments:
+  * not possible to enumerate them
+  * ...
+* Fuzzy rules in the chain to determine environment
+* Security issues
+* Inefficient and error prone / fuzzy handling of pluginsync (may require expensive iterations)
+* Not possible to get indication/error if requested environment becomes the effective environment
+* Not possible to base environment selection on facts (except by cheating, which is done in the wild)
+
+Clear rules regarding environment selection are essential in order to have a solid process for the next
+level of configuration since it is environment specific (per the environment itself and the modules on its
+modulepath).
+
+### Provide a mechanism that makes it possible to plugin functionality to defined extension points
+
+Lack of definition of runtime extension points makes it difficult to plugin behavior (in Ruby) other that functions
+and types/providers which have reasonably well-defined APIs (internal DSLs). One example of a simple extension point
+(used as an example in this ARM) is the support for syntax checkers that is proposed in ARM-4 Heredoc where the only reasonable
+option was to implement the syntax checker as a function; in this case not terribly bad since it may be of value to also
+call such a function from user code. But other such plugins would not make sense to expose to users - several examples
+are presented in this ARM.
+
+This feature is important as it offers distinct APIs for extensions that can be delivered in modules with a minimum of effort.
+Having clear APIs allows shipment of basic functionality in the open source version while making it possible to offer
+commercial alternatives, as well as the possibility for partners to provide integration.
+
 
 Description
 ===========
@@ -146,7 +208,8 @@ Hiera 2 it is of great value to also clean this up. The proposed sequence is as 
 
 * Request reaches new node terminus.
 * All facts are turned into top scope variables (or, optionally, put into a `$facts[]` hash).
-* The `$environment` variable if set is cleared (it is unsafe in its current form).
+* The `$environment` variable if set is renamed to `$agent_environment` (it is unsafe in its current form) - see
+  [Environment from Agents](#environment-from-agents) for the specifics.
 * If the request contains trusted data (from cert or encrypted facts), these are made available using a mechanism
   that is to be specified separately (i.e. via a different mechanism than just setting `$environment` in top scope).
 * If an external (current API) ENC is configured it is called to obtain environment, top scope variables, class parameters
@@ -160,7 +223,8 @@ Hiera 2 it is of great value to also clean this up. The proposed sequence is as 
 
 ### environments.pp
 
-The entry point manifest is named `environments.pp` and is placed in the same directory as `puppet.conf`.
+The entry point manifest is named `environments.pp` and is placed in a directory appointed by `puppet.conf` (defaults
+to `$confdir`)
 
 > ##### Use hardcoded environments?
 > Decision:  Should `environments.pp `be a hard-coded name, or be configurable in puppet-conf?
@@ -168,70 +232,139 @@ The entry point manifest is named `environments.pp` and is placed in the same di
 > Pro configurable: easier to test different overriding configuration (dev/test)
 
 The concrete syntax for an environment is specified by borrowing the resource syntax. It is made special by
-being placed inside of a `site { }` expression.
+being placed inside of a `site { }` expression (these _environment resources_ are not placed in the catalog).
+All paths except `envdir` may be relative (this is explained in more detail below).
 
     site {
       # Environment defaults
       Environment {
-        modulepath => 'colon separated path',
-        manifest   => 'path to environment root manifest',
-        # ...
+        envdir      => ... # absolute path to environment's root, defaults to '$confdir'
+        modulepath  => ... # colon separated paths, may mix absolute and relative paths, defaults to '<envdir>/modules'
+        manifestdir => ... # path to directory containing manifests, may be relative, defaults to 'manifests/'
+        manifest    => ... # path to environment root manifest, may be relative, defaults to '<manifestdir>/site.pp'
+        templatedir => ... # path to templates directory, may be relative, defaults to 'templates/'
+        bindingsdir => --- # path to root of bindings directory, may be relative, defaults to '<envdir>/bindings'
       }
-      # Production environment
+
+      # A static environment
       environment { 'production':
-        modulepath  => 'colon separated path',
-        manifest    => 'path to environment root manifest',
-        manifestdir => 'directory',
-        templatedir => 'directory',
-      }
-      # Additional environments
-      environment { '...':
         # ...
+      }
+      # Additional static environment
+      environment { '...':
+      }
+      
+      # Allowing dynamic environments, and specifying defaults if different than Environment defaults
+      dynamic_environments { '/etc/puppet/environments':
+        # envdir is automatically set and cannot be changed (error if attempted)
       }
     }
+    
     $environment = 'production'
 
-> Note: The rationale is that things inside the new top level keyword `site` are different, and that
-> this top level keyword contains other new keywords that are not special outside of "site". This reduces
+Here is an example where dynamic environments are turned on and then put to use. A dynamic environment comes into
+existence by a user checking out a branch; e.g. `/etc/puppet/environments/test36` becomes the environment called
+`test36` with the configuration shown below). The selection of environment sets the `envdir` to either the
+static `$confdir/master` if "production" was selected, or one of the dynamic environments if the selected environment
+name matches a a name of a subdirectory of the `dynamic_environments` specified directory; e.g. `test36` 
+The relative paths are resolved against the effective `envdir`.
+(A relative path in `manifest` is however first resolved against `manifestdir` which
+in turn is resolved against `envdir` if relative. This is done to enable just specifying the name of the manifest).
+For the statically declared `production` environment the `envdir` must be specified (if it should be something other
+than the default `$confdir`).
+
+    site {
+      Environment {
+        modulepath => 'modules/dist:modules/site:/opt/puppet/share/puppet/modules',
+      }
+      dynamic_environments { "$confdir/environments":
+      }
+      environment { 'production':
+        envdir     => "$confdir/master",
+        modulepath => '$confdir/modules:modules/site:modules/dist',
+      }
+    }
+
+> Note: The rationale for things inside the new top level keyword `site` borrowing syntax, but being
+> special kinds of resource, and that the `site` top level keyword contains other new keywords that are not
+> special outside of "site". This reduces
 > potential clashes with existing logic. It also logically relates these kinds of statements with other
 > statements about the "site" (as you will see in later sections). (Remember that we want one parser to
 > be able to parse older versions of the puppet language.)
+>
+
 
 The following rules apply:
 
 * It is no longer possible to introduce stanzas in `puppet.conf` for environments.
 * Restriction on environment names is lifted
-* Any number of environments may be available
-* The `--environment` flag is ignored from agents. See [Integration with existing ENC](#integration-with-existing-enc) and [Request
-  Sequence](#request-sequence) for details.
-* Environments incorporate `Environment` resources defaults from `environments.pp` in addition to default puppet values for all parameters
-  derived from `puppet.conf`.
+* Any number of environments may be used; statically declared or (if enabled) dynamically placed under one directory
+  specified by the _environment resource_ `dynamic_environments`.
+* Environment resources are not placed in the catalog.
+* The `--environment` flag is _by default_ ignored from agents. See [Environment from Agents](#environment-from-agents),
+  [Integration with existing ENC](#integration-with-existing-enc) and [Request Sequence](#request-sequence) for details
+  and discussion.
+* Environments incorporate `Environment` resource-defaults from `environments.pp` in addition to default puppet values
+  for all parameters derived from `puppet.conf` (i.e. where defaults/defaults are set if factory settings are not
+  wanted - but this is really not needed since user has full control in `environments.pp`).
 * If `environments.pp` is absent, a default "production" environment is automatically defined.
 * If `environments.pp` is present but does not define a "production" environment and an environment by the name of "production" is not
-  available in `$environmentdir` then one is automatically defined.
+  available (and allowed) as a dynamic environment then one is automatically defined.
 * If execution reaches the end of the `environments.pp` and `$environment` has not been defined, it is set to "production".
-* A parameter `$environmentdir` may be defined with a value of an absolute directory path. It defaults to `/etc/puppet/environments`
-* If `$environment` is set to a value other than one of the statically-defined environments in `environments.pp` and `$environmentdir` is
-  configured, then a directory of `$environmentdir/$environment` is assumed to be the environment directory.
-* If the environment directory does not exist and no statically-defined environment matches then an error is raised and processing stops.
-* If the environment directory does exist then `$manifest` is attempted to be read from `$environmentdir/$environment/manifests/site.pp`
-* If the environment directory does exist then each non-absolute path in `$modulepath` is read from `$environmentdir/$environment`
-* Absolute paths in `$modulepath` are absolute and do not vary per environment.
-* The RHS parameter values may be any non top level puppet expression, but may not use injection
+* A `dynamic_environments` environments resource may be defined with a title of an absolute directory path. This allows
+  dynamic environments to be used and specifies that additional environments are available in its sub-directories named
+  after the environment they represent.
+* If `$environment` is set to a value other than one of the statically-defined environments in `environments.pp`,
+  or (if allowed) a subdirectory of `dynamic_environments`, an error is raised ("unknown environment") and processing stops.
+* In case `$environment` is successfully resolved against an existing directory the `envdir` parameter is determined;
+  it must be explicitly set in a statically environment (or set from `Environment` defaults), and it is automatically
+  set when `$environment` is successfully resolved to a dynamic environment.
+* Then `$manifest` is resolved against the selected environment resource (relative paths resolved against `envdir`)
+* The `$modulepath` is resolved against the selected environment resource (relative paths resolved against `envdir`)
+* (Absolute paths remain absolute).
+* The RHS parameter values may be any non top level puppet expression (just as for regular resources), but may not use injection
 * Facts and secure data have been bound to variables when evaluation of `environments.pp` starts
-* With the exception of `$environment`, any variables set in `environments.pp` are set in a local scope not visible to the rest of the system.
-* The `environments.pp` may contain other puppet expressions - the use case is to support data manipulation, common definitions reused in
-  several environment specifications, etc.
+* With the exception of `$environment`, any variables set in `environments.pp` are set in a local scope not visible to the
+  rest of the system.
+* The `environments.pp` may contain other puppet expressions - the use case is to support data manipulation, common
+  definitions reused in several environment specifications, etc.
 * Only functionality available in puppet core may be used (functions and plugins/extensions) since the environment has not been setup, and
   hence no module-path.
+* `environments.pp` is reevaluated on each request (if changed) as the master would otherwise need to be restarted.
 
 > ##### Use magical return?
 > Discuss: Since the new evaluator will return the value of the last executed expression as the result, we could simply
-> return a value that way, but it is slightly magical in this context.
+> return a value that way, but it is slightly magical in this context.  
+> Likely resolution : `$environment` is picked up, no magic.
 
 > ##### Use literal default for environment parameters?
 > Discuss: A parameter value of `default` could be used to initiate the parameter to a sane/typical default in an
 > environment.
+
+> ##### Discuss: Is `$envdir` of value later in the process?
+> Or should it simply be used internally when resolving relative paths in `environments.pp`?
+
+### Environment from Agents
+
+It is of value to be able to set the environment on an agent using `--environment <env>`. There are however
+issues with this approach:
+* The setting is not secure
+* The setting is not authoritative (an ENC may override it)
+* If overridden by the master (ENC or `environments.pp`), there is no warning (or error).
+
+For those that use classic node statements (no ENC) the environment set on an agent will not be overridden.
+
+It is proposed that the environment set using `--environment` on an agent should be made available when evaluating `environments.pp`
+under a different name e.g. `$agent_environment`. If `--environment` has not been specified, the value of `$agent_environment` is
+`undef`. The logic in `environments.pp` can then resolve the various cases:
+
+* ignore the `$agent_environment` completely
+* compare it against `$environment` and if different issue a warning or raise an error
+* use it if there is a desire to override the decision in an ENC
+* use it in combination with other data supplied from the agent to determine the environment to use.
+
+In simple terms: the environment set on an agent does not automatically become the `$environment` that will be used, while
+giving a user full freedom to do what they want.
 
 ### Integration with existing ENC
 
@@ -248,12 +381,22 @@ ENC set top scope variables and `$environment` or set them to a new value.
 The resulting `$environment` is the visible value at the end of the evaluation
 of `environments.pp` (before the two scopes are abandoned), all other local variable values are discarded.
 
+The new implementation is best made as an extension point that defines a new API for ENC (enables a new ENC to be written
+that has access to facts). An implementation (adapter) is made that adapts to the existing ENC.
+
+> ##### How to have bindings before evaluating `envbironments.pp`?
+> Discuss: There should be a mechanism that allows bindings to be in effect before getting to the environment specific
+> bindings - these bindings are internal, and should be expressed in a `.pp` file that is evaluated before `environments.pp`.
+> (The boot sequence is indeed complicated). Should `environments.pp` contain two things? i.e. a stanza that is first evaluated
+> even before having access to facts and secure variables, and before an environment is selected; i.e prior to calling *any*
+> external service.
+
 > ##### Provide access to $classes and $parameters in environments.pp?
 > Discuss: It is probably of questionable value to have access to the defined classes since environments.pp only
 > influences the selection of an environment. Likewise, class parameters are of little value.
 
 The binding of classes to nodes are done using the Hiera2 Layering mechanism;
-see [Composition of Bindings](#composition-of-bindings) and [Enc Bindings Provider(#enc-bindings-provider).
+see [Composition of Bindings](#composition-of-bindings) and [Enc Bindings Provider](#enc-bindings-provider).
 
 > ##### Top scope variables - how?
 > Discuss: Inject them from vars set in environements.pp, as named bindings, provide other mechanism (bind variables using bind operations)?
@@ -261,8 +404,8 @@ see [Composition of Bindings](#composition-of-bindings) and [Enc Bindings Provid
 > are bad in general because they may be introduced without being declared in Puppet Logic which makes static analysis
 > of code referencing top scope variables impossible.
 > We can continue in this style - say by making all variable assignments in `environments.pp` be top scope
-> assignments, and simply mix in variables from the ENC, or change them into named bindings allowing them
-> to be composed (see [Named Bindings](#named-bindings)).
+> assignments (not so good), and simply mix in variables from the ENC, or change them into named bindings allowing them
+> to be composed (see [Named Bindings](#named-bindings)), or have concrete syntax (probably the best).
 
 ### Categorization
 
@@ -431,10 +574,19 @@ This makes it very flexible to chose what is done in "general" and what is "spec
           # when kermit is virtual bind something special than for all other virtual
         }
        # for anything else that is virtual
-     }
+    }
 
 Nesting is an _and_ operation. Internally, this results in one binding with the precedence of the highest
 precedented category in the nesting - see discussion below as this simple rule may break 'the law of least surprise'.
+
+Since (as you will see later) it is possible to use an `or` operator it is symmetrical to also allow `and` to have
+the same effect as a simple nesting - using the same example as above:
+
+    bindings x {
+      when virtual true and node 'kermit.example.com' {
+          # when kermit is virtual bind something special than for all other virtual
+      }
+    }
 
 > ##### Precedence score - how?
 > Discuss: One could argue that a nested binding should have higher precedence than a non-nested since
@@ -450,20 +602,18 @@ precedented category in the nesting - see discussion below as this simple rule m
 > increase the precedence like numbered paragraphs: 'environment' (2) and 'virtual' (3) is given the score '3.2' which is
 > lower than 'node' (4). The segments are ordered in descending precedence order.
 
-It is also allowed to declare multiple categories with the same semantics as when a `when` clause is used in
-a `case` expression - e.g.:
+It is also allowed to declare multiple categories using `or`:
 
-    when virtual true, node 'kermit.example.com' {
+    when virtual true or node 'kermit.example.com' {
       # bindings when virtual or when node is kermit
     }
 
-This is an _or_ operator. (Internally, this results in two bindings with different precedence). This is of value
+Internally, this results in two bindings with different precedence. This is of value
 to avoid repetition. (If overused there is probably something wrong with how the user defined the categorizations).
 
-> ##### Support when with or semantics?
-> Discuss: This may lead to hard to understand error messages as one of the precedented bindings may cause
-> a conflict - it should however be possible to explain the issue well enough to the user to make it understandable
-> - e.g. "The binding of x (on line n, file f) in category 'virtual true' is in conflict with the same binding in..."
+This may lead to hard to understand error messages as one of the precedented bindings may cause
+a conflict - it should however be possible to explain the issue well enough to the user to make it understandable
+- e.g. "The binding of x (on line n, file f) in category 'virtual true' is in conflict with the same binding in..."
 
 Bind Operations
 ---------------
@@ -480,6 +630,7 @@ producer of an object). The expressive power of bindings is achieved with a rela
 * **anonymous binding** -- binding using only type
 * **rebinding** -- re-binding an already bound key (alias or rename)
 * **binding of parameter mapping** -- allows mappings of parameters between types
+* **binding of variables** -- allows binding of top scope variables
 
 You probably wonder what all of these mean, and if a user really need to learn all these different terms. But as
 you will see, the concrete syntax makes specification of all these kinds of bindings quite natural as you only have
@@ -522,6 +673,8 @@ if you want to look at details).
     bind_key
       : # empty if inferrable
       | PARAMETERS type
+      | VAR
+      | VAR type
       | type
       | type ',' STRING
       | STRING
@@ -556,7 +709,7 @@ TODO: Query is missing
 
 > Also Note: The simplified grammar is only for illustration - it is not a correct grammar as it has many
 > illegal invariants, and requirements that elements are required when they are not. Example; a multibinding
-> requires the id option to be set. An abstract binding can not have a producer (nor options). This is explained
+> requires the id option to be set. Most abstract bindings can not have a producer (nor options). This is explained
 > in detail in the following sections.
 
 ### Binding and Multibinding
@@ -564,12 +717,14 @@ TODO: Query is missing
 A binding is one of:
 
 * `bind` -- (binds one or multiple keys)
+* `bind parameters` -- binds one or multiple parameters
+* `bind variables` -- binds one or multiple top scope variables
 * `multibind` -- binds one key to which other (_fragment_) bindings contribute
 * `bind map` -- binds a parameter map from one type to another
 * `bind alias` -- creates a copy binding under a new name
 * `bind renamed` -- create a copy binding under a new name and removes the original
 * `rebind` -- bind existing binding with higher precedence
-* `include` -- binds inclusion of classes (syntactic sugar)
+* `include` -- binds inclusion of classes
 * `exclude` -- binds exclusion of classes
 
 Each form of binding is explained separately in the following sections. The explanations of the general
@@ -601,6 +756,14 @@ An explicit injection calling `inject("the meaning of life")` will then produce 
 
 See [Named Binding](#named-binding) and [Type System](#type-system) for details about
 type (in case you wonder why the error message contains the text `Data` and what it means).
+
+#### Invariants of Abstract Bindings
+
+Some combination are not meaninful, specifically abstract bindings of parameters - they are already declared to exist - it would not
+be meaninful to also specify that a parameter must be bound. (The real grammar/validation rules will enforce this).
+
+Abstract binding of variables is however meaningful, it declares the requirement that a top scope variable must be set.
+See [Binding Variables](#binding-variables) for an example.
 
 > ##### Is abstract too abstract?
 > Discuss: If the Computer Science term 'abstract' is to abstract [sic] a more populistic name like `placeholder`
@@ -817,21 +980,19 @@ identity (i.e. 'syntax-validators') been used the result would have been the sam
 
 #### Array Multibind Example
 
-We want to collect strings in an array where each string is a class name.
+We want to collect strings in an array where each string is a user name.
 
 In this example, a multibind is created. It is declared that each contribution should be of type
-`String`. Contributions should be made using the key 'included_classes', and the result of
-the collection is of `Array` type. Thus a call to `inject('classes')` results in
-an `Array` with the content ['apache', 'java', 'jenkins'].
+`String`. Contributions should be made using the key 'included_users', and the result of
+the collection is of `Array` type. Thus a call to `inject('users')` results in
+an `Array` with the content ['anna', 'akuna', 'ries'].
 
-    multibind Array[String], 'classes' AS 'included_classes' 
-    bind to 'apache' in 'included_classes'
-    bind to ['java', 'jenkins'] in 'included_classes'
+    multibind Array[String], 'users' AS 'included_users' 
+    bind to 'anna' in 'included_users'
+    bind to ['akuna', 'ries'] in 'included_users'
 
-This is the mechanism that is used that makes it possible for any contributor to bind a class to include
-on a node (i.e. by contributing classes based on category). 
 A multibind is used (in addition to the obvious reason to enable collection) to allow the entire result
-to be overridden with a binding of 'classes' if so desired.
+to be overridden with a binding of 'users' if so desired.
 
 #### Multibind -- to Merge or not to Merge
 
@@ -920,12 +1081,13 @@ Classes (or rather, class inclusion) is performed with (examplified):
 It is also possible to bind exclusion, and it is otherwise difficult to erase/replace a faulty binding.
 
     exclude name
-    exclue [name1, name2, ...]
+    exclude [name1, name2, ...]
 
 The list of classes is injected with `inject('/classes')`. Also see [Naming Scheme](#naming-scheme).
-Internally, this is handled as multibindings to 'included-classes' and 'excluded-classes'.
+Internally, this is handled as multibindings to 'included_classes' and 'excluded_classes'.
 
-An include wins over an exclude if the exclude has lower precedence.
+An include wins over an exclude if the exclude has lower precedence. Eclude of a non-existing included class
+is a no-op.
 
 > ##### Use keywords include (and exclude) for class inclusion (and erasure)?
 > Discuss: Class inclusion (and exclusion) was given concrete syntax rather than being multibind contributions.
@@ -1073,6 +1235,89 @@ multiple objects:
 
 Here we resolve the issue that both Y and Z have parameters a, b, and c. By defining the maps it is clear what to
 pick from the respective type.
+
+
+### Binding Variables
+
+The binding of top scope variables is similar to binding of parameters, but here no mapping is offered. Each
+variable is internally bound separatly (and may thus, just like parameters be individually shadowed by a binding
+with higher precedence).
+
+Here is an example:
+
+    bind variables to {
+      myvar => 42,
+      my_other_var => 44
+    }
+
+> Rationale: We could simply handle these bindings as variable assignments among the
+> other binding operations - i.e. `$a = 10` is the equivalence of `bind variables to { a => 10 }`. Although straight forward
+> it will probably cause confusion over parse/evaluation order, and would not be symmetrical with other types of bindings (How is
+> the assignment then made abstract?
+>
+
+Variable binding keys must be unique across all types (i.e. variable names are unique).
+
+#### Typing Variables
+
+The simplest form of binding variables binds variables (as shown in the example in [Binding Variables](#binding-variables),
+with type determined by inference. If a type is specified and a literal producer is used, the bound literals must comply with
+the declared type.
+
+    bind variables Integer to { 
+      a => 10, # ok
+      b => 'bananas' # error
+    }
+
+Although perhaps not valuable on its own it is of value when declaring abstract variable bindings.
+
+#### Abstract Binding of Variables
+
+It is worth noting that it is possible to specify what a module expects in terms of defined top scope variables
+by declaring them as abstract. This makes it possible to give errors upfront (and tools can perform this analysiz statically)
+without having to wait until the moment in logic where such a variable may be referenced.
+
+Arguably, depending on the precence of top scope variables is not the recommended approach given that parameters can be
+specified in more precise ways. It is however of value when dealing with older code / existing modules where this style is
+used. An external source can now declare variables to be abstract in a helper module (say a helper module that adapts an
+older module for use in a more modern puppet).
+
+Examples
+    # A module wants to ensure that the variable `$::mainurl` is set
+    bind variables abstract to 'mainurl'
+
+    # Declaring multiple variables at once as abstract
+    bind abstract varibles to ['must_be_set', 'this_too']
+
+This is (probably) the only exception to the rule that an abstract binding does not have a "producer"; in this case a producer
+of the names to bind abstractly. It is farfetched that someone would need a construct where the set of abstract
+variables is determined by a non literal producer (i.e. ruby logic) - hence that will not be allowed.
+
+Typing a variable in combination with abstract is a valuable way of constraining the variable's type:
+
+    bind abstract variable Array[String] to ['blog_administrators']
+
+Abstract untyped variable bindings are made using the type `Any`.
+
+### Binding Dependencies
+
+Since the bindings system is used to compose the content of a catalog, it is important to also be able to compose
+dependencies that define the order.
+
+While it is possible to bind to the meta-parameters `before`, `require`, `notify` and `subscribe` it is possible to
+define the order using parameter bindings.
+
+I is naturally also possible to define concrete syntax. (This is not included in the proposed grammar, as the topic needs
+to be discussed). Here are some examples what it could look like:
+
+    bind dependency File['/etc/ssh/sshd_config'] ~> Service['sshd']
+
+Syntax should support `->` and `~>` (but not right to left arrows). Syntax should also support an array of references.
+The semantics are: if both left and right side are in the catalog, then add the dependency.
+
+>##### How should dependencies/ordering be handled?
+> Discuss: Is it enough to only bind order using meta parameters?
+> Are the semantics the correct semantics? (i.e. ignored if not both sides are present)
 
 ### Summary of Binding Options
 
@@ -1537,6 +1782,18 @@ Is encoded as:
 
 Note that this takes place internally, and is only a concern in Ruby extensions.
 
+### Classes
+
+The key `Array[String], '/classes'` is the name of the binding that provides a list of classes. It has a producer that
+performs an set operation of `inject('included_classes') - inject('excluded_classes')`
+
+### Variables
+
+Top scope variables are bound using:
+
+    /var/var_name
+
+
 Ruby API
 --------
 
@@ -1698,4 +1955,22 @@ Write example where X has parameters a, b, c, these should come from two differe
 
 TODO: To bind custom ruby code there is probably also the need to specify what to require in order to load
 the code (or maybe this is part of some underlying registration of "plugins").
+
+#### One to One Map
+
+Since a map both defines mapping of names as well as which names to map it may be of value to allow binding an array
+of names as a 1:1 map.
+
+One could imagine the syntax:
+
+    bind map T1 to T2 [a, b, c]
+
+But this is not possible using the proposed grammar as an options hash is expected after T2, and this hash doubles as
+the mapping hash in a bind map expression. This could be solved by making the options map requiring a map=> key also for
+bind map and accept an array as a "unit map". 
+
+Uncertain if it is of great value to make bind map worse to gain the unit ability. It can be done with an explicit unit
+map { a => a, b => b }. Since the use case is both advanced and esotheric it seems not worth the cost as it is possible
+to achieve the result with a bit more typing.
+
 
