@@ -3,6 +3,6 @@
    "title": "Puppet Bindings",
    "champion": "hlindberg",
    "project":"https://github.com/puppetlabs/armatures",
-   "revision":"0.0.1"
+   "revision":"0.0.1",
    "discussion":"https://groups.google.com/d/topic/puppet-dev/ITIqQrEY9ZY/discussion"
 }
