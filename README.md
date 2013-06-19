@@ -84,18 +84,18 @@ Index of ARMs
   <td>Draft</td>
 </tr><tr>
   <td>8</td>
-  <td><a href="arm-8.hiera_2/index.md">Hiera 2 Specification</a></td>
+  <td><a href="arm-8.puppet_bindings/index.md">Puppet Bindings</a></td>
   <td>Unified dependency injection framework for Puppet</td>
   <td>0.0.1</td>
   <td>June 1, 2013</td>
   <td>Draft<br><a href="https://groups.google.com/d/topic/puppet-dev/ITIqQrEY9ZY/discussion">Discuss</a></td>
 </tr><tr>
   <td>9</td>
-  <td><a href="arm-9.data_binding/index.md">Data Bindings</a></td>
-  <td><del>Next iteration of automatic data bindings</del></td>
-  <td><del>0.1.0</del></td>
-  <td><del>March 1, 2013</del></td>
-  <td>Withdrawn</td>
+  <td><a href="arm-9.data_in_modules/index.md">Data in Modules</a></td>
+  <td>Focused specification for providing Hiera data in Puppet Modules</td>
+  <td>0.0.1</td>
+  <td>June 18, 2013</td>
+  <td>Draft</td>
 </tr><tr>
   <td>10</td>
   <td><a href="arm-10.additional_node_scope/index.md">Additional Node Scope</a></td>
