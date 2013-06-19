@@ -1,5 +1,5 @@
-ARM-8 Hiera 2
-=============
+ARM-8 Puppet Bindings
+=====================
 
 Summary
 -------
