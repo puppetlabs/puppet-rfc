@@ -93,8 +93,8 @@ Index of ARMs
   <td>9</td>
   <td><a href="arm-9.data_in_modules/index.md">Data in Modules</a></td>
   <td>Focused specification for providing Hiera data in Puppet Modules</td>
-  <td>0.0.1</td>
-  <td>June 18, 2013</td>
+  <td>0.0.2</td>
+  <td>Aug 16, 2013</td>
   <td>Draft</td>
 </tr><tr>
   <td>10</td>
