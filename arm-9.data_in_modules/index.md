@@ -147,7 +147,7 @@ these values, and it would be bad if bindings were contributed that would never 
 The **path** is there (just like in hiera1) to point the implementation to the data file that contains the values
 for this particular category. The path is relative to the location of the directory containing the hiera.yaml file.
 
-Three categories are predefined; `node`, `environment` and `common` - these have to have this
+Four categories are predefined; `node`, `osfamily`, `environment`, and `common` - these have to have this
 relative precedence (node having the highest priority (of the three), and common the lowest).
 Note that “everything” is in the common category.
 
@@ -205,7 +205,7 @@ There are two main entries; **layers** (which defines the layering of contribut
 and **categories** (which defines the names of valid categories, and their priority). 
 Contributions in a layer with higher priority completely override those in lower layers (i.e.; by default - anything
 defined at site level overrides everything contributed from modules. Note, there is nothing preventing
-bindings from the `$confdir` to placed in the same layer as contributions from modules, and only have site-wide
+bindings from the `$confdir` to be placed in the same layer as contributions from modules, and only have site-wide
 overrides in the top layer).
 
 The **categories** is a list in priority order (highest priority first) giving the name of the category, and the
@@ -372,7 +372,7 @@ Opting in on Hiera-2 'Data in Modules'
 
 First, `--binder` or `--parser future` must be in effect.
 
-The, in order for a module to be able to contribute bindings (i.e. data) using Hiera-2 and the default configuration,
+Then, in order for a module to be able to contribute bindings (i.e. data) using Hiera-2 and the default configuration,
 the module needs to have a `hiera.yaml` in its root directory. (This is not entirely true; to opt in using bindings
 expressed in Ruby there is no need to have a `hiera.yaml` file). Also as you will see later, you can modify the overall
 composition to place the module's `hiera.yaml` elsewhere, or have alternatives for the user to choose from. The convention
@@ -392,8 +392,8 @@ Hiera-2 has sane defaults, so all that is required is a file in the root of the 
 
 Yes, that is all that is needed to be able to express common bindings (and bindings for osfamily).
 The default configuration declares that all data is in a directory called `data`, and that *common* is
-in `data/common/`, and *osfamily* is in `data/osfamily/`. You also get both `yaml` and `json` backends by default
-where `yaml` has higher priority.
+in `data/common{.json, .yaml}`, and *osfamily* is in `data/osfamily/<osfamily>{.json, .yaml}`.
+You also get both `yaml` and `json` backends by default where `yaml` has higher priority.
 
 At this point, we have not defined any data in the module, but this can now be added.
 
@@ -453,8 +453,8 @@ When adding a category, you need to specify the entire section (i.e. hierarchy 
     ---
     version: 2
     hierarchy:
-      [['osfamily', '\$osfamily', 'data/osfamily/\$osfamily'],
-       ['environment', '\$environment', 'data/env/\$environment'],
+      [['osfamily', '$osfamily', 'data/osfamily/$osfamily'],
+       ['environment', '$environment', 'data/env/$environment'],
        ['common', 'true', 'data/common']
       ]
 
@@ -546,6 +546,9 @@ $looked_up = lookup('something') |$result| {
 }
 </pre>
 
+The advantage of using a lambda is that there is no leakage of an extra variable, in the first example above, both `$x`, and `$looked_up` are
+externally referenceable if they are in a class. When using a lambda, its variables are always local.
+
 Overriding bindings from modules
 --------------------------------
 
@@ -633,7 +636,7 @@ Shipping a module with alternative bindings
 If you are publishing a complex module - say one that is configurable to be used in combination with other
 modules or stand alone and you want to help users consume it by including different sets of data.
 
-This is easily done by having one default (say for standalone) configuration one for each alternative.
+This is easily done by having one default (say for standalone) configuration and one for each alternative.
 You could organize this like this:
 
 <pre>
@@ -662,8 +665,8 @@ If there is a default contribution that is mutually exclusive the user needs to 
 before including one of the alternatives. The user may end up with these two entries in their modules layer
 in `bindings_config.yaml`:
 
-    include: [... , 'module-hiera:/the\_module/for\_x' ],
-    exclude: [... , 'module-hiera:/the\_module]
+    include: [... , 'module-hiera:/the_module/for_x' ],
+    exclude: [... , 'module-hiera:/the_module]
 
 If you have complex data you may want to consider defining this in ruby instead as you can then define everything
 per option - i.e. `default.rb`, `for_x.rb`, and `for_y.rb` and have them all in the same place.
@@ -946,7 +949,7 @@ You can use this if you need to read simple name to value definitions in some fi
 Here is a toy backend that binds an echo of the input parameters. The example below should be placed in a module
 (in the example, in the module 'awesome'). The method `read_data` should return a Hash with the wanted map of names to values.
 
-**&lt;module-root&gt;/lib/puppetx/awesome/echo\_backend.rb:**
+**&lt;module-root&gt;/lib/puppetx/awesome/echo_backend.rb:**
 <pre>
 require 'puppetx/puppet/hiera2_backend'
 module Puppetx::Awesome
@@ -993,7 +996,7 @@ wildcards/query/optionality is supported, and to produce a bindings model. (The 
 Here is a toy echo scheme handler example:
 
 <pre>
-require 'puppetx/puppet/bindings\_scheme\_handler'
+require 'puppetx/puppet/bindings_scheme_handler'
 module Puppetx::Awesome
 
 # A binding scheme that echoes its path
@@ -1036,7 +1039,7 @@ Custom Producer
 Both the Hiera-2 backend, and scheme handler extensions, deal with the production of bindings.
 These bindings are created up-front before catalog compilation and they are therefore somewhat static in nature.
 While it is possible to bind a puppet expression (that is evaluated either before compilation starts, or on each lookup),
-'there may be the need to create a reusable value producer to keep the amount of repeated logic down, or to provide
+there may be the need to create a reusable value producer to keep the amount of repeated logic down, or to provide
 features not already available from one of the existing producers.
 
 Note that it is only possible to bind a name to a custom producer when defining the bindings in Ruby. The Hiera-2
@@ -1134,7 +1137,8 @@ Yes, this is possible, you can even call lookup, or one of the Hiera-1 lookup fu
 Can I use the same data files in both Hiera-1 and Hiera-2?
 ----------------------------------------------------------
 
-Yes, the data files are compatible. However if you rely on Hiera-1 lookups that use something other
+The data files are compatible unless you use interpolation, in which case you need to change from the `%{}` syntax in Hiera-1, to
+the Puppet DSL syntax `${}` in Hiera-2. Also, if you rely on Hiera-1 lookups that use something other
 than priority lookup (e.g. `merge`, `merge deeper`, etc.) you will not get the same result from the
 lookup function. If you need this, you should either stay with Hiera-1, or use the more advanced ruby bindings.
 
@@ -1221,6 +1225,7 @@ Can I write a puppet function that adds/alters the bindings?
 ------------------------------------------------------------
 
 No, all the bindings are computed first. Once computed they are immutable. Calling functions happens much later.
+If you really need this, you may want to implement a **Producer** since they can have lazy evaluation.
 
 So, can I do any dynamic binding?
 ---------------------------------
