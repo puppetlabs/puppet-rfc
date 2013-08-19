@@ -7,34 +7,53 @@ Hiera data in Puppet modules.
 Summary
 -------
 
-REQUIRED -- Provide a one-paragraph summary of the proposal, no more
-than a few sentences.  This summary will be rolled up into feature
-lists and other documents, so please take the time to make it short
-and sweet.
+Currently, module authors use a 'params class pattern' to provide defaults for
+the parameters their classes accept. A module for managing a database service
+`mydb`, for example, will provide a `class mydb::params`, which contains
+parameter assignments like `$mydb::params::tcp_port`,
+`$mydb::params::install_dir`, etc. These assignments can use the puppet DSL for
+conditional logic so that the `install_directory` follows different OS'
+filesystem conventions appropriately. The parameter values are then used in the
+module's other classes, either in the prototype for the class or directly in
+the manifest:
+
+    class mydb::packages (
+      $tcp_port    = $mydb::params::tcp_port,
+      $install_dir = $mydb::params::install_dir,
+      ...
+      ) {
+        # class resources go here
+      }
+ 
+The params pattern has some drawbacks (summarized from user comments on [#16856](http://projects.puppetlabs.com/issues/16856) and the subsequent [mailing list discussion](https://groups.google.com/d/topic/puppet-users/pvqzeyHkrY4/discussion):
+
+* it lives apart from hiera, which we've landed on and promoted as being the solution to the data/code separation problem
+* it’s an attempt to supply default data to your classes and falls over whenever someone wants to change data or provide their own for their site. They’re forced to either run with a modified module or commit changes upstream, which may contain private data. 
 
 Goals
 -----
 
-What are the goals of this proposal?  Omit this section if you have
-nothing to say beyond what's already in the summary.
+1. We'd like to build a simple, consistent interface for data in modules that ties into our larger data/code separation story. This means building on the concepts in Hiera, which advanced users have found to be flexible and powerful enough for their needs without imposing a huge cognitive load on their non-expert team members.
+2. The implementation described here is a low risk, opt-in mechanism to integrate technology based on Cloudsmith's work in Geppetto and Stackhammer. It presents a significant opportunity to improve areas that have historically been troublesome in Puppet and hiera: data typing, lookup precedence, introspection of variable lookups, round-trips from the Puppet DSL to a UI and back. 
 
 Non-Goals
 ---------
 
-Describe any goals you wish to identify specifically as being out of
-scope for this proposal.
+None stated; but this probably means we need help questioning our assumptions.
 
 Success Metrics
 ---------------
 
-If the success of this work can be gauged by specific numerical
-metrics and associated goals then describe them here.
+If our approach is successful:
+
+* new users who find and integrate modules that make use of hiera2 will find that it's easy to understand and meets their needs for site customization.
+* module authors will find the approach to be a significant improvement over their current methods of providing bindings of values-to-variables which are based on conditional logic.
+* current hiera users will find the new capabilities to be an advancement in expressiveness, power and predictability.
 
 Motivation
 ----------
 
-Why should this work be done?  What are its benefits?  Who's asking
-for it?  How does it compare to the competition, if any?
+I think this is largely covered by the [Goals](#Goals) section.
 
 Description
 ===========
