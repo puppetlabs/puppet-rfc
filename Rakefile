@@ -4,7 +4,7 @@ require 'json'
 class Armature
   METADATA_FILE = "metadata.json"
 
-  ATTRIBUTES = [ "arm", "title", "champion", "organization", "effort", "revision", "requires-arms", "project", "issues", "implementation" ]
+  ATTRIBUTES = [ "arm", "title", "champion", "organization", "effort", "revision", "requires-arms", "project", "issues", "implementation", "discussion" ]
   REQUIRED_ATTRS = [ "arm", "title", "champion", "revision", "project" ]
   ARRAYS = [ "organization", "requires-arms", "issues" ]
 
