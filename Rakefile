@@ -75,3 +75,68 @@ task :validate do
     end
   end
 end
+
+task :gh => [:armsite, :gh_pages] do
+end
+
+require 'bundler/setup'
+require 'grancher/task'
+Grancher::Task.new(name = 'gh_pages') do |g|
+  g.branch = 'gh-pages'
+#  g.push_to = 'origin'
+  g.message = 'Updated armatures'
+  g.directory '_armsite'
+  g.file 'jekyll/_config.yml', '_config.yml'
+end
+
+task :armsite do
+  PRESITE="_armsite"
+  FileUtils.rm_rf(PRESITE)
+  FileUtils.mkdir_p(PRESITE)
+  puts "Generating _presite"
+  Dir.entries(".").find_all { |d| d =~ /^arm-[\d]+\./ }.each do |d|
+    begin
+      arm = Armature.new(d)
+      arm.load
+#      arm.validate
+      presite_arm_dir = File.join(PRESITE, d)
+      puts "Generating arm in #{presite_arm_dir}"
+      Dir.mkdir(presite_arm_dir) unless File.directory?(presite_arm_dir)
+      Dir.entries(d).find_all { |f| f =~ /\.md$/ }.each do |f|
+        puts "Reading: #{f}"
+        File.open(File.join(d, f), "r") do |fh|
+          presite_file = File.join(presite_arm_dir, f)
+          puts "Generating arm file #{presite_file}"
+          File.open(presite_file, "w") do |fh2|
+            fh2.puts("---")
+            fh2.puts("layout: page")
+            fh2.puts("title: #{arm['title']}")
+            fh2.puts("arm: #{arm['arm']}")
+            fh2.puts("champion: #{arm['champion']}")
+            fh2.puts("revision: #{arm['revision']}")
+            fh2.puts("project: #{arm['project']}")
+            fh2.puts("implementation: #{arm['implementation']}")
+            fh2.puts("requires-arms: #{arm['requires-arms']}")
+            fh2.puts("issues: #{arm['issues']}")
+            fh2.puts("main-page: true") if f =~ /^index\.md$/
+            fh2.puts("---")
+            fh2.puts
+            # copy over the full file, but rewrite internal links
+            # to md file to .html files
+            fh.readlines.each do |line|
+              fh2.puts line.gsub(/\((\w+)\.md\)/, '(\1.html)' )
+            end
+          end
+        end
+      end
+      # finally copy over all the top level pages
+      Dir.entries(".").find_all { |f| f =~ /\.md$/ }.each do |f|
+        puts "copying #{f}"
+        FileUtils.cp(f, File.join(PRESITE, f))
+      end
+    rescue => detail
+      puts "Could not parse #{d}: #{detail}"
+      puts detail.backtrace
+    end
+  end
+end
