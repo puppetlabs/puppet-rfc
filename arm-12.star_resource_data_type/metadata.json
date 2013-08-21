@@ -3,10 +3,11 @@
    "title": "A resource data format and associated tooling",
    "champion":"nfagerlund",
    "revision":"0.0.0",
-   "requires":[
+   "project": "N/A",
+   "requires-arms":[
    ],
    "issues":[
    ],
    "implementation":[
-   ],
+   ]
 }

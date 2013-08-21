@@ -1,13 +1,13 @@
 {
-   "arm": <REPLACE with ARM number>,
-   "title": "<REPLACE with title of ARM>",
+   "arm": 10,
+   "title": "Additional Node Scope",
    "champion":"<REPLACE with Github handle of proposal champion",
    "project":"https://github.com/<REPLACE with ref to project at github>",
    "revision":"0.0.0",
-   "requires":[
+   "requires-arms":[
    ],
    "issues":[
    ],
    "implementation":[
-   ],
+   ]
 }
