@@ -39,48 +39,48 @@ condition.
 Description
 -----------
 
-REQUIRED -- Describe the enhancement in detail: Both what it is and,
-to the extent understood, how you intend to implement it.  Summarize,
-at a high level, all of the interfaces you expect to modify or extend,
-including APIs, command-line switches, network protocols,
-and file formats.  Explain how failures in applications using this
-enhancement will be diagnosed, both during development and in
-production.  Describe any open design issues.
+The intent is to add the switches --markup and --markdown [message] to 
+the puppet master command to allow an administrator to change the 
+internal status of the master process. 
 
-This section will evolve over time as the work progresses, ultimately
-becoming the authoritative high-level description of the end result.
-Include hyperlinks to additional documents as required.
+Within lib/puppet/status.rb there is simple support allows the 
+internal status to be set when the Puppet::Status object is created. 
+The switches will manipulate this internal status directly so that 
+calls to https://<master>:8140/production/status/no_key will change
+the static value of "is_alive" to "is_down". This will allow a load
+balancer to mark down the master based on the response from the 
+status REST call. 
+
+The optional message will be added to the PSON output of the status 
+REST call if specified. At this point it is recommended that the 
+key label for the message would be 'reason' to allow automation 
+software to use the message in notifications or logging of events
+related to the master being marked down. 
+
+This proposal will also provide future options to allow the master 
+to mark itself down in the event it detects an error condition in 
+which it is not able to recover from. Conditions such as not 
+receiving proper responses from the ENC could be detected and take
+the master out of service to prevent it from providing invalid or
+wrong catalogs to an agent. 
+
 
 Testing and Evaluation
 ----------------------
 
-What kinds of test development and execution will be required in order
-to validate this enhancement, beyond the usual mandatory unit tests?
-Be sure to list any special platform or hardware requirements.
-
-What criteria should people use to evaluate the alternatives? If
-there are suggestions you have as the author for helping readers
-decide between alternatives (or whether to the ARM should be 
-implemented at all), build a decision tree here.
+TBD
 
 Alternatives and Recommendation
 -------------------------------
 
-Did you consider any alternative approaches or technologies?  If so
-then please describe them here and explain why they were not chosen.
-
-Describe which, if any, of the alternatives you recommend and why
-you prefer it. This could walk through the Author's use of the
-"Evaluation" decision tree explaining the rationale.
+None at this time.
 
 
 Risks and Assumptions
 ---------------------
 
-Describe any risks or assumptions that must be considered along with
-this proposal.  Could any plausible events derail this work, or even
-render it unnecessary?  If you have mitigation plans for the known
-risks then please describe them.
+No determined risks.
+
 
 Dependencies
 ------------
@@ -91,18 +91,4 @@ Dependencies
 Impact
 ------
 
-How will this work impact other parts of the platform, the product,
-and the contributors working on them?  Omit any irrelevant items.
-
-- Other Puppet components: ...
-- Compatibility: ...
-- Security: ...
-- Performance/scalability: ...
-- User experience: ...
-- I18n/L10n: ...
-- Accessibility: ...
-- Portability: ...
-- Packaging/installation: ...
-- Documentation: ...
-- Spin-offs/Future work: ...
-- Other: ...
+No anticipated impact to other components.
