@@ -1,0 +1,13 @@
+{
+   "arm": 15,
+   "title": "Master to Produce Meaningful Status Messages",
+   "champion":"hickey",
+   "project":"https://github.com/hickey/puppet/tree/server-status",
+   "revision":"0.0.1",
+   "requires":[
+   ],
+   "issues":[
+   ],
+   "implementation":[
+   ],
+}

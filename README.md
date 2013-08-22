@@ -134,6 +134,14 @@ Index of ARMs
   <td>0.0.1</td>
   <td>April 17, 2013</td>
   <td>New</td>
-</tr>
+</tr>  <tr>
+    <td>15</td>
+    <td><a href="arm-15.master_status/index.md">Master to Produce Meaningful Status Messages</a></td>
+    <td>Allow administrators and/or the master process itself to update the status response when /production/status/no_key is hit so that proper load balancer support can be achieved.
+  </td>
+    <td>0.0.1</td>
+    <td>August 21, 2013</td>
+    <td>New</td>
+  </tr>
 
 </table>
