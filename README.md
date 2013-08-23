@@ -133,7 +133,7 @@ Index of ARMs
 </td>
   <td>0.0.1</td>
   <td>April 17, 2013</td>
-  <td>New</td>
+  <td>New - <a href="https://groups.google.com/forum/?fromgroups=#!topic/puppet-dev/5QFelBbbAMw"</td>
 </tr>  <tr>
     <td>15</td>
     <td><a href="arm-15.master_status/index.md">Master to Produce Meaningful Status Messages</a></td>
@@ -141,7 +141,8 @@ Index of ARMs
   </td>
     <td>0.0.1</td>
     <td>August 21, 2013</td>
-    <td>New</td>
-  </tr>
+    <td>New - <a 
+    href="https://groups.google.com/forum/?fromgroups=#!topic/puppet-dev/5QFelBbbAMw">Discuss</a></td>
+    </tr>
 
 </table>
