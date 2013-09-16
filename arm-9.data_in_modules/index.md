@@ -190,7 +190,7 @@ The `binder_config.yaml` defines how all contributions to the  bindings are co
         'include' => ['confdir-hiera:/', 'confdir:/default?optional']  
       },
       { 'name' => 'modules',
-        'include' => ['module-hiera:/\*/', 'module:/\*::default']
+        'include' => ['module-hiera:/*/', 'module:/*::default']
       },
     ]
     
@@ -592,7 +592,7 @@ and specify it like this (a comment shows what is added to the default):
       [{name: site, include: 'confdir-hiera:/'},
        {name: overrides, include: 'confdir-hiera:/overrides'}, # <--added
        {name: modules,
-        include: ['module-hiera:/\*', 'module:/\*::default']}
+        include: ['module-hiera:/*', 'module:/*::default']}
       ]
 
 We do not have to enter the categories, since we are not going to change those from the default.
@@ -626,7 +626,7 @@ we want to exclude the default Hiera-2 data from module 'bad'
       [{name: site, include: 'confdir-hiera:/'},
        {name: overrides, include: 'confdir-hiera:/overrides'}
        {name: modules,
-        include: ['module-hiera:/\*', 'module:/\*::default'],
+        include: ['module-hiera:/*', 'module:/*::default'],
         exclude: 'module-hiera:/bad'}
       ]
 
@@ -1006,8 +1006,8 @@ class EchoSchemeHandler &lt; Puppetx::Puppet::BindingsSchemeHandler
   def contributed_bindings(uri, scope, composer)
     factory = ::Puppet::Pops::Binder::BindingsFactory
     bindings = factory.named_bindings("echo")
-    bindings.bind.name(uri.path.gsub(/\\//, '::'))
-      .to("echo: #{uri.path.gsub(/\\//, ' ').strip!}")
+    bindings.bind.name(uri.path.gsub(/\//, '::'))
+      .to("echo: #{uri.path.gsub(/\//, ' ').strip!}")
     result = factory.contributed_bindings("echo", bindings.model, nil)
     end
   end
