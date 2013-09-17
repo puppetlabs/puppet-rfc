@@ -165,7 +165,7 @@ The data files (in json or yaml) work the same way as in Hiera-1 except that int
 syntax (the future parser is used for this). This means that `${}` should be used instead of the `%{}` syntax
 for interpolation in Hiera-1.
 
-This also means that any expression can be used, not only variable references. Most notably it is possible to lookup a value!
+This also means that any r-value expression can be used, not only variable references. Most notably it is possible to lookup a value!
 
 Here are some examples:
 
@@ -186,20 +186,20 @@ The `binder_config.yaml` defines how all contributions to the  bindings are co
     ---
     version: 1
     layers: [
-      { 'name' => 'site',
-        'include' => ['confdir-hiera:/', 'confdir:/default?optional']  
-      },
-      { 'name' => 'modules',
-        'include' => ['module-hiera:/*/', 'module:/*::default']
-      },
-    ]
+        { 'name': 'site',
+          'include': ['confdir-hiera:/', 'confdir:/default?optional']  
+        },
+        { 'name': 'modules',
+          'include': ['module-hiera:/*/', 'module:/*::default']
+        }
+      ]
     
-    categories: [
-      ['node',        "${fqdn}"],
-      ['osfamily',    "${osfamily}"],
-      ['environment', "${environment}"],
-      ['common',      "true"]
-    ]
+    categories:
+      [['node',        "${fqdn}"],
+       ['osfamily',    "${osfamily}"],
+       ['environment', "${environment}"],
+       ['common',      "true"]
+      ]
 
 There are two main entries; **layers** (which defines the layering of contributions), 
 and **categories** (which defines the names of valid categories, and their priority). 
