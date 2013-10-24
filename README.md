@@ -44,8 +44,8 @@ Index of ARMs
   <td>2</td>
   <td><a href="arm-2.iteration/index.md">Iteration</a></td>
   <td>Add iteration to the Puppet Language</td>
-  <td>1.0.0</td>
-  <td>March 26, 2013</td>
+  <td>2.0.0</td>
+  <td>Oct 24, 2013</td>
   <td>Completed</td>
 </tr><tr>
   <td>3</td>
