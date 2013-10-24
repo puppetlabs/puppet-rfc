@@ -3,9 +3,9 @@
 Update for Puppet 3.4
 ------
 The implementation of this ARM was made available as an experimental feature
-in the Puppet 3.x release stream. Usability studies and feedback resulted
-in that the recommended syntax was also the most favored. From Puppet 3.4,
-the not recommended syntax variants will be removed. The set of iterative
+in the Puppet 3.x release stream. Usability studies and feedback showed
+that the recommended syntax was also the most favored. From Puppet 3.4,
+the other syntax variants will be removed. The set of iterative
 functions has also been revised.
 
 The following changes are made in Puppet 3.4:
