@@ -1,5 +1,30 @@
 (ARM-2) Iteration
 =================
+Update for Puppet 3.4
+------
+The implementation of this ARM was made available as an experimental feature
+in the Puppet 3.x release stream. Usability studies and feedback showed
+that the recommended syntax was also the most favored. From Puppet 3.4,
+the other syntax variants will be removed. The set of iterative
+functions has also been revised.
+
+The following changes are made in Puppet 3.4:
+
+* The `reject` function is removed - it is trivially replaced with `filter` and `not` in
+  combination.
+* The `foreach` function was dropped (in favor of the `each` function)
+* The `collect` function is renamed to `map`
+* The `select` function is renamed to `filter`
+
+These functions are unchanged
+
+* `each`
+* `reduce`
+* `slice`
+
+As a consequence, this ARM is updated to what has been decided to be Puppet's support
+for iteration.
+
 
 Summary
 -------
@@ -14,7 +39,7 @@ This alternative also makes use of lambda expressions.
 
 The "ruby/java-8" like proposal has been implemented
 to allow usability studies of the various options in this proposal.
-At present this implementation supports all of the presented options at
+In versions earlier than Puppet 3.4 the implementation supported all of the presented options at
 the same time to allow users to experiment.
 
 Real world examples of the proposed solution are found in [Examples](examples.md).
@@ -157,7 +182,7 @@ else that ends up in the catalog) takes place in evaluation order.
 
 ### Calls
 
-This proposal introduces a new form of function call reminicent of a _method call_ using an infix `.` (dot) operator
+This proposal introduces a new form of function call reminiscent of a _method call_ using an infix `.` (dot) operator
 notation. This is easier to both read and construct compared to regular nested function calls when a chain
 of operations are wanted (e.g. filter and then transform).
 
@@ -169,11 +194,11 @@ Method call syntax:
 
 Consider a filter operation followed by a transform - first using infix `.` notation...:
 
-    $array.select |$x| {$x =~ /^0-9+$/}.collect |$x| { $x * 2 }
+    $array.filter |$x| {$x =~ /^0-9+$/}.map |$x| { $x * 2 }
     
 ... then in function call notation, this would become (the much harder to read):
 
-    collect(select($array) |$x| {$x =~ /^0-9+$/}) |$x| { $x * 2 }
+    map(filter($array) |$x| {$x =~ /^0-9+$/}) |$x| { $x * 2 }
 
 Note that the existing function call syntax is unaltered (except allowing an optional lambda).
 
@@ -227,9 +252,8 @@ The proposed functions for iteration and data transformation are:
 
 * `each` - iterates over collection
 * `slice` - produces slices (chunks; pairs, triplets, ...) of a collection and optionally iterates over it
-* `collect` - produces a new array by collecting each result of the given lambda
-* `select` - produces a new array filtered by the given (inclusion predicate) lambda
-* `reject` - produces a new array filtered by the given (rejection predicate) lambda
+* `map` - produces a new array by collecting each (mapped/transformed) result of the given lambda
+* `filter` - produces a new array filtered by the given (inclusion predicate) lambda
 * `reduce` - produces a single (reduced) value from a collection of values
 
 #### each
@@ -286,7 +310,7 @@ When called without a block, the function produces a concatenated result of the 
   
       slice($[1,2,3,4,5,6], 2) # produces [[1,2], [3,4], [5,6]]
 
-#### collect
+#### map
 
 Applies a parameterized block to each element in a sequence of entries from the first
 argument and returns an array with the result of each invocation of the parameterized block.
@@ -294,7 +318,7 @@ argument and returns an array with the result of each invocation of the paramete
 This function takes two mandatory arguments: the first should be an Array or a Hash, and the second
 a parameterized block as produced by the puppet syntax:
 
-    $a.collect |$x| { ... }
+    $a.map |$x| { ... }
 
 When the first argument is an Array, the block is called with each entry in turn. When the first argument
 is a hash the entry is an array with `[key, value]`.
@@ -302,12 +326,12 @@ is a hash the entry is an array with `[key, value]`.
 *Examples*
 
     # Turns hash into array of values  
-    $a.collect |$x| { $x[1] }
+    $a.map |$x| { $x[1] }
       
     # Turns hash into array of keys  
-    $a.collect |$x| { $x[0] }
+    $a.map |$x| { $x[0] }
 
-#### select
+#### filter
 
 Applies a parameterized block to each element in a sequence of entries from the first
 argument and returns an array with the entires for which the block evaluates to true.
@@ -315,7 +339,7 @@ argument and returns an array with the entires for which the block evaluates to 
 This function takes two mandatory arguments: the first should be an Array or a Hash, and the second
 a parameterized block as produced by the puppet syntax:
 
-    $a.select |$x| { ... }
+    $a.filter |$x| { ... }
 
 When the first argument is an Array, the block is called with each entry in turn. When the first argument
 is a hash the entry is an array with `[key, value]`.
@@ -324,12 +348,11 @@ is a hash the entry is an array with `[key, value]`.
 
     # selects all that end with berry
     $a = ["raspberry", "blueberry", "orange"]  
-    $a.select |$x| { $x =~ /berry$/ }
+    $a.filter |$x| { $x =~ /berry$/ }
 
-#### reject
 
-Works the same way as select, but returns a new array with the entries for which the block evaluates
-to false or nil.
+To use the `filter` function to *filter-out* something, simply reverse the test being made
+by using `not` (or reversing the operator - e.g. `==` to `!=` or `=~` to `!~` etc.)
 
 #### reduce
 
@@ -444,7 +467,7 @@ Changes that are not directly visible to a user of the puppet language.
 
 The biggest internal change in the implementation of this proposal is the use of a new _expression based grammar_.
 This grammar handles both "statements" and "expressions" as expressions. This style means that some semantics
-are not enforced by the grammar per se (the parser may accept nonsensical input) and the enforement of semantics
+are not enforced by the grammar per se (the parser may accept nonsensical input) and the enforcement of semantics
 is instead handled by a validator that kicks in when the parser has completed its work.
 In contrast, the current grammar can not enforce all semantics, and many
 issues are not found until the logic is evaluated. The introduction of a validator means that more such runtime validation
@@ -487,29 +510,12 @@ Some AST objects do not produce a meaningful result, they should either produce 
 
 ### Grammar Switch
 
-This feature allows passing settings to the parser; use the latest, turn on some experimental feature etc.
-
-> T.B.D(escribed) - this is not yet designed. 
+The new language features are turned on with the setting `--parser future`.
 
 Testing and Evaluation
 ======================
-It is intended that this proposal is evaluated by performing UX studies:
+Testing and evaluation has taken place, and this ARM now reflects the result.
 
-* Is the Ruby/java-8 style preferred over the Unix Pipes style?
-* Within the Ruby/Java-8 style what are the preferences for:
-  * Parameters outside (`|$x| { ... }`)
-  * Parameters inside (`{|$x| ... }`
-  * Use of fat arrow (`|$x| => { ... }`), or not
-* The names of the iteration functions
-  * Both `each` and `foreach` are available in the implementation (`each` is recommended). Which one is preferred?
-  * The names of additional functions where chosen based on the corresponding functions in Ruby (and to some
-    extent Java). Are these names good?
-
-The available implementation of the Ruby/Java-8 style allows all of these at the same time to allow for experimentation.
-
-Currently, the implementation is found at: "https://github.com/puppetlabs/puppet/tree/feature/master/future-parser"
-and this implementation supports the above mentioned alternatives. (It includes a vendored copy of the gem rgen and does
-thus contain everything needed to use the implementation).
 
 Alternatives and Recommendation
 ===============================
@@ -528,7 +534,7 @@ The rest of this section contains viable alternatives and options not included i
 Lambda Syntax Alternatives
 --------------------------
 
-### Alternative: 'Parameters inside' lambda syntax
+### Rejected Alternative: 'Parameters inside' lambda syntax
 
 A "ruby like" option is to place the lambda parameters inside the block expression.
 
@@ -549,7 +555,7 @@ Here is an example:
 
 > This option is available in the exploratory implementation.
 
-### Alternative: Using Fat Arrow in Lambda
+### Rejected Alternative: Using Fat Arrow in Lambda
 
 It may be more readable to use a fat arrow between the lambda parameters and the BlockExpression.
 
@@ -561,7 +567,7 @@ It may be more readable to use a fat arrow between the lambda parameters and the
 Options
 -------
 
-### Bare Expression as Body Instead of BlockExpression
+### Rejected: Bare Expression as Body Instead of BlockExpression
 
 The recommended solution uses a BlockExpression as the body of a lambda. It could also have been
 a single expression as in this example:
@@ -578,7 +584,7 @@ Consider:
 
 What is the select applied to? (A: the literal 2).
 
-### Function references
+### Rejected: Function references
 
 It is useful to be able to directly pass a named function where a lambda
 is allowed. The `&` operator can be used for this:
@@ -599,7 +605,7 @@ r-value) - see "Discussion about Function Reference" below.
 > support "iteration". It is not included in the recommendation, and can be
 > added later.
 
-### Uncompleted Function Calls
+### Not Implemented: Uncompleted Function Calls
 
 A functional reference with additional arguments is known as
 an *uncompleted function call*, where special variables are used to denote
@@ -703,7 +709,7 @@ But we can drop the arrow, since it is just syntactic noise:
     |$x, $y| { }    
     || { }
 
-And this is what is the recommended solution.
+**And this is what is the recommended solution**.
 
 Further, it is of value to be able to write a lambda that is not a block
 (such as a function reference). In this case the fat arrow separator may
@@ -782,6 +788,8 @@ needed. Using `_` is the more viable, i.e. `_` or `_1` is the first `_2` is the 
 the `$` should probably be used thus forming: `$_` or `$_1` for the first `$_2` for the second etc.
 
 The recommendation is to use `$`, `$$` simply because it looks less magic / (hackish) than `$_1`.
+
+> This is not implemented in Puppet 3.4
 
 Discussion about Closures
 -------------------------
@@ -878,9 +886,8 @@ The implementation has a dependency on [RGen](https://github.com/mthiede/rgen).
 RGen in turn has an optional dependency on [Nokogiri](http://nokogiri.org/) if XML features are used (which they are not
 in the proposed implementation).
 
-The RGen gem has been vendored (included in the Puppet packaging) and does not have to be separately installed.
-The optional Nokogiri is not used by the implementation of this arm, and is only needed if someone want to do work
-with the models in this arm in XML form).
+The RGen gem is optional for regular Puppet, but must be installed when using the new parser.
+The optional Nokogiri gem is not used by the implementation of this arm, and is only needed if someone want to do work with the models in this arm in XML form).
 
 Impact
 ======

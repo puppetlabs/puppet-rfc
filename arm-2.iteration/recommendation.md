@@ -7,7 +7,7 @@ The author of this proposal recommends that the ruby-java8 like proposal is used
 2.  Lambda parameters placed left of the lambda body i.e. `|$x| {e}`
 3.  The lambda body may be a block with one or several
     expressions/statements
-4.  Enumeration functions `each`, `slice`, `select`, `reject`, `collect` and `reduce` are
+4.  Enumeration functions `each`, `slice`, `filter`, `map` and `reduce` are
     implemented.
 5.  Enumeration picking is:  
     **Array** - one lambda arg picks each value, two args picks index and each value.  
