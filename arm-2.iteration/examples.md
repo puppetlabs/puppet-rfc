@@ -2,6 +2,8 @@
 ==========================
 
 This document contains examples of the Recommended Implementation.
+### Update
+The examples have been updated to Puppet 3.4 w.r.t renamed iterative functions.
 
 ### Creating an Array by appending to each element of another Array
 
@@ -14,7 +16,7 @@ Here is how:
 
     $nodes = ['gfs01' ,'gfs02', 'gfs03', 'gfs04]
     $brick_store = "/var/bricks"
-    $brick_array = $nodes.collect |$x| { "$x:$brick_store" }
+    $brick_array = $nodes.map |$x| { "$x:$brick_store" }
 
 ### Combining Two Structures
 From the mailinglist:
@@ -39,32 +41,32 @@ From the mailinglist:
     
     # content contains the desired text (although with a blank line first)
 
-**By collection and join**
+**By map and join**
 
 This can also be implemented
-as collection to an array, and applying the standard library `join` function on the result (joining entries with a new line).
+as mapping to an array, and applying the standard library `join` function on the result (joining entries with a new line).
 
     # function call style
-    $content = join($data.collect |$x| "/bin/mount --bind /home/${$x[1]}/ /home/${x[0]}/www" }, "\n")
+    $content = join($data.map |$x| "/bin/mount --bind /home/${$x[1]}/ /home/${x[0]}/www" }, "\n")
     
     # or method call style
-    $content = $data.collect |$x| "/bin/mount --bind /home/${$x[1]}/ /home/${x[0]}/www" }.join("\n")
+    $content = $data.map |$x| "/bin/mount --bind /home/${$x[1]}/ /home/${x[0]}/www" }.join("\n")
 
 
-**zip of two arrays, collect, and join**
+**zip of two arrays, map, and join**
 
 If the structure is in two arrays, the stdlib function `zip` can be used to combine them:
 
     $users = ['someuser', 'differentuser', 'anotheruser']
     $paths = ['some/path', 'complete/tely/different/path', 'another/path']
-    $content = zip($users, $paths).collect |$x| "/bin/mount --bind /home/${x[1]}/ /home/${x[0]}/www" }.join("\n")
+    $content = zip($users, $paths).map |$x| "/bin/mount --bind /home/${x[1]}/ /home/${x[0]}/www" }.join("\n")
 
-**slize one array, collect, and join**
+**slize one array, map, and join**
 
 If the structure is in one array, the `slice` function (in this ARM) can be used:
 
     $users = ['someuser', 'some/path', 'differentuser', 'complete/tely/different/path', 'anotheruser', 'another/path']
-    $content = $users.slice(2).collect |$x| { "/bin/mount --bind /home/${paths[$x]}/ /home/$x/www" }.join("\n")
+    $content = $users.slice(2).map |$x| { "/bin/mount --bind /home/${paths[$x]}/ /home/$x/www" }.join("\n")
 
 ### Iterating over an Array - Creating Resources
 
@@ -107,18 +109,18 @@ Easier, that can be written as:
 
 ### Creating, Collecting, and Relating Resources
 
-    $r1 = $a1.collect |$x| {file {"/somewhere/$x": owner => $x}}
-    $r2 = $a2.collect |$x| {file {"/elsewhere/$x": owner => $x}}
+    $r1 = $a1.map |$x| {file {"/somewhere/$x": owner => $x}}
+    $r2 = $a2.map |$x| {file {"/elsewhere/$x": owner => $x}}
     $r1 -> $r2
 
 or
 
-    $a1.collect |$x| { file {"/somewhere/$x": owner => $x}} ->
-      $a2.collect |$x| { file {"/elsewhere/$x": owner => $x}}
+    $a1.map |$x| { file {"/somewhere/$x": owner => $x}} ->
+      $a2.map |$x| { file {"/elsewhere/$x": owner => $x}}
 
 ### Filtering Data Before Creating a resource
 
-    $a.select |$x| { $x =~ /com$/ }.each |$x| {
+    $a.filter |$x| { $x =~ /com$/ }.each |$x| {
       file { "/somewhere/$x":
         owner => $x
       }
