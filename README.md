@@ -134,15 +134,23 @@ Index of ARMs
   <td>0.0.1</td>
   <td>April 17, 2013</td>
   <td>New - <a href="https://groups.google.com/forum/?fromgroups=#!topic/puppet-dev/5QFelBbbAMw"</td>
-</tr>  <tr>
+</tr><tr>
     <td>15</td>
     <td><a href="arm-15.master_status/index.md">Master to Produce Meaningful Status Messages</a></td>
     <td>Allow administrators and/or the master process itself to update the status response when /production/status/no_key is hit so that proper load balancer support can be achieved.
   </td>
     <td>0.0.1</td>
     <td>August 21, 2013</td>
-    <td>New - <a 
+    <td>New - <a
     href="https://groups.google.com/forum/?fromgroups=#!topic/puppet-dev/5QFelBbbAMw">Discuss</a></td>
+</tr><tr>
+    <td>16</td>
+    <td><a href="arm-16.acls/index.md">Managing ACLs (Access Control Lists)</a></td>
+    <td>Describe Puppet's ability for managing access control lists.
+  </td>
+    <td>0.0.1</td>
+    <td>October 25, 2013</td>
+    <td>New - <a href="https://groups.google.com/forum/#!topic/puppet-dev/9xq-oFWSqXo">Discuss</a></td>
     </tr>
 
 </table>
