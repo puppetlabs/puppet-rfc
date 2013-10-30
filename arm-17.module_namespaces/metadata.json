@@ -1,0 +1,13 @@
+{
+   "arm": 17,
+   "title": "Module Namespaces",
+   "champion":"Hunner",
+   "project":"https://github.com/puppetlabs/puppet",
+   "revision":"0.1.0",
+   "requires":[
+   ],
+   "issues":[
+   ],
+   "implementation":[
+   ],
+}
