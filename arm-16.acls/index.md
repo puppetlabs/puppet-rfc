@@ -62,7 +62,7 @@ With ACLs you can get into fine-grained detail or you can stay at a high level.
 
     acl { 'absolute/path':
       ensure => <present>,
-      purge_unspecified_explicit_permissions => <purge_unspecified_explicit_permissions>,
+      purge => <purge>,
       permissions => [
         Ace['resource_name']
         ],
@@ -72,15 +72,15 @@ With ACLs you can get into fine-grained detail or you can stay at a high level.
       identity => <identity>,
       rights => [<rights>],
       type => <type>,
-      inherit => <inheritance>,
-      propagate => <propagation>,
+      affects => <affects>,
+      child_types => <child_types>,
     }
 
-where with `security_descriptor`: `owner` and `inherited_permissions` have sensible defaults; with `ace`: `type`, `inherit` and `propagate` have sensible defaults (discussed in their appropriate sections below). `Rights` is an array of rights that can contain one or more rights (discussed in the rights section below).
+where with `security_descriptor`: `owner` and `inherit_parent_permissions` have sensible defaults; with `ace`: `type`, `affects` and `child_types` have sensible defaults (discussed in their appropriate sections below). `Rights` is an array of rights that can contain one or more rights (discussed in the rights section below).
 
 #### ACL::File_ACL Defined Type
 
-    acl::file_acl($path = $title, $permissions, $ensure, $purge_unspecified_explicit_permissions, $inherit_parent_permissions, $owner)
+    acl::file_acl($path = $title, $permissions, $ensure, $purge, $inherit_parent_permissions, $owner)
 
 where the only required elements are `$path` and `$permissions`.
 
@@ -106,7 +106,7 @@ The Security Descriptor provider will autorequire the resource to ensure that th
 
 **NOTE**: With `inherit_parent_permissions => true` (which is the default), one may run into a validation warning at runtime that is something to the effect of `Due to  inherited permissions, a narrowing permission cannot be set`. This is simply stating that there was an inherited permission found that won't allow a permission to be set since it would narrow a particular identity's permissions (which cannot be done on Windows when a resource inherits permissions). This can be overcome by using `inherit_parent_permissions => false` on the `security_descriptor`, by managing the identity at the level where the inheritance is passed down (and possibly altering it there), or widening your current permission to match. The recommended way would be to manage the identity's permissions at the top level as widening could be a maintenance issue if the top level were to change in a way that would cause your permissions to be narrowing again.
 
-**Warning**: While managing ACLs you could lock the Puppet Agent user completely out of managing resources. Extreme care should be used when using `purge_unspecified_explicit_permissions => true` on `acl` with `inherit_parent_permissions => false` on the `security_descriptor`. Almost never should an admin also include `acl` `permissions => []`, which would cause the provider to remove all permissions to a resource.
+**Warning**: While managing ACLs you could lock the Puppet Agent user completely out of managing resources. Extreme care should be used when using `purge => true` on `acl` with `inherit_parent_permissions => false` on the `security_descriptor`. Almost never should an admin also include `acl` `permissions => []`, which would cause the provider to remove all permissions to a resource.
 
 #### Owner Property
 
@@ -128,7 +128,7 @@ This is a string value that is translated to SID every time when using Windows.
 
     acl { 'unique_title':
       ensure => <present>,
-      purge_unspecified_explicit_permissions => <true | false>,
+      purge => <true | false>,
       permissions => [
         Ace['resource_name']
         ],
@@ -147,9 +147,11 @@ The ACL provider will autorequire the resource to ensure that the ordering is co
 
 Ensure defaults to `present`.
 
-#### Purge Unspecified Explicit Permissions Parameter
+#### Purge Parameter
 
-`purge_unspecified_explicit_permissions` specifies whether to remove other explicit permissions if not specified in the permissions set. Defaults to `false`.
+`purge` specifies whether to remove other explicit permissions if not specified in the permissions set. This doesn't do anything with permissions inherited from parents.
+
+Defaults to `false`.
 
 #### Permissions Property
 
@@ -157,15 +159,6 @@ The format of the `permissions` section is:
 
  * An array
  * Each element of the array is an ACE (Access Control Entry) - which maps to the `ace` type.
- * Each ACE can be a defined ace resource or an inlined ACE hash.
- * Each element of the array is a hash containing (each element discussed in more detail in the following sections):
-    * `identity` - trustee, principal
-    * access `rights` mask - an array of `rights`
-    * access `type` - defaults to `allow`
-    * `inheritance` strategy - defaults to `inherit`
-    * `propagation` strategy - defaults to `propagate`
- * The least amount of detail required would be the identity and access rights (i.e. `'bob' => [modify]`)
- * Each permission element in the hash is considered an ACE (access control entry)
 
 **NOTE**: Order is important with ACEs, as Windows will evaluate ACEs in order until it finds an explicit permisison. Therefore one should start with the deny ACES, followed by user then groups. See <http://msdn.microsoft.com/en-us/library/windows/desktop/aa379298(v=vs.85).aspx>.
 
@@ -175,8 +168,8 @@ The format of the `permissions` section is:
       identity => <identity>,
       rights => [<rights>],
       type => <type>,
-      inherit => <inheritance>,
-      propagate => <propagation>,
+      affects => <affects>,
+      child_types => <child_types>,
     }
 
 #### Title Parameter
@@ -201,8 +194,6 @@ Access `rights` define what permissions to give to the `identity`. This is an ar
 
 `rights` takes the following forms:
 
- * `'string access mask'` - a string value like `'mwrx'` defining the permission rights.
-    * **Note** that with Windows, the only valid values here are `'mwrx'`, `'wrx'`, `'rx'` and `'r'`.
  * `full` - full permissions, there is no equivalent mask value. This is also known as `GENERIC_ALL`. In addition to 'mwrx', an `identity` with full permissions also can change permissions and take ownership of the target resource.
  * `modify` - `'mwrx'`.
  * `write` - maps to `'wrx'` This is also known as `GENERIC_WRITE`
@@ -222,55 +213,64 @@ Access `type` is one of the two following types:
 
 `type` defaults to `allow` - in most cases this is the permission type that is wanted.
 
-#### Inheritance Property (optional)
+#### Child Types Property (optional)
 
-The `inheritance` strategy can be one of the following:
+ * `all` - all of the child types
+ * `objects` - files
+ * `containers` - directories
 
- * `inherit` - allow both objects (files) and containers (directories) to inherit this permission. This maps to `OI` `CI` security descriptors.
- * `inherit_containers_only` - allow inheritance on containers (directories) only. This maps to the `CI` security descriptor.
- * `inherit_objects_only` - allow inheritance on objects (files) only. This maps to the `OI` security descriptor.
- * `no_inherit` - the permission specified will only apply to the current resource.
+`child_types` defaults to `all` - which is the same as `(OI)(CI)` if there is an inheritance strategy defined by `affects`. More discussed on the combinations in the next section.
 
-With `inheritance` the default value is `inherit` as this maps directly to how it defaults with Windows.
+#### Affects Property (optional)
 
-A good resource to look at is <http://msdn.microsoft.com/en-us/library/windows/desktop/aa374928(v=vs.85).aspx>.
+Affects and Child Types define the `inheritance` and `propagation` strategies. Affects can be one of the following:
+
+ * `all` - allow the path, plus both child objects (files) and containers (directories) to inherit this permission (this includes grandchildren).
+    * When `child_types => all`, this maps to the ace flags of `(OI)(CI)`
+    * When `child_types => objects`, this maps to `(OI)`
+    * When `child_types => containers`, this maps to `(CI)`
+ * `self_only` - no inheritance, just apply the ACE to the target path
+    * This maps to ace flags `(NP)`
+    * When this is selected, it means no inheritance or propagation strategy will be used.
+ * `children_only` - only children/grandchildren will carry the rights defined by the ACE.
+    * When `child_types => all`, this maps to `(IO)(CI)(OI)`
+    * When `child_types => objects`, this maps to `(IO)(OI)`
+    * When `child_types => containers`, this maps to `(IO)(CI)`
+ * `self_and_direct_children` - apply the permission to the target path and only the first level of children.
+    * When `child_types => all`, this maps to `(NP)(CI)(OI)`
+    * When `child_types => objects`, this maps to `(NP)(OI)`
+    * When `child_types => containers`, this maps to `(NP)(CI)`
+ * `direct_children_only` - apply the permission to the first level of children only.
+    * When `child_types => all`, this maps to `(IO)(NP)(CI)(OI)`
+    * When `child_types => objects`, this maps to `(IO)(NP)(OI)`
+    * When `child_types => containers`, this maps to `(IO)(NP)(CI)`
+
+With `affects` the default value is `all` as this maps directly to how it defaults with Windows.
+
+A good resource to look at is <http://msdn.microsoft.com/en-us/library/ms229747.aspx> and <http://msdn.microsoft.com/en-us/library/Windows/desktop/aa374928(v=vs.85).aspx>
 
 Inheritance is specific to containers (directories) and will only apply when the target resource is a container.
-
-#### Propagation Property (optional)
-
-The `propagation` strategy defines how `inheritance` is applied. The following values can be used:
-
- * `propagate` - apply `inheritance` to all children and grandchildren
- * `one_level` - apply `inheritance` only to children, not to grandchildren.
- * `inherit_only` - apply `rights` only to children and grandchildren, not the target resource.
-
-With `propagation` the default value is `propagate` is this maps directly to how it defaults with Windows.
-
-There is a great resource at <http://msdn.microsoft.com/en-us/library/ms229747.aspx> explaining the different combinations of `inheritance` and `propagation`.
-
-If `inheritance => 'no_inherit'` propagation will not apply and should not be specified.
 
 ### File_Acl Defined Type
 
     define acl::file_acl(
       $path = $title,
       $permissions,
-      $ensure                                  => present,
-      $purge_unspecified_explicit_permissions  => ignore,
-      $inherit_parent_permissions              => true,
-      $owner                                   => 'Administrators'
+      $ensure                      => present,
+      $purge                       => ignore,
+      $inherit_parent_permissions  => true,
+      $owner                       => 'Administrators'
     ) {
       acl { $path:
-        ensure                                 => $ensure,
-        purge_unspecified_explicit_permissions => $purge_unspecified_explicit_permissions,
-        permissions                            => $permissions,
+        ensure                     => $ensure,
+        purge                      => $purge,
+        permissions                => $permissions,
       }
 
       security_descriptor { $path:
-        owner                                  => $owner,
-        dacl                                   => Acl[$path],
-        inherit_parent_permissions             => $inherit_parent_permissions,
+        owner                      => $owner,
+        dacl                       => Acl[$path],
+        inherit_parent_permissions => $inherit_parent_permissions,
       }
     }
 
@@ -292,7 +292,7 @@ This allows you to specify file/folder permissions without needing to be extreme
 This applies the permission set to 'C:\windows\temp' with the following permissions:
 
  * User `'tim'` will have list/read/execute permissions to this folder, subfolders and files.
- * Any other identities that were are not explicitly noted would be left alone on the ACL of the target resource due to the defaults of `inherit_parent_permissions => true, purge_unspecified_explicit_permissions => false`.
+ * Any other identities that were are not explicitly noted would be left alone on the ACL of the target resource due to the defaults of `inherit_parent_permissions => true, purge => false`.
 
 ### Verbose ACL:
 
@@ -300,13 +300,13 @@ This applies the permission set to 'C:\windows\temp' with the following permissi
       identity => 'tim',
       rights => [read,execute,list],
       type => allow,
-      inheritance => inherit,
-      propagation => propagate,
+      affects => all,
+      child_types => all,
     }
 
     acl {'c:/windows/temp':
       ensure => present,
-      purge_unspecified_explicit_permissions => false,
+      purge => false,
       permissions => [
         Ace['tim_ace']
       ],
@@ -342,7 +342,7 @@ This applies the permission set to 'C:\windows\temp' with the following permissi
 
  * User `'bob'` will have full permissions to this folder, subfolders, and files. This is the equivalent of `ace {'bob_full': identity => 'bob', rights => [full], type => allow, inheritance => inherit, propagation => propagate}`.
  * User `'tim'` will have list/read/execute permissions to this folder, subfolders and files. This is the equivalent of `ace {'tim_rxl': identity => 'tim', rights => [read,execute,list], type => allow, inheritance => inherit, propagation => propagate}`.
- * Any other identities that were are not explicitly noted would be left alone on the ACL of the target resource due to the defaults of `inherit_parent_permissions => true, purge_unspecified_explicit_permissions => false`.
+ * Any other identities that were are not explicitly noted would be left alone on the ACL of the target resource due to the defaults of `inherit_parent_permissions => true, purge => false`.
 
 ### Simple object ACL:
 
@@ -366,7 +366,7 @@ This applies the permission set to `C:\windows\temp\tempfile.txt` with the follo
  * Group `'Administrators'` will have full access to this file.
  * User `'bob'` will have modify/write/read/execute permissions to this file.
 
- * Any other identities that were are not explicitly noted would be left alone on the ACL of the target resource due to the defaults of `inherit_parent_permissions => true, purge_unspecified_explicit_permissions => false`.
+ * Any other identities that were are not explicitly noted would be left alone on the ACL of the target resource due to the defaults of `inherit_parent_permissions => true, purge => false`.
 
 **Note**: With respect to Windows, if `'tim'` is part of the `'Administrators'` group, his effective permissions will still allow him to modify/write/take ownership/change permissions. This will allow `'tim'` to give himself read and execute access, even though it was explicitly denied. When using `deny`, one needs to understand how this is applied.
 
@@ -388,7 +388,7 @@ This maps out to the following:
 
  * User `'tim'` will be denied modify/write/read/execute/list access to `C:\Windows\temp`, subfolders and files.
  * However, user `'tim'` will be allowed read/execute access to `C:\Windows\temp\tempfile.txt` because it was explicitly allowed without an explicit deny on the file resource.
- * Any other identities that were are not explicitly noted would be left alone on the ACL of the target resource due to the defaults of `inherit_parent_permissions => true, purge_unspecified_explicit_permissions => false`.
+ * Any other identities that were are not explicitly noted would be left alone on the ACL of the target resource due to the defaults of `inherit_parent_permissions => true, purge => false`.
 
 ### Domain Users and SIDs
 
@@ -403,7 +403,7 @@ This maps to the following:
 
  * User `'TheNet\bob'` will be granted full access to `C:\Windows\temp`, subfolders, and files.
  * SID `'S-1-5-18'` will be granted modify/write/read/execute access to `C:\Windows\temp`, subfolders and files.
- * Any other identities that were are not explicitly noted would be left alone on the ACL of the target resource due to the defaults of `inherit_parent_permissions => true, purge_unspecified_explicit_permissions => false`.
+ * Any other identities that were are not explicitly noted would be left alone on the ACL of the target resource due to the defaults of `inherit_parent_permissions => true, purge => false`.
 
 ### Absent Examples
 
@@ -444,7 +444,7 @@ This maps out to the following:
 
 ### Unspecified Permissions Examples
 
-#### `purge_unspecified_explicit_permissions => true`:
+#### `purge => true`:
 
     ace {'Admins_full': identity => 'Administrators', rights => [full]}
     ace {'tim_mwrx': identity => 'tim', rights => [modify,write,read,execute,list]}
@@ -455,7 +455,7 @@ This maps out to the following:
     ace {'tim_rxl': identity => 'tim', rights => [read,execute,list]}
     acl::file_acl { 'C:/windows/temp/anotherfolder':
       ensure => present,
-      purge_unspecified_explicit_permissions => true,
+      purge => true,
       permissions => [Ace['tim_rxl']],
     }
 
@@ -466,11 +466,11 @@ This maps out to the following:
  * Due to the secondary `exact` permission, `'Administrators'` will NOT have access to `C:\Windows\temp\anotherfolder`, its subfolders and files. This is because the inherited permission is removed.
  * Also due to the secondary `exact` permission, `'tim'` will have 'rx' permissions to `C:\Windows\temp\anotherfolder`, its subfolders and files. This is because the inherited permission is removed.
 
-#### `purge_unspecified_explicit_permissions => true` with `inherit_parent_permissions => false` and an empty permission set
+#### `purge => true` with `inherit_parent_permissions => false` and an empty permission set
 
     acl::file_acl {'C:/windows/temp':
       ensure => present,
-      purge_unspecified_explicit_permissions => true,
+      purge => true,
       inherit_parent_permissions => false,
       permissions => [],
     }
@@ -479,7 +479,7 @@ While this is a perfectly legitimate permission set, it results in leaving the r
 
 It is suggested that instead of this, when you want to lock down a folder to one or two folks, lock it down to an admin group that at least the Puppet Agent user is in. And when you need access, add yourself to that group.
 
-#### `purge_unspecified_explicit_permissions => true` with `inherit_parent_permissions => true`:
+#### `purge => true` with `inherit_parent_permissions => true`:
 
     ace {'Admins_full': identity => 'Administrators', rights => [full]}
     acl::file_acl {'C:/windows/temp':
@@ -489,17 +489,17 @@ It is suggested that instead of this, when you want to lock down a folder to one
 
     ace {'tim_rxl': identity => 'tim', rights => [read,execute,list]}
     acl::file_acl { 'C:/windows/temp/anotherfolder':
-      purge_unspecified_explicit_permissions => true,
+      purge => true,
       permissions => [Ace['tim_rxl']],
     }
 
 This maps out to the following:
 
  * Group `'Administrators'` will be granted full privileges to `C:\Windows\temp`, its subfolders and files.
- * Even with the secondary `purge_unspecified_explicit_permissions` permission, `'Administrators'` will have full access to `C:\Windows\temp\anotherfolder`, its subfolders and files. This is because this is an inherited permission.
+ * Even with the secondary `purge` permission, `'Administrators'` will have full access to `C:\Windows\temp\anotherfolder`, its subfolders and files. This is because this is an inherited permission.
  * User `'tim'` will have read/execute/list permissions to `C:\Windows\temp\anotherfolder`, its subfolders and files.
 
-#### `purge_unspecified_explicit_permissions => true` with `inherit_parent_permissions => true` where attempting to narrow permissions on an inherited user - INVALID Scenario:
+#### `purge => true` with `inherit_parent_permissions => true` where attempting to narrow permissions on an inherited user - INVALID Scenario:
 
     ace {'tim_mwrx': identity => 'tim', rights => [modify,write,read,execute,list]}
     acl::file_acl {'C:/windows/temp':
@@ -510,7 +510,7 @@ This maps out to the following:
     ace {'tim_rxl': identity => 'tim', rights => [read,execute,list]}
     acl::file_acl { 'C:/windows/temp/anotherfolder':
       ensure => present,
-      purge_unspecified_explicit_permissions => true,
+      purge => true,
       permissions => [Ace['tim_rxl']],
     }
 
@@ -523,7 +523,7 @@ This maps to:
 
 **NOTE**: This is considered an invalid scenario since inherited permissions cannot be narrowed.
 
-#### `purge_unspecified_explicit_permissions => true` with `inherit_parent_permissions => true` where attempting to widen permissions on an inherited user:
+#### `purge => true` with `inherit_parent_permissions => true` where attempting to widen permissions on an inherited user:
 
     ace{'tim_rxl': identity => 'tim', rights => [read,execute,list]}
     acl {'C:/windows/temp':
@@ -533,7 +533,7 @@ This maps to:
     ace{'tim_mwrx': identity => 'tim', rights => [modify,write,read,execute,list]}
     acl { 'C:/windows/temp/anotherfolder':
       inherit_parent_permissions => true,
-      purge_unspecified_explicit_permissions => true,
+      purge => true,
       permissions => [Ace['tim_mwrx']],
     }
 
@@ -582,8 +582,8 @@ Given the above, we have a structure of:
     ace{'tim_rxl':
       identity => 'tim',
       rights => [read,execute,list],
-      inherit => inherit,
-      propagate => propagate,
+      affects => all,
+      child_types => all,
     }
     acl {'c:/windows/temp':
       ensure => present,
@@ -604,8 +604,8 @@ Evaluating the structure specified at the beginning of this section the followin
     ace{'tim_rxl':
       identity => 'tim',
       rights => [read,execute,list],
-      inherit => inherit_containers_only,
-      propagate => propagate,
+      affects => children_only,
+      child_types => containers,
     }
     acl {'c:/windows/temp':
       ensure => present,
@@ -627,8 +627,8 @@ Evaluating the structure specified at the beginning of this section the followin
     ace{'tim_rxl':
       identity => 'tim',
       rights => [read,execute,list],
-      inherit => inherit_objects_only,
-      propagate => propagate,
+      affects => children_only,
+      child_types => objects,
     }
     acl {'c:/windows/temp':
       ensure => present,
@@ -650,7 +650,7 @@ Evaluating the structure specified at the beginning of this section the followin
     ace{'tim_rxl':
       identity => 'tim',
       rights => [read,execute,list],
-      inherit => no_inherit,
+      affects => self_only,
     }
     acl {'c:/windows/temp':
       ensure => present,
@@ -674,8 +674,7 @@ This will create the permission with no inheritance to children or grandchildren
     ace{'tim_rxl':
       identity => 'tim',
       rights => [read,execute,list],
-      inherit => inherit,
-      propagate => one_level,
+      affects => self_and_direct_children,
     }
     acl {'c:/windows/temp':
       ensure => present,
@@ -697,8 +696,7 @@ Evaluating the structure specified at the beginning of this section the followin
     ace{'tim_rxl':
       identity => 'tim',
       rights => [read,execute,list],
-      inherit => inherit,
-      propagate => inherit_only,
+      affects => children_only,
     }
     acl {'c:/windows/temp':
       ensure => present,
@@ -720,8 +718,8 @@ Evaluating the structure specified at the beginning of this section the followin
     ace{'tim_rxl':
       identity => 'tim',
       rights => [read,execute,list],
-      inherit => inherit_containers_only,
-      propagate => inherit_only,
+      affects => children_only,
+      child_types => containers,
     }
     acl {'c:/windows/temp':
       ensure => present,
@@ -743,8 +741,8 @@ Evaluating the structure specified at the beginning of this section the followin
     ace{'tim_rxl':
       identity => 'tim',
       rights => [read,execute,list],
-      inherit => inherit_objects_only,
-      propagate => one_level,
+      affects => direct_children_only,
+      child_types => objects,
     }
     acl {'c:/windows/temp':
       ensure => present,
