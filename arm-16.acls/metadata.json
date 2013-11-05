@@ -1,0 +1,8 @@
+{
+   "arm": 16,
+   "title": "Managing ACLs",
+   "champion":"robreynolds",
+   "organization":"puppetlabs",
+   "project":"https://github.com/puppetlabs/puppetlabs-acl",
+   "revision":"0.0.1"
+}
