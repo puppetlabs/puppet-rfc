@@ -669,9 +669,10 @@ A couple of combinations have been left off as one should be able to understand 
 Open Questions
 --------------
 
- 1. Should puppet attempt to reorder ACEs so that the order meets <http://msdn.microsoft.com/en-us/library/windows/desktop/aa379298(v=vs.85).aspx>?
- 1. With respect to `rights` - Should we support `'string access mask'` such as `'mwrx'` or is it enough just to have `[modify,write,read,execute]`?
- 1. Do users want a very specific `list` `right`? Does it confuse folks coming from *nix if read and list are separate?
+ 1. How should Puppet reorder ACEs so that the order meets <http://msdn.microsoft.com/en-us/library/windows/desktop/aa379298(v=vs.85).aspx>? Should it be done in a way that merges the managed ACEs ahead of the non-managed ACEs?
+ 1. Without a way to note what ACEs are Puppet managed, without purge, this could potentionally mean that previously managed aces that are removed from future manifests will continue to be on the ACL. This might be surprising - we should look for a way to somehow annotate those aces that we manage or document this as a known behavior (and document vigilantly).
+ 1. With respect to `rights` - Should we support `'string access mask'` such as `'mwrx'` or is it enough just to have `[modify,write,list,read,execute]`?
+ 1. Do users need a very specific `list` `right`? Does it confuse folks coming from *nix if read and list are separate?
 
 Future Considerations
 ---------------------
