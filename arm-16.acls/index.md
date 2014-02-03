@@ -132,7 +132,7 @@ Access `rights` define what permissions to give to the `identity`. This is an ar
  * `list` - With respect to containers, this grants listing the items in a container.
  * `read` - maps to `'r'`. This is also known as `GENERIC_READ`
  * `execute` - maps to `'x'`. This is also known as `GENERIC_EXECUTE`.
- * `binary hex flag access mask` - this maps to the binary flags for advanced permissions - i.e. `0x00010000` for DELETE
+ * `binary hex flag access mask` - this maps to the binary flags for advanced permissions - i.e. `0x00010000` for DELETE - `NOTE: This will not be allowed in the first release`
 
 This should be specified as an array (i.e. `rights => [read,list]`).
 
