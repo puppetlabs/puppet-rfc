@@ -102,20 +102,19 @@ These functions cannot be modified in a backwards compatible way to support both
 type of template can not be derived from filenames (since it is not required to use .erb or .epp as extension). The same
 applies to the inline function where it is not possible to detect if a string is .erb or .epp in a straight forward way.
 
-Instead, two new functions `epptemplate()` and `inline_epptemplate()` are introduced to process EPP templates.
+Instead, two new functions `epp()` and `inline_epp()` are introduced to process EPP templates.
 
-These functions work as their non 'epp' equivalences with the addition that they support passing a hash with named arguments
-as the last parameter. The entries in the hash become available as variables in the local scope used when evaluating the
-template. (This is explained further in [Passing Arguments to the Template](#passing-arguments-to-the-template)).
+These functions work on one template string/file at the time (in contrast to the existing template
+functions that handles multiple templates and joins them). In addition EPP supports passing a hash with named arguments.
 
-Suggested File Extensions
--------------------------
+The entries in the hash become available as variables in the local scope used when evaluating the
+template. When specified, they replace access to the calling context. (This is explained further in [Passing Arguments to the Template](#passing-arguments-to-the-template)).
 
-It is suggested, but not mandatory to give EPP templates an extension that identities them as such.
-The reason why it is optional is because some files have to have a precise and fixed name (in order to be able to
-open/edit it with a suitable editor).
+File Extensions
+---
 
-By convention, EPP templates should be named with the extension `.epp`.
+EPP templates should be given an extension that identities them as such.
+EPP templates should be named with the extension `.epp`.
 
     404page.epp
     404page.html.epp
@@ -123,41 +122,46 @@ By convention, EPP templates should be named with the extension `.epp`.
 Both of these signal that this is an epp file, and could be used like
 this:
 
-    epptemplate ('404page.epp')
+    epp ('404page.epp')
 
-The `epptemplate()` functions will attempt to parse the file as given, and if it does not exist, the file with `.epp` appended to
-its name.
+The `epp()` functions will appended `.epp` to the given name if it is missing.
 
 Passing Arguments to the Template
------------------------------------------
+---
 
-Since the template is evaluated with access to the calling context it has access to
-all variables visible in this context. If the template is not parameterized
-and there is a need to use it more than once with different values, it quickly
-becomes difficult.
+To make it easier to create reusable templates, EPP offers a way to declare required and
+optional parameters directly in a template. The caller of the template must supply the
+values of the required parameters (it is an error if they are not given).
 
-To make it easier to create reusable templates, EPP offers a way to declare required and optional parameters
-directly in a template. The caller of the template must supply the values of the required parameters (it is an error
-if they are not given). This provides additional isolation between templates and the scope/closure where they are evaluated.
-Security concerned users may want to go as far as dictating that templates are only allowed to use values given to them as
-arguments (this is not defined in this ARM, but could be added later if shown to be valuable).
+When a template declares parameters, the call must supply a hash. Additionally, when a hash
+is given, it replaces access to the calling scope. The template still has access to global
+scope. This applies both to `inline_epp` and `epp`.
 
-Since a template evaluation creates a local scope for the evaluation of
-the template to prevent the template from leaking variable values this
-can be used by also passing additional parameters into the context.
+Declaring parameters provides additional isolation between templates and the scope/closure
+where they are evaluated.
+Security concerned users may want to go as far as dictating that templates must always use parameters.
+
+A template has access to the scope in which it is defined (unless it has declared parameters),
+plus the global scope. For a file based template, the defining scope is global scope
+(access is never given to the scope where a call to `app` is made), and
+for an inline template, the defining scope is the scope where `inline_epp` is called.
 
 These are equivalent:
 
+    $x = 'droid'
     $message = "This is not the $x you are looking for."
 
-    $message = inline_epptemplate('This is not the <%= $x %> you are looking for.')
+    $x = 'droid'
+    $message = inline_epp('This is not the <%= $x %> you are looking for.')
 
-    $message = epptemplate('404page.epp') # Assuming it contains the text above
+This only works if there is a `$x` in global scope:
 
-In the two EPP examples, we can pass arguments:
+    $message = epp('404page.epp') # Assuming it contains the text above
+
+We can pass arguments even if there are no parameters declared:
 
     $x = 'page'
-    inline_epptemplate('This is not the <%= $x %> you are looking for.', { 'x' => 'droid'})
+    inline_epp('This is not the <%= $x %> you are looking for.', { 'x' => 'droid'})
     
     # => 'This is not the droid you are looking for.'
 
@@ -166,29 +170,36 @@ Note that it is possible to pass arguments (i.e. set variables in the template's
 having declared parameters or not.
 
 Also note that it is not possible to pass qualified names (they can not be set in a local scope). Thus, if there is a desire
-to shadow a name, the template should be designed to take an (unqualified) parameter and it is the callers responsability to override
-a default setting as in the following example:
+to shadow a name, the template should be designed to take an (unqualified) parameter and it is the callers responsibility to override a default setting as in the following example:
 
-    <%- ($foo = $some::where::foo) -%>
+    <%- |$foo = $some::where::foo| -%>
 
 Now, a user will get the default `$some::where::foo` or can pass an overriding value for `foo`.
+
+When a templates does not declare parameters, any parameters given in a hash in the call to
+`epp` or `inline_epp` are added to the template's scope, and they may shadow variables in the
+defining and global scopes.
 
 Declaring Template Parameters
 -----------------------------
 
-It is possible to declare required and optional parameters (with default values) inside the template by starting the template
-with a parenthesized parameters list in the same fashion parameters are declared for a `define`. Since the "call" passes arguments
-by name instead of by position it is allowed to place required and optional parameters in any order (although the convention is
-to place optional parameters last).
+It is possible to declare required and optional parameters (with default values) inside the template 
+by starting the template with a pipe separated parameters list in the same fashion parameters are
+declared for a `lambda`.
 
-    <%- ($x, $y, $z = 'unicorn') -%>
+Since the "call" passes arguments by name instead of by position it is allowed to place required and optional parameters in any order (although the convention is to place optional parameters last).
+
+    <%- |$x, $y, $z = 'unicorn'| -%>
     Here are your values: <%= $x %>, <%= $y %>. Don't forget to feed the <%= $z %>
 
-In this example, the template is declared to take three parameters, the required `$x` and `$y`, and the optional `$z`, which
-if not given is assigned the value `unicorn`.
+In this example, the template is declared to take three parameters, the required `$x` and `$y`, and 
+the optional `$z`, which if not given is assigned the value `unicorn`.
 
-Note the use of `<%-` and `-%>` which suppresses the leading and trailing whitespace (if there is leading whitespace before
-the epp tag containing the parameters they are not recognized as parameters to the EPP template and will result in a syntax error).
+Note the use of `<%-` and `-%>` which suppresses the leading and trailing whitespace (if there is 
+leading whitespace before the epp tag containing the parameters they are not recognized as parameters
+to the EPP template and will result in a syntax error).
+
+As stated earlier, access to variables in the defining scope is not available when parameters are declared.
 
 Nesting
 -------
@@ -197,23 +208,23 @@ As in ERB it is not possible to nest template tags. It is however possible to ca
 No EPP in regular logic
 -----------------------
 
-It is not possible to switch to EPP/text mode when parsing regular manifests. (One could imagine turning the epp tags
-"inside out", and switch mode, but this is not supported.
+It is not possible to switch to EPP/text mode when parsing regular manifests. (One could imagine 
+turning the epp tags "inside out", and switch mode, but this is not supported.
 
 The following is illegal and will result in Syntax error when parsed with --parser future as a regular manifest:
 
     $a = 10
     $b = %>This is template text with <%= $a %> %<
 
-In fact, any EPP tags in a manifest (.pp) will result in a syntax error. The EPP tags are only recognized when
-performing template parsing.
+In fact, any EPP tags in a manifest (.pp) will result in a syntax error. The EPP tags are only 
+recognized when performing template parsing invoked via the two EPP functions.
 
 Mixing Text and Logic
 ---------------------
 
 It is important to consider how text and logic combine in a template.
 A text segment in the template results in evaluation of a "render" operation
-that appends the text to the overall result. The rendering always returns nil as
+that appends the text to the overall rendered result. The rendering always returns nil as
 it is of questionable value to return the appended text (probably just a
 source of errors). Thus, if an attempt is made to assign the result of
 rendered text as in this example:
@@ -232,7 +243,7 @@ defined (or there is nothing there to evaluate in the first place).
 
 As an (illegal) example:
 
-    Here is a list of servers:    
+    Here is a list of servers:
     <ul>
     <% $array.each %> TEXT <% |$x|
       <li><%= $x %></li>
@@ -263,10 +274,10 @@ There is also no protection against realizing/collecting resources.
 
 Arguably, these operations are not intended to be used inside templates (as a side effect of
 producing text) and should probably be validated as not being allowed.
-The current reference implementation does not validate these expressions, but this can be
-added. (As a comparison, it is possible to create resources by sideeffect in an interpolated string).
-If someone chooses to use these questionable expressions inside a template, there is no real harm;
-only poor design.
+The current implementation does not validate these expressions, but this can be
+added. (As a comparison, it is possible to create resources by side-effect in an
+interpolated string). If someone chooses to use these questionable expressions inside a template, 
+there is no real harm; only poor design.
 
 Alternatives and Recommendation
 ===============================
@@ -288,7 +299,7 @@ Alternative: Recognize `@x` as a Variable
 -----------------------------------------
 
 One consideration was to allow `@x` to be a variable reference in EPP. This would mean
-that some ERB templates would immediatly work as EPP templates. There is however grammar problems
+that some ERB templates would immediately work as EPP templates. There is however grammar problems
 with using `@` in this fashion and the idea was abandoned. (Having more than one way to reference variables is
 also unwanted, so they would come with deprecation warnings. Doing a search/replace is easy enough).
 
@@ -307,11 +318,8 @@ this is added to scope, it will need to provide direct support for collecting re
 Dependencies
 ------------
 
-The reference implementation is based on work done to support ARM 4 - Heredoc, but does not directly
-depend on the Heredoc support. Combining Heredoc and inline templates is however beneficial
-as it is otherwise tedious to construct complex inline EPP strings (as they may require extensive escaping).
+The implementation is built on the `--parser future` / `--evaluator future` implementation.
 
-The reference implementation is built on the `--parser future` implementation.
 
 Impact
 ------
