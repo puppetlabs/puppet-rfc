@@ -152,5 +152,14 @@ Index of ARMs
     <td>October 25, 2013</td>
     <td>New - <a href="https://groups.google.com/forum/#!topic/puppet-dev/9xq-oFWSqXo">Discuss</a></td>
     </tr>
+    <tr>
+    <td>17</td>
+    <td><a href="arm-17.dcs/index.md">Reserved for DCS</a></td>
+    <td>TBD.
+  </td>
+    <td>0.0.0</td>
+    <td>-</td>
+    <td>tbd. <a href="https://groups.google.com/forum/#!topic/puppet-dev/">Discuss TBD</a></td>
+    </tr>
 
 </table>
