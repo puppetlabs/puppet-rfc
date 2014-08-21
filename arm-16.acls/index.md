@@ -132,7 +132,7 @@ Access `rights` define what permissions to give to the `identity`. This is an ar
  * `list` - With respect to containers, this grants listing the items in a container.
  * `read` - maps to `'r'`. This is also known as `GENERIC_READ`
  * `execute` - maps to `'x'`. This is also known as `GENERIC_EXECUTE`.
- * `binary hex flag access mask` - this maps to the binary flags for advanced permissions - i.e. `0x00010000` for DELETE
+ * `binary hex flag access mask` - this maps to the binary flags for advanced permissions - i.e. `0x00010000` for DELETE - `NOTE: This will not be allowed in the first release`
 
 This should be specified as an array (i.e. `rights => [read,list]`).
 
@@ -209,7 +209,7 @@ This is a string value that is translated to SID every time when using Windows.
 
 **NOTE**: With `inherit_parent_permissions => true` (which is the default), one may run into a validation warning at runtime that is something to the effect of `Due to  inherited permissions, a narrowing permission cannot be set`. This is simply stating that there was an inherited permission found that won't allow a permission to be set since it would narrow a particular identity's permissions (which cannot be done on Windows when a resource inherits permissions). This can be overcome by using `inherit_parent_permissions => false` on the `acl`, by managing the identity at the level where the inheritance is passed down (and possibly altering it there), or widening your current permission to match. The recommended way would be to manage the identity's permissions at the top level as widening could be a maintenance issue if the top level were to change in a way that would cause your permissions to be narrowing again.
 
-**Warning**: While managing ACLs you could lock the Puppet Agent user completely out of managing resources. Extreme care should be used when using `purge => true` on `acl` with `inherit_parent_permissions => false` on the `acl`. Almost never should an admin also include `acl` `permissions => []`, which would cause the provider to remove all permissions to a resource.
+**Warning**: While managing ACLs you could lock the Puppet Agent user completely out of managing resources. Extreme care should be used when using `purge => true` on `acl` with `inherit_parent_permissions => false` on the `acl`.
 
 ## Examples
 
@@ -375,7 +375,7 @@ This maps out to the following:
  * Group `'Administrators'` will be granted full privileges to `C:\Windows\temp`, its subfolders and files (except where noted below).
  * User `'tim'` will have 'mwrx' permissions to `C:\Windows\temp`, its subfolders and files (except where noted below).
 
-#### `purge => true` with `inherit_parent_permissions => false` and an empty permission set
+#### INVALID SCENARIO: `purge => true` with `inherit_parent_permissions => false` and an empty permission set
 
     acl {'C:/windows/temp':
       ensure => present,
@@ -384,9 +384,9 @@ This maps out to the following:
       permissions => [],
     }
 
-While this is a perfectly legitimate permission set, it results in leaving the resource unmanageable as it removes all inherited permissions and locks down the folder completely. The only way to get into the resource from there is by the owner.
+This use case is not supported. Empty permission sets are not supported. You must specify a non-empty list of permissions. While this is a perfectly legitimate setting in Windows, one could have a bug in a hiera file and could trigger this, and would end up with a bigger mess more often than someone actually wanting to set the ACL this way.
 
-It is suggested that instead of this, when you want to lock down a folder to one or two folks, lock it down to an admin group that at least the Puppet Agent user is in. And when you need access, add yourself to that group.
+If you are looking to lock down a folder, lock it down to an admin group that at least the Puppet Agent user is in. And when you need access, add yourself to that group.
 
 #### `purge => true` with `inherit_parent_permissions => true`:
 
@@ -669,9 +669,10 @@ A couple of combinations have been left off as one should be able to understand 
 Open Questions
 --------------
 
- 1. Should puppet attempt to reorder ACEs so that the order meets <http://msdn.microsoft.com/en-us/library/windows/desktop/aa379298(v=vs.85).aspx>?
- 1. With respect to `rights` - Should we support `'string access mask'` such as `'mwrx'` or is it enough just to have `[modify,write,read,execute]`?
- 1. Do users want a very specific `list` `right`? Does it confuse folks coming from *nix if read and list are separate?
+ 1. How should Puppet reorder ACEs so that the order meets <http://msdn.microsoft.com/en-us/library/windows/desktop/aa379298(v=vs.85).aspx>? Should it be done in a way that merges the managed ACEs ahead of the non-managed ACEs?
+ 1. Without a way to note what ACEs are Puppet managed, without purge, this could potentionally mean that previously managed aces that are removed from future manifests will continue to be on the ACL. This might be surprising - we should look for a way to somehow annotate those aces that we manage or document this as a known behavior (and document vigilantly).
+ 1. With respect to `rights` - Should we support `'string access mask'` such as `'mwrx'` or is it enough just to have `[modify,write,list,read,execute]`?
+ 1. Do users need a very specific `list` `right`? Does it confuse folks coming from *nix if read and list are separate?
 
 Future Considerations
 ---------------------
