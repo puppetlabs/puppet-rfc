@@ -21,11 +21,6 @@ to address and who experiences those problems? (Is it every Puppet
 installation in the world? Only ones which operate under particular
 conditions? Only people attempting to extend Puppet?)
 
-Goals
------
-
-What are the goals of this proposal?  Omit this section if you have
-nothing to say beyond what's already in the summary.
 
 Non-Goals
 ---------
