@@ -350,7 +350,12 @@ is a hash the entry is an array with `[key, value]`.
     $a = ["raspberry", "blueberry", "orange"]  
     $a.filter |$x| { $x =~ /berry$/ }
 
+So in order to use to return the filtered array, you would use this as follows:
 
+    # Produces a new array, $a_filtered for all elements that end with berry
+    $a = ["raspberry", "blueberry", "orange"]  
+    $a_filtered = $a.filter |$x| { $x =~ /berry$/ }
+    
 To use the `filter` function to *filter-out* something, simply reverse the test being made
 by using `not` (or reversing the operator - e.g. `==` to `!=` or `=~` to `!~` etc.)
 
