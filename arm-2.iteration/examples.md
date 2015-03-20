@@ -14,7 +14,7 @@ Question from mailing list:
 
 Here is how:
 
-    $nodes = ['gfs01' ,'gfs02', 'gfs03', 'gfs04]
+    $nodes = ['gfs01' ,'gfs02', 'gfs03', 'gfs04']
     $brick_store = "/var/bricks"
     $brick_array = $nodes.map |$x| { "$x:$brick_store" }
 
@@ -36,7 +36,7 @@ From the mailinglist:
       'differentuser'=>'complete/tely/different/path', 
       'anotheruser'  => 'another/path'
     }
-    $content = $data.reduce("") |$memo, $x| "$memo
+    $content = $data.reduce("") |$memo, $x| { "$memo
     /bin/mount --bind /home/${x[1]}/ /home/${x[1]}/www" }
     
     # content contains the desired text (although with a blank line first)
