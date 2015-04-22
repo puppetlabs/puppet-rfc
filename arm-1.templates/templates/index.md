@@ -16,7 +16,7 @@ and sweet.
 Problems and People
 -------------------
 
-Why should this work be done?  What are the problems it is attempting
+REQUIRED -- Why should this work be done?  What are the problems it is attempting
 to address and who experiences those problems? (Is it every Puppet
 installation in the world? Only ones which operate under particular
 conditions? Only people attempting to extend Puppet?)
