@@ -215,10 +215,10 @@ Example metadata.json
 ~~~json
 {
   "arm":123,
-  "title":"Introduce a new syntax"
+  "title":"Introduce a new syntax",
   "advocate":"hlindberg",
   "organization":[
-    "hlinkberg",
+    "hlindberg",
     "ahpook",
     "jdwelch"
   ],
