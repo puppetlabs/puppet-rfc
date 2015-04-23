@@ -100,7 +100,7 @@ quickly.  A successful ARM passes through the following states:
   consensus- building; Generally a fork of the ARM repository that has not
   been merged into the master branch. Language-specific changes should 
   go to the 
-  [language-team@puppetlabs.com](mailto:language-team@puppetlabs.com) 
+  [language-arms@puppetlabs.com](mailto:language-arms@puppetlabs.com) 
   mailing list for a quick vetting; two "+1"s and no "definitely not" 
   replies mean it can proceed to the next stage.
 
@@ -126,7 +126,7 @@ quickly.  A successful ARM passes through the following states:
   major version 1.0. Submissions must be made by sending mail to the
   [Puppet Developers](https://groups.google.com/group/puppet-dev) 
   mailing list. Language changes require a summary of any differences 
-  between the original and the Submitted proposal to the language-team 
+  between the original and the Submitted proposal to the language-arms 
   list, and again two +1s are necessary to green-light the proposal 
   for implementation.
 
