@@ -6,10 +6,10 @@ Introduction
 
 Open source projects often adopt an enhancement proposal process to
 encourage design and discussion before complicated development work begins,
-and it's in this spirit that Puppet Armatures came about. This process 
-is heavily inspired by the Java community's [JEP][JEP1] process, but 
-has changed over time to reflect the less formal nature of our 
-community.
+and it's in this spirit that Puppet Armatures (often abbreviated as "ARMs") 
+came about.  This process is heavily inspired by the Java community's 
+[JEP][JEP1] process, but has changed over time to reflect the less formal 
+nature of our community.
 
 In some cases, ARMs are artifacts of the process leading up to one or several
 issues/feature requests in the issue tracker. In others, they may be detailed,
