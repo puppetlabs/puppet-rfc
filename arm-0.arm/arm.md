@@ -4,16 +4,12 @@
 Introduction
 ------------
 
-There is currently a gap in the process for developing Puppet that is
-sometimes critiqued as lack of openness,  frustration over where and how
-to get ideas heard, and the perception that the redmine issue tracker
-functions as a dumping ground for fly by feature requests that sit there
-for years with no, or very little, action or value.
-
-Other open source projects have adopted an enhancement process to deal
-with such issues, and thus, this is an attempt to define ARM - Puppet
-Armatures. This proposal is heavily inspired by the Java
-community's [JEP][JEP1] process.
+Open source projects often adopt an enhancement proposal process to
+encourage design and discussion before complicated development work begins,
+and it's in this spirit that Puppet Armatures (often abbreviated as "ARMs") 
+came about.  This process is heavily inspired by the Java community's 
+[JEP][JEP1] process, but has changed over time to reflect the less formal 
+nature of our community.
 
 In some cases, ARMs are artifacts of the process leading up to one or several
 issues/feature requests in the issue tracker. In others, they may be detailed,
@@ -23,7 +19,7 @@ Overview
 --------
 
 Puppet Armatures is a process for collecting, reviewing,
-sorting, and recording the result of proposals for enhancements to
+refining, and recording the result of proposals for enhancements to
 Puppet and related ecosystem and processes.
 
 An enhancement is an effort to design and implement a non trivial
@@ -38,16 +34,14 @@ one of the following criteria:
     developed, or
 3.  It is in high demand by developers or users
 
-In addition, some changes are always considered significant:
+In addition, language changes are always considered significant, and 
+since the implications for changes to the Puppet Langauge are more 
+far-reaching, there is a slightly modified process for them which the 
+"Process" section below calls out specifically.
 
-1.  Changes to the Puppet Language
-2.  Changes in evaluation semantics
-
-The primary goal of the process is to produce an up-to-date list of
-proposals serving as a long term roadmap for Puppet Projects. The intent
-is that this roadmap extends well into the future (several years) to
-allow for sufficient time for the most complex proposals to be
-researched, defined and implemented.
+The primary goal of the process is to enable _iterative_, productive 
+conversations about proposals that influence the future direction of 
+Puppet Projects.
 
 The process is public; anyone may submit proposals as well as contribute
 to any of the proposals.
@@ -62,69 +56,16 @@ collaborators have signed up to complete the work of a ARM to consider
 it to be funded. Non funded, stale or otherwise defunct ARMs are taken
 off the list.
 
-
-ARM Process
------------
-
-A successful ARM (and we want them _all_ to be successful!) passes through the
-following states:
-
-![Fig. 1: Armature workflow](arm-0-workflow.png)
-
-* **Draft** —  In circulation by the idea's champion for initial review and
-  consensus- building; Generally a fork of the ARM repository that has not
-  been merged into the master branch.
-
-* **Posted** — Pushed into the ARM repository by the champion for wider
-  review. When an ARM is posted (via a pull request), comments must be
-  requested from the [Puppet Developers](https://groups.google.com/group
-  /puppet-dev) mailing list. Feedback from that forum, and any other means the
-  champion wishes, is incorporated by the champion and other contributors
-  until the ARM is ready for a more formal review.
-
-* **Submitted** — Declared by the champion as ready for evaluation by the
-  Armatures governors. A formal review results in an up-or-down decision. If
-  the proposal is accepted, it moves to Candidate status, and is given the
-  major version 1.0. Submissions must be made by sending mail to the
-  [Puppet Developers](https://groups.google.com/group/puppet-dev) mailing list.
-
-* **Candidate** — Accepted for inclusion in iteration planning (costing and
-  scheduling). A
-  [ticket](https://projects.puppetlabs.com/projects/puppet/issues/new) is
-  created for the sole purpose of tracking development.
-
-* **Funded** — Implementation is costed and staffed. In some cases, Puppet
-  Labs will be responsible for executing on an ARM; in others, community
-  contributors (likely the ARM champions) are responsible for execution,
-  following the normal procedures for [contributing to Puppet]
-  (https://github.com/puppetlabs/puppet/blob/master/CONTRIBUTING.md).
-
-* **Completed** — Built, tested, packaged, released. Once completed, ARMs are
-  archived and marked as such.
-
-* **Rejected:** — The governors hope it doesn't happen, but there may come a
-  point they must reject proposals outright. The proposal will still be in the
-  repository, and champions will be notified exactly why a proposal is
-  rejected. Rejected proposals may be resubmitted after necessary rework. Re-
-  submissions must increment the major version number.
-
-* **Withdrawn:** — If the ARM champion does not wish to continue further work,
-  it can be marked as withdrawn. The proposal will contiune to exist, and 
-  work may be taken up by a new champion.
-
-### ARMs Talks, and ARM Rallies
-
-There should be regular ARMs talks; where proposals for new ARMs are
-presented, major revisions reviewed and where the ARM process itself is
-reviewed. These meetings are open to the public. (The collaborators of a
-particular ARM may naturally hold their own meetings).
-
-ARM rallies should be arranged whenever there is a Puppet conf/camp -
-this includes communicating the state of ARMs and possibly organizing
-reviews/feedback on ARMs in the pipeline.
-
 Creating an ARM
 ---------------
+
+This github repo contains an index of the ARMs and links to WIP 
+documents. To get started, create a copy of the ARM template in a 
+public Google document, with the "Sharing" options set to "Anyone can 
+comment". Edit the boilerplate text with as much detail as possible, 
+with at least the sections marked "required" filled in. Then,
+open a github issue in the ARM repository requesting a new number, 
+describe your proposed change, and link to the Google Doc.
 
 The ARM consists of a Git repository where each top level folder is a
 ARM identified by an ARM number and the name of the ARM.
@@ -132,28 +73,6 @@ One folder exists for defunct/old ARMs, and one for accepted/implemented
 and archived ARMs. Defunct ARMs are garbage collected after 12 months of
 their deprecation. Archived ARMs are kept (but are not updated to keep
 in sync with the implementation).
-
-To request a new ARM identifier or suggest archiving an old one, submit a 
-Github Issue against the main repository. The governors of the ARM resolve additions
-by ascertaining the seriousness and likelihood of funding, assign a ARM
-number and creates a top level folder for the ARM. The seriousness
-behind an idea does not necessarily mean that it is not a "wacky idea",
-only that there is serious intent to work on the idea.
-
-The ARM governors create a folder with initial metadata (see below) and a
-template for the proposal. (See the JEP template as a reference to what
-it may contain - link at the end of this document).
-
-Contributions to a ARM are done via github pull requests. The ARM is
-worked on until there is a first acceptable draft. It is then merged to
-the master ARM repository. At that point the champion should announce the ARM 
-on a thread on the puppet-dev mailing list and reference the thread at 
-https://groups.google.com/d/topic/puppet-dev/ in the top-level ARM index and 
-metadata.json. The mailing list thread should be the canonical place for 
-commentary, questions, suggestions and feedback about the ARM. (For the record, 
-we experimented with using a Github-based workflow for collaboration using pull 
-request comments and issues but found that useful commentary got lost when the 
-pull requests were closed; mailing list threads are more permanent.)
 
 We suggest that people working on a larger ARM fork the repository and use the 
 fork (and its issue tracker) as the collaboration point to drive that ARM to
@@ -163,9 +82,79 @@ The issue tracker for the master ARM project is used only for the
 lifecycle of ARMs, not for handling issues/work related to the content
 of the ARMs.
 
-The master ARM repository is owned/governed by Puppet Labs but commit access
-should be opened to community members who have demonstrated interest in working 
-on ARMs.
+
+ARM Process
+-----------
+
+The ARM process encourages rapid iteration, feedback, and 
+collaboration among stakeholders. It also incorporates a two-week 
+timer to prevent stale ARMs, though in-depth discussion pauses the 
+timer while it's on-going; discussions should run their course but not 
+get side-tracked indefinitely. We want ARMs to incorporate feedback 
+and either move through to "Completed" or be "Withdrawn" fairly 
+quickly.  A successful ARM passes through the following states:
+
+![Fig. 1: Armature workflow](arm-0-workflow.png)
+
+* **Draft** —  In circulation by the idea's advocate for initial review and
+  consensus- building; Generally a fork of the ARM repository that has not
+  been merged into the master branch. Language-specific changes should 
+  go to the 
+  [language-arms@puppetlabs.com](mailto:language-arms@puppetlabs.com) 
+  mailing list for a quick vetting; two "+1"s and no "definitely not" 
+  replies mean it can proceed to the next stage.
+
+* **Posted** — Pushed into the ARM repository by the advocate for wider
+  review. When an ARM is posted (via a pull request), comments must be
+  requested from the [Puppet 
+  Developers](https://groups.google.com/group/puppet-dev) mailing 
+  list. Feedback from that forum, and any other means the
+  advocate wishes, is incorporated by the advocate and other contributors
+  until the ARM is ready for a more formal review. This posting starts 
+  a two-week timer to avoid lingering, unreviewed ARMs. After seven 
+  days, the advocate should post a "refresher" email to solicit any 
+  further comments. Feedback which results in a major rework of the 
+  proposal should cause a restart of the two-week timer (so the 
+  advocate does not feel crunched to go back to the drawing board with 
+  1 day remaining, for example). If no substantive objections arise 
+    during the two week period, the ARM can move to the "Submitted" 
+    phase.
+
+* **Submitted** — Declared by the advocate as ready for evaluation by the
+  Armatures governors. A formal review results in an up-or-down decision. If
+  the proposal is accepted, it moves to Candidate status, and is given the
+  major version 1.0. Submissions must be made by sending mail to the
+  [Puppet Developers](https://groups.google.com/group/puppet-dev) 
+  mailing list. Language changes require a summary of any differences 
+  between the original and the Submitted proposal to the language-arms 
+  list, and again two +1s are necessary to green-light the proposal 
+  for implementation.
+
+* **Candidate** — Accepted for inclusion in iteration planning (costing and
+  scheduling). A
+  [ticket](https://tickets.puppetlabs.com/browse/PUP) is
+  created for the purpose of tracking development.
+
+* **Funded** — Implementation is costed and staffed. In some cases, Puppet
+  Labs will be responsible for executing on an ARM; in others, community
+  contributors (likely the ARM advocates) are responsible for execution,
+  following the normal procedures for [contributing to Puppet]
+  (https://github.com/puppetlabs/puppet/blob/master/CONTRIBUTING.md).
+
+* **Completed** — Built, tested, packaged, released. Once completed, 
+  the advocate moves the ARMs from the Google doc to a Markdown-format 
+  file in this repository (we found the G-docs to be excellent for 
+  commentary and collaboration but terrible for discoverability)
+
+* **Rejected:** — The governors hope it doesn't happen, but there may come a
+  point they must reject proposals outright. The proposal will still be in the
+  repository, and advocates will be notified exactly why a proposal is
+  rejected. Rejected proposals may be resubmitted after necessary rework. Re-
+  submissions must increment the major version number.
+
+* **Withdrawn:** — If the ARM advocate does not wish to continue further work,
+  it can be marked as withdrawn. The proposal will contiune to exist, and 
+  work may be taken up by a new advocate.
 
 Text Format
 -----------
@@ -173,10 +162,6 @@ Text Format
 Proposals are written using Github Flavored Markdown.
 
 Encoding is always UTF-8.
-
-The templates in ARM-1 should be a starting point, but a minimal beginning 
-point might be simply writing to the section header prompts in [the JEP2 
-document][JEP2].
 
 Auxiliary Files
 ---------------
@@ -192,7 +177,7 @@ A proposal always has one root file `metadata.json` that describes:
 
 1.  **arm** - (required) self reference, the ARM number
 2.  **title** - (required) Human-readable title for the ARM
-3.  **champion** - (required) Github handle of the primary author
+3.  **advocate** - (required) Github handle of the primary author
 4.  **organization** - a list of Github handles for contributors
     to the ARM, or a Github organization name
 5.  **effort** - quantity of work required to fully implement. Resonable
@@ -230,10 +215,10 @@ Example metadata.json
 ~~~json
 {
   "arm":123,
-  "title":"Introduce a new syntax"
-  "champion":"hlindberg",
+  "title":"Introduce a new syntax",
+  "advocate":"hlindberg",
   "organization":[
-    "hlinkberg",
+    "hlindberg",
     "ahpook",
     "jdwelch"
   ],
