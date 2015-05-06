@@ -1,10 +1,10 @@
 {
-   "arm": 1,
+   "prfc": 1,
    "title": "Templates",
-   "champion": "ahpook",
+   "advocate": "ahpook",
    "revision":"1.0.0",
-   "project":"https://github.com/puppetlabs/armatures",
-   "requires-arms":[
+   "project":"https://github.com/puppetlabs/puppet-rfc",
+   "requires":[
    ],
    "issues":[
    ]

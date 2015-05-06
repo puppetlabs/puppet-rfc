@@ -1,8 +1,8 @@
-ARM-XX: TITLE OF ARM
+PRFC-XX: TITLE OF PRFC
 ====================
 
 This text is adapted from [JEP-2](http://openjdk.java.net/jeps/2)
-and is intended as writing prompts for ARM proposals. Any of the
+and is intended as writing prompts for PRFC proposals. Any of the
 sections not flagged as REQUIRED is optional.
 
 Summary
