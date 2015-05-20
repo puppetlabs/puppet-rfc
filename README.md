@@ -134,7 +134,7 @@ Index of PRFCs
   <td>Describe Puppet's ability for managing system reboots.</td>
   <td>0.0.1</td>
   <td>April 17, 2013</td>
-  <td>New - <a href="https://groups.google.com/forum/?fromgroups=#!topic/puppet-dev/5QFelBbbAMw"</td>
+  <td>New - <a href="https://groups.google.com/forum/?fromgroups=#!topic/puppet-dev/5QFelBbbAMw">Discuss</a></td>
 </tr><tr>
     <td>15</td>
     <td><a href="prfc-15.master_status/index.md">Master to Produce Meaningful Status Messages</a></td>
@@ -151,13 +151,33 @@ Index of PRFCs
     <td>0.0.1</td>
     <td>October 25, 2013</td>
     <td>New - <a href="https://groups.google.com/forum/#!topic/puppet-dev/9xq-oFWSqXo">Discuss</a></td>
-    </tr>
-    <tr>
+</tr><tr>
     <td>17</td>
-    <td><a href="prfc-17.dcs/index.md">Reserved for DCS</a></td>
-    <td>TBD.</td>
+    <td><a href="prfc-17.lambda_in_case/index.md">Lambda Case Option</a></td>
+    <td>Add ability to use a lambda as case option for advanced matching. (See <a href="https://tickets.puppetlabs.com/browse/PUP-4193">PUP-4193</a>)</td>
     <td>0.0.0</td>
     <td>-</td>
-    <td>tbd. <a href="https://groups.google.com/forum/#!topic/puppet-dev/">Discuss TBD</a></td>
+    <td>New. <a href="https://groups.google.com/forum/#!topic/puppet-dev/">Discuss TBD</a></td>
+</tr><tr>
+    <td>18</td>
+    <td><a href="prfc-18.ignored_parameter/index.md">Ignored Parameter</a></td>
+    <td>The work is to compare how variables like this is used in other languages and how this can be applied/made useful in the Puppet Language. (See <a href="https://tickets.puppetlabs.com/browse/PUP-4193">PUP-4193</a>)</td>
+    <td>0.0.0</td>
+    <td>-</td>
+    <td>New. <a href="https://groups.google.com/forum/#!topic/puppet-dev/">Discuss TBD</a></td>
+</tr><tr>
+    <td>19</td>
+    <td><a href="prfc-19.direct_eval/index.md">Direct Evaluation of Resource Instantiation</a></td>
+    <td>Current behavior makes it very difficult for users to reason about evaluation order; this work aims to fix that.</td>
+    <td>0.0.1</td>
+    <td>-</td>
+    <td>New. <a href="https://groups.google.com/forum/#!topic/puppet-dev/">Discuss TBD</a></td>
+</tr><tr>
+    <td>20</td>
+    <td><a href="prfc-20.iteration_control/index.md">Iteration Control</a></td>
+    <td>The idea is to specify the semantics for two functions: break(val = undef), and next(val=undef) that enables control of iteration.</td>
+    <td>0.0.1</td>
+    <td>-</td>
+    <td>New. <a href="https://groups.google.com/forum/#!topic/puppet-dev/">Discuss TBD</a></td>
 </tr>
 </table>
