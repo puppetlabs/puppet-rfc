@@ -1,0 +1,13 @@
+{
+   "prfc": 18,
+   "title": "Ignored Parameter",
+   "advocate":"hlindberg",
+   "project":"https://github.com/<REPLACE with ref to project at github>",
+   "revision":"0.0.0",
+   "requires":[
+   ],
+   "issues":[
+   ],
+   "implementation":[
+   ],
+}
