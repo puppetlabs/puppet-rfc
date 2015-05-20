@@ -1,0 +1,11 @@
+{
+   "prfc": 1,
+   "title": "Templates",
+   "advocate": "ahpook",
+   "revision":"1.0.0",
+   "project":"https://github.com/puppetlabs/puppet-rfc",
+   "requires":[
+   ],
+   "issues":[
+   ]
+}

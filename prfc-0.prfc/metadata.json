@@ -1,0 +1,8 @@
+{
+   "prfc":0,
+   "title":"Puppet RFC Process",
+   "advocate":"hlindberg",
+   "organization":"puppetlabs",
+   "project":"https://github.com/puppetlabs/puppet-rfc",
+   "revision":"2.0.0"
+}
