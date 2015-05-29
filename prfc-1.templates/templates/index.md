@@ -1,5 +1,17 @@
-PRFC-XX: TITLE OF PRFC
+(WIP) PRFC-XX: TITLE OF PRFC
 ====================
+
+### Please see the google doc at LINK.
+
+## WORK IN PROGRESS (Next steps)
+- Please create a google doc with the template below and fill it out.
+- Allow anyone to read and comment on the document (only give write access to those working on the RFC with you)
+- Create a pull request linking to the google doc above here. (remove the template below but leave this wip section)
+- Open a discussion with puppet-dev at googlegroups dot com.
+- Once things solidify, please push information back here.
+
+#NOTHING TO SEE HERE YET
+## TEMPLATE
 
 This text is adapted from [JEP-2](http://openjdk.java.net/jeps/2)
 and is intended as writing prompts for PRFC proposals. Any of the
@@ -52,13 +64,13 @@ consider, learn from, or possibly adopt wholesale?
 
 Alternatives
 ------------
-Are there other approaches that we should consider? 
+Are there other approaches that we should consider?
 
 Additional Concerns
 -------------------
 
 How will this work impact other parts of the platform, the product,
-and the contributors working on them? 
+and the contributors working on them?
 
 - Other Puppet components: ...
 - Compatibility: ...
