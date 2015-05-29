@@ -182,7 +182,7 @@ Index of PRFCs
 </tr><tr>
     <td>21</td>
     <td><a href="prfc-21.dsc/index.md">PowerShell Desired State Configuration (DSC)</a></td>
-    <td>Puppet should support integration with PowerShell DSC as a supported module. [FM-2410](https://tickets.puppetlabs.com/browse/FM-2410) </td>
+    <td>Puppet should support integration with PowerShell DSC as a supported module. LINK EPIC </td>
     <td>0.0.1</td>
     <td>-</td>
     <td>New. <a href="https://groups.google.com/forum/#!topic/puppet-dev/">Discuss TBD</a></td>
