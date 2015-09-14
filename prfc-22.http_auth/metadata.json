@@ -1,0 +1,13 @@
+{
+   "prfc": 22,
+   "title": "HTTP Authorization Framework",
+   "advocate":"ahpook",
+   "project":"https://github.com/puppetlabs/trapperkeeper-authorization",
+   "revision":"1.0.0",
+   "requires":[
+   ],
+   "issues":[ "https://tickets.puppetlabs.com/browse/SERVER-111",
+   ],
+   "implementation":[
+   ],
+}
