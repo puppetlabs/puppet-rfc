@@ -186,5 +186,14 @@ Index of PRFCs
     <td>0.0.1</td>
     <td>-</td>
     <td>New. <a href="https://groups.google.com/forum/#!topic/puppet-dev/">Discuss TBD</a></td>
+</tr><tr>
+    <td>22</td>
+    <td><a href="prfc-22.http_auth/index.md">HTTP Authorization Framework</a></td>
+    <td><a href="https://docs.google.com/document/d/1XIsGAg0Dm_aF5YWzvzZwkYaGQ15XoLVONCgYiBv9RpI/edit">Clojure-based 
+    implementation of HTTP Authorization system</a></td>
+    <td>1.0</td>
+    <td>2015-09-15</td>
+    <td>Posted - <a href="https://groups.google.com/d/topic/puppet-dev/I4GVsA46C5g/discussion">puppet-dev 
+    thread</a></td>
 </tr>
 </table>
