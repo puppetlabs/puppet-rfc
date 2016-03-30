@@ -1,0 +1,13 @@
+{
+   "prfc": 23,
+   "title": "XPP - Exchangeable Puppet Files",
+   "advocate":"peterhuene",
+   "project":"https://github.com/puppetlabs/puppetcpp",
+   "revision":"1.0.0",
+   "requires":[
+   ],
+   "issues":[ "https://tickets.puppetlabs.com/browse/NPUP",
+   ],
+   "implementation":[
+   ],
+}
