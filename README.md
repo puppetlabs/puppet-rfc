@@ -4,18 +4,18 @@ Puppet RFC
 Puppet RFC Repository
 ---------------------
 
-This repository contains Puppet RFCs, which are "Requests For Comments" in the tradition of the IETF 
-RFC process. They are proposals to enhance / add features to Puppet or something in the Puppet 
-ecosystem. This is a community-focused process intended to improve openness and transparency in both 
-Puppet Labs-funded and contributor efforts. For details, please read [PRFC-0](prfc-0.prfc/index.md), 
+This repository contains Puppet RFCs, which are "Requests For Comments" in the tradition of the IETF
+RFC process. They are proposals to enhance / add features to Puppet or something in the Puppet
+ecosystem. This is a community-focused process intended to improve openness and transparency in both
+Puppet Labs-funded and contributor efforts. For details, please read [PRFC-0](prfc-0.prfc/index.md),
 which describes the rationale and process.
 
 Historical note
 ---------------
 
-From their introduction in 2013 until a renaming/reboot in mid-2015, the process and artifacts were 
-called "Armatures", abbreviated to "ARMs". While the git repository and all current documentation 
-are updated, it's possible you will see references to the old name in immutable artifacts like 
+From their introduction in 2013 until a renaming/reboot in mid-2015, the process and artifacts were
+called "Armatures", abbreviated to "ARMs". While the git repository and all current documentation
+are updated, it's possible you will see references to the old name in immutable artifacts like
 mailing list threads, bug tracker tickets, etc.
 
 Index of PRFCs
@@ -138,7 +138,7 @@ Index of PRFCs
 </tr><tr>
     <td>15</td>
     <td><a href="prfc-15.master_status/index.md">Master to Produce Meaningful Status Messages</a></td>
-    <td>Allow administrators and/or the master process itself to update the status response when 
+    <td>Allow administrators and/or the master process itself to update the status response when
     /production/status/no_key is hit so that proper load balancer support can be achieved.</td>
     <td>0.0.1</td>
     <td>August 21, 2013</td>
@@ -189,11 +189,18 @@ Index of PRFCs
 </tr><tr>
     <td>22</td>
     <td><a href="prfc-22.http_auth/index.md">HTTP Authorization Framework</a></td>
-    <td><a href="https://docs.google.com/document/d/1XIsGAg0Dm_aF5YWzvzZwkYaGQ15XoLVONCgYiBv9RpI/edit">Clojure-based 
+    <td><a href="https://docs.google.com/document/d/1XIsGAg0Dm_aF5YWzvzZwkYaGQ15XoLVONCgYiBv9RpI/edit">Clojure-based
     implementation of HTTP Authorization system</a></td>
     <td>1.0</td>
     <td>2015-09-15</td>
-    <td>Posted - <a href="https://groups.google.com/d/topic/puppet-dev/I4GVsA46C5g/discussion">puppet-dev 
+    <td>Posted - <a href="https://groups.google.com/d/topic/puppet-dev/I4GVsA46C5g/discussion">puppet-dev
     thread</a></td>
+</tr><tr>
+    <td>23</td>
+    <td><a href="prfc-23.xpp/index.md">XPP - Exchangeable Puppet Files</a></td>
+    <td><a href="https://docs.google.com/document/d/17SFn_2PJYcO5HjgA4R65a5ynR6_bng_Ak5W53KjM4F8">Pre-parsed Puppet Language source files</a></td>
+    <td>1.0</td>
+    <td>2016-03-30</td>
+    <td>Posted - <a href="https://groups.google.com/d/topic/puppet-dev/ve0IdegWQck/discussion">puppet-dev thread</a></td>
 </tr>
 </table>
