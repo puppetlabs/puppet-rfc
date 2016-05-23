@@ -1,0 +1,14 @@
+{
+   "prfc": "24",
+   "title": "Config file for Facter",
+   "advocate":"ahpook",
+   "project":"https://github.com/puppetlabs/facter",
+   "revision":"1.0.0",
+   "requires":[
+   ],
+   "issues":[
+     "https://projects.puppetlabs.com/issues/11449"
+   ],
+   "implementation":[
+   ]
+}
