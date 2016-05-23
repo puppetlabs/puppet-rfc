@@ -202,5 +202,13 @@ Index of PRFCs
     <td>1.0</td>
     <td>2016-03-30</td>
     <td>Posted - <a href="https://groups.google.com/d/topic/puppet-dev/ve0IdegWQck/discussion">puppet-dev thread</a></td>
+</tr><tr>
+    <td>24</td>
+    <td><a href="prfc-24.facter-conf/index.md">Facter Config File</a></td>
+    <td><a href="https://docs.google.com/document/d/1xlj0NYESLHNv5ZO_NJ-1fCssAWzaHsTZIhyaK3uzHQY/edit?usp=sharing">A config file for facter, providing runtime settings</a></td>
+    <td>1.0</td>
+    <td>2016-05-24</td>
+    <td>Posted - <a href="https://groups.google.com/d/topic/puppet-dev/bebmBUyRETg/discussion">puppet-dev thread</a></td>
 </tr>
+
 </table>
