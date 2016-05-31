@@ -198,9 +198,9 @@ Index of PRFCs
 </tr><tr>
     <td>23</td>
     <td><a href="prfc-23.xpp/index.md">XPP - Exchangeable Puppet Files</a></td>
-    <td><a href="https://docs.google.com/document/d/17SFn_2PJYcO5HjgA4R65a5ynR6_bng_Ak5W53KjM4F8">Pre-parsed Puppet Language source files</a></td>
+    <td>XPP eXchangeable puPPet defines now the native parser can parse and validate PP files for evaluation by the Ruby runtime</td>
     <td>1.0</td>
-    <td>2016-03-30</td>
+    <td>2016-05-25</td>
     <td>Posted - <a href="https://groups.google.com/d/topic/puppet-dev/ve0IdegWQck/discussion">puppet-dev thread</a></td>
 </tr><tr>
     <td>24</td>
