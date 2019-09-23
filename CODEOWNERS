@@ -1,0 +1,4 @@
+# most of the original RFCs are a part of language, but use platform-core as a catch all for now
+# * @puppetlabs/language
+# * @puppetlabs/night-s-watch
+* @puppetlabs/platform-core
